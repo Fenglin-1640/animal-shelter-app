@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { SimpleHeader } from "@/components/layout/simple-header";
@@ -34,13 +35,17 @@ function AlertIcon() {
   );
 }
 
-export function SignInScreen() {
+export function SignInScreen({
+  initialEmail = "",
+}: {
+  initialEmail?: string;
+}) {
   const { signIn } = useAuth();
   const router = useRouter();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -226,6 +231,16 @@ export function SignInScreen() {
               </button>
             </form>
           </div>
+
+          <p className="mt-4 text-center text-sm text-text-muted">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/sign-up"
+              className="font-semibold text-secondary underline underline-offset-2 hover:no-underline"
+            >
+              Sign Up
+            </Link>
+          </p>
 
           <div className="mt-4 rounded-[12px] border border-border bg-surface p-4 text-xs text-text-muted">
             <p className="font-semibold text-text">Prototype demo accounts</p>

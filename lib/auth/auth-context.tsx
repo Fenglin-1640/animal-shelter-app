@@ -9,6 +9,12 @@ import {
   type ReactNode,
 } from "react";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
+import {
+  generateAccountId,
+  loadRegisteredAccounts,
+  saveRegisteredAccounts,
+  type RegisteredAccount,
+} from "@/lib/auth/accounts-store";
 import type { Role } from "@/lib/roles/roles";
 
 // Prototype auth per PRD FR-AUTH-01 / section 4.1: lock after 6 failed
@@ -28,6 +34,19 @@ export type SignInResult =
   | { ok: false; reason: "locked" }
   | { ok: false; reason: "inactive" };
 
+export interface SignUpInput {
+  title: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+export type SignUpResult =
+  | { ok: true; accountId: string }
+  | { ok: false; reason: "duplicate" };
+
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 interface StoredSession {
@@ -44,9 +63,46 @@ interface AuthContextValue {
   user: SessionUser | null;
   signIn: (email: string, password: string) => SignInResult;
   signOut: () => void;
+  signUp: (input: SignUpInput) => SignUpResult;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+interface LookupAccount {
+  email: string;
+  password: string;
+  role: Role;
+  status: "Active" | "Inactive";
+  displayName: string;
+}
+
+function findAccount(normalizedEmail: string): LookupAccount | undefined {
+  const demo = DEMO_ACCOUNTS.find(
+    (a) => a.email.toLowerCase() === normalizedEmail,
+  );
+  if (demo) return demo;
+
+  const registered = loadRegisteredAccounts().find(
+    (a) => a.email.toLowerCase() === normalizedEmail,
+  );
+  if (!registered) return undefined;
+  return {
+    email: registered.email,
+    password: registered.password,
+    role: registered.role,
+    status: registered.status,
+    displayName: registered.displayName,
+  };
+}
+
+function isEmailRegistered(normalizedEmail: string): boolean {
+  return (
+    DEMO_ACCOUNTS.some((a) => a.email.toLowerCase() === normalizedEmail) ||
+    loadRegisteredAccounts().some(
+      (a) => a.email.toLowerCase() === normalizedEmail,
+    )
+  );
+}
 
 function loadSession(): StoredSession {
   if (typeof window === "undefined") return { user: null, failedAttempts: {} };
@@ -90,9 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(
     (rawEmail: string, password: string): SignInResult => {
       const email = rawEmail.trim().toLowerCase();
-      const account = DEMO_ACCOUNTS.find(
-        (a) => a.email.toLowerCase() === email,
-      );
+      const account = findAccount(email);
       const currentFailures = session.failedAttempts[email] ?? 0;
 
       if (currentFailures >= LOCKOUT_THRESHOLD) {
@@ -140,6 +194,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveSession({ user: null, failedAttempts: session.failedAttempts });
   }, [session.failedAttempts]);
 
+  const signUp = useCallback((input: SignUpInput): SignUpResult => {
+    const email = input.email.trim().toLowerCase();
+    if (isEmailRegistered(email)) {
+      return { ok: false, reason: "duplicate" };
+    }
+
+    const account: RegisteredAccount = {
+      id: generateAccountId(),
+      email: input.email.trim(),
+      password: input.password,
+      role: "Adopter",
+      status: "Active",
+      displayName: `${input.title} ${input.firstName.trim()} ${input.lastName.trim()}`.trim(),
+      phone: input.phone.trim(),
+      signUpAt: new Date().toISOString(),
+    };
+    saveRegisteredAccounts([...loadRegisteredAccounts(), account]);
+    return { ok: true, accountId: account.id };
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -147,6 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: session.user,
         signIn,
         signOut,
+        signUp,
       }}
     >
       {children}
