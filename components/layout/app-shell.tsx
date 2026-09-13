@@ -6,7 +6,13 @@ import { AppHeader } from "@/components/layout/app-header";
 import { RoleSidebar } from "@/components/layout/role-sidebar";
 import { useAuth } from "@/lib/auth/auth-context";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  rightPanel,
+}: {
+  children: ReactNode;
+  rightPanel?: ReactNode;
+}) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { status, user, signOut } = useAuth();
   const router = useRouter();
@@ -46,6 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="min-w-0 flex-1 px-[5%] py-8">
           <div className="mx-auto w-full max-w-[70em]">{children}</div>
         </main>
+        {rightPanel}
       </div>
     </div>
   );

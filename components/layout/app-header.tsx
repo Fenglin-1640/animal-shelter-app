@@ -84,7 +84,7 @@ export function AppHeader({
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <HeaderIconButton label="Notifications">
+        <HeaderIconButton label="Notifications" href="/notifications">
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
