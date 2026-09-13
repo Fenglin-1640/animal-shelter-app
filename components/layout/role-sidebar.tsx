@@ -1,25 +1,46 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ROLE_FUNCTIONS, type Role } from "@/lib/roles/roles";
 
 function NavItem({
   label,
+  href,
   current = false,
+  onNavigate,
 }: {
   label: string;
+  href?: string;
   current?: boolean;
+  onNavigate?: () => void;
 }) {
+  const className = `flex w-full items-center rounded-[12px] border px-3 py-2 text-left text-sm transition-colors duration-150 ${
+    current
+      ? "border-border-strong bg-surface-active font-semibold text-text"
+      : "border-transparent text-text hover:border-border hover:bg-surface-active"
+  }`;
+
   return (
     <li>
-      <button
-        type="button"
-        aria-current={current ? "page" : undefined}
-        className={`flex w-full items-center rounded-[12px] border px-3 py-2 text-left text-sm transition-colors duration-150 ${
-          current
-            ? "border-border-strong bg-surface-active font-semibold text-text"
-            : "border-transparent text-text hover:border-border hover:bg-surface-active"
-        }`}
-      >
-        {label}
-      </button>
+      {href ? (
+        <Link
+          href={href}
+          aria-current={current ? "page" : undefined}
+          onClick={onNavigate}
+          className={className}
+        >
+          {label}
+        </Link>
+      ) : (
+        <button
+          type="button"
+          aria-current={current ? "page" : undefined}
+          className={className}
+        >
+          {label}
+        </button>
+      )}
     </li>
   );
 }
@@ -52,6 +73,7 @@ export function RoleSidebar({
   onClose: () => void;
 }) {
   const functions = ROLE_FUNCTIONS[role];
+  const pathname = usePathname();
 
   const content = (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
@@ -68,7 +90,12 @@ export function RoleSidebar({
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-4">
         <div className="border-t border-border pt-4">
           <ul className="flex flex-col gap-1">
-            <NavItem label="Home" current />
+            <NavItem
+              label="Home"
+              href="/"
+              current={pathname === "/"}
+              onNavigate={onClose}
+            />
           </ul>
         </div>
         <NavGroup

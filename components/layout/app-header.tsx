@@ -1,21 +1,34 @@
 "use client";
 
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 interface HeaderIconButtonProps {
   label: string;
+  href?: string;
   onClick?: () => void;
   children: React.ReactNode;
 }
 
-function HeaderIconButton({ label, onClick, children }: HeaderIconButtonProps) {
+function HeaderIconButton({ label, href, onClick, children }: HeaderIconButtonProps) {
+  const className =
+    "flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-text transition-colors duration-150 hover:bg-surface-active focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+
+  if (href) {
+    return (
+      <Link href={href} title={label} aria-label={label} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={onClick}
       title={label}
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-text transition-colors duration-150 hover:bg-surface-active focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className={className}
     >
       {children}
     </button>
@@ -87,7 +100,7 @@ export function AppHeader({
             <path d="M10.5 21a1.5 1.5 0 0 0 3 0" />
           </svg>
         </HeaderIconButton>
-        <HeaderIconButton label="My Profile">
+        <HeaderIconButton label="My Profile" href="/profile">
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"

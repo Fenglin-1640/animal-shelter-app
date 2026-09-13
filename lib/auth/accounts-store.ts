@@ -9,7 +9,9 @@ export interface RegisteredAccount {
   password: string;
   role: "Adopter";
   status: "Active";
-  displayName: string;
+  title: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   signUpAt: string;
 }

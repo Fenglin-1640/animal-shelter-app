@@ -15,6 +15,8 @@ import {
   saveRegisteredAccounts,
   type RegisteredAccount,
 } from "@/lib/auth/accounts-store";
+import { formatDisplayName } from "@/lib/auth/format-name";
+import { getProfileOverride, mergeProfileOverride } from "@/lib/auth/profile-store";
 import type { Role } from "@/lib/roles/roles";
 
 // Prototype auth per PRD FR-AUTH-01 / section 4.1: lock after 6 failed
@@ -25,6 +27,13 @@ const STORAGE_KEY = "asams-session";
 export interface SessionUser {
   email: string;
   role: Role;
+  status: "Active" | "Inactive";
+  title: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  signUpAt: string;
+  lastLoginAt: string;
   displayName: string;
 }
 
@@ -47,6 +56,17 @@ export type SignUpResult =
   | { ok: true; accountId: string }
   | { ok: false; reason: "duplicate" };
 
+export interface UpdateProfileInput {
+  title: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export type ChangePasswordResult =
+  | { ok: true }
+  | { ok: false; reason: "incorrect_current_password" };
+
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 interface StoredSession {
@@ -64,6 +84,11 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => SignInResult;
   signOut: () => void;
   signUp: (input: SignUpInput) => SignUpResult;
+  updateProfile: (input: UpdateProfileInput) => void;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => ChangePasswordResult;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -73,26 +98,40 @@ interface LookupAccount {
   password: string;
   role: Role;
   status: "Active" | "Inactive";
-  displayName: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  signUpAt: string;
+}
+
+function applyOverride(
+  account: LookupAccount,
+  normalizedEmail: string,
+): LookupAccount {
+  const override = getProfileOverride(normalizedEmail);
+  if (!override) return account;
+  return {
+    ...account,
+    title: override.title ?? account.title,
+    firstName: override.firstName ?? account.firstName,
+    lastName: override.lastName ?? account.lastName,
+    phone: override.phone ?? account.phone,
+    password: override.password ?? account.password,
+  };
 }
 
 function findAccount(normalizedEmail: string): LookupAccount | undefined {
   const demo = DEMO_ACCOUNTS.find(
     (a) => a.email.toLowerCase() === normalizedEmail,
   );
-  if (demo) return demo;
+  if (demo) return applyOverride(demo, normalizedEmail);
 
   const registered = loadRegisteredAccounts().find(
     (a) => a.email.toLowerCase() === normalizedEmail,
   );
   if (!registered) return undefined;
-  return {
-    email: registered.email,
-    password: registered.password,
-    role: registered.role,
-    status: registered.status,
-    displayName: registered.displayName,
-  };
+  return applyOverride(registered, normalizedEmail);
 }
 
 function isEmailRegistered(normalizedEmail: string): boolean {
@@ -102,6 +141,25 @@ function isEmailRegistered(normalizedEmail: string): boolean {
       (a) => a.email.toLowerCase() === normalizedEmail,
     )
   );
+}
+
+function toSessionUser(account: LookupAccount, lastLoginAt: string): SessionUser {
+  return {
+    email: account.email,
+    role: account.role,
+    status: account.status,
+    title: account.title,
+    firstName: account.firstName,
+    lastName: account.lastName,
+    phone: account.phone,
+    signUpAt: account.signUpAt,
+    lastLoginAt,
+    displayName: formatDisplayName(
+      account.title,
+      account.firstName,
+      account.lastName,
+    ),
+  };
 }
 
 function loadSession(): StoredSession {
@@ -173,11 +231,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (account.password !== password) return recordFailure();
 
       const nextAttempts = { ...session.failedAttempts, [email]: 0 };
-      const sessionUser: SessionUser = {
-        email: account.email,
-        role: account.role,
-        displayName: account.displayName,
-      };
+      const lastLoginAt = new Date().toISOString();
+      mergeProfileOverride(email, { lastLoginAt });
+      const sessionUser = toSessionUser(account, lastLoginAt);
       setSession({
         status: "authenticated",
         user: sessionUser,
@@ -206,13 +262,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: input.password,
       role: "Adopter",
       status: "Active",
-      displayName: `${input.title} ${input.firstName.trim()} ${input.lastName.trim()}`.trim(),
+      title: input.title,
+      firstName: input.firstName.trim(),
+      lastName: input.lastName.trim(),
       phone: input.phone.trim(),
       signUpAt: new Date().toISOString(),
     };
     saveRegisteredAccounts([...loadRegisteredAccounts(), account]);
     return { ok: true, accountId: account.id };
   }, []);
+
+  const updateProfile = useCallback(
+    (input: UpdateProfileInput) => {
+      if (!session.user) return;
+      const email = session.user.email.toLowerCase();
+      mergeProfileOverride(email, {
+        title: input.title,
+        firstName: input.firstName.trim(),
+        lastName: input.lastName.trim(),
+        phone: input.phone.trim(),
+      });
+      const updatedUser: SessionUser = {
+        ...session.user,
+        title: input.title,
+        firstName: input.firstName.trim(),
+        lastName: input.lastName.trim(),
+        phone: input.phone.trim(),
+        displayName: formatDisplayName(
+          input.title,
+          input.firstName.trim(),
+          input.lastName.trim(),
+        ),
+      };
+      setSession((prev) => ({ ...prev, user: updatedUser }));
+      saveSession({ user: updatedUser, failedAttempts: session.failedAttempts });
+    },
+    [session],
+  );
+
+  const changePassword = useCallback(
+    (currentPassword: string, newPassword: string): ChangePasswordResult => {
+      if (!session.user) {
+        return { ok: false, reason: "incorrect_current_password" };
+      }
+      const email = session.user.email.toLowerCase();
+      const account = findAccount(email);
+      if (!account || account.password !== currentPassword) {
+        return { ok: false, reason: "incorrect_current_password" };
+      }
+      mergeProfileOverride(email, { password: newPassword });
+      return { ok: true };
+    },
+    [session.user],
+  );
 
   return (
     <AuthContext.Provider
@@ -222,6 +324,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signOut,
         signUp,
+        updateProfile,
+        changePassword,
       }}
     >
       {children}

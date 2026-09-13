@@ -7,7 +7,11 @@ export interface DemoAccount {
   password: string;
   role: Role;
   status: "Active" | "Inactive";
-  displayName: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  signUpAt: string;
 }
 
 export const DEMO_PASSWORD = "Demo123!";
@@ -18,34 +22,54 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     password: DEMO_PASSWORD,
     role: "Administrator",
     status: "Active",
-    displayName: "Administrator Demo",
+    title: "Ms",
+    firstName: "Priya",
+    lastName: "Sharma",
+    phone: "+61 2 5550 1001",
+    signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
     email: "staff@asams.demo",
     password: DEMO_PASSWORD,
     role: "Shelter Staff Member",
     status: "Active",
-    displayName: "Shelter Staff Demo",
+    title: "Mr",
+    firstName: "Daniel",
+    lastName: "Lee",
+    phone: "+61 2 5550 1002",
+    signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
     email: "vet@asams.demo",
     password: DEMO_PASSWORD,
     role: "Veterinarian",
     status: "Active",
-    displayName: "Veterinarian Demo",
+    title: "Dr",
+    firstName: "Sarah",
+    lastName: "Nguyen",
+    phone: "+61 2 5550 1003",
+    signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
     email: "council@asams.demo",
     password: DEMO_PASSWORD,
     role: "Council Animal Control Officer",
     status: "Active",
-    displayName: "Council Officer Demo",
+    title: "Mr",
+    firstName: "Marcus",
+    lastName: "Chen",
+    phone: "+61 2 5550 1004",
+    signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
     email: "adopter@asams.demo",
     password: DEMO_PASSWORD,
     role: "Adopter",
     status: "Active",
-    displayName: "Adopter Demo",
+    title: "Ms",
+    firstName: "Jordan",
+    lastName: "Taylor",
+    phone: "+61 2 5550 1005",
+    signUpAt: "2024-01-08T09:00:00.000Z",
   },
 ];
