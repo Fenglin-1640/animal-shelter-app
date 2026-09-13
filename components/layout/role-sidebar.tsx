@@ -1,7 +1,4 @@
-"use client";
-
-import { useRole } from "@/lib/roles/role-context";
-import { ROLES, ROLE_FUNCTIONS, type Role } from "@/lib/roles/roles";
+import { ROLE_FUNCTIONS, type Role } from "@/lib/roles/roles";
 
 function NavItem({
   label,
@@ -44,36 +41,28 @@ function NavGroup({ heading, items }: { heading: string; items: string[] }) {
 }
 
 export function RoleSidebar({
+  role,
+  displayName,
   mobileOpen,
   onClose,
 }: {
+  role: Role;
+  displayName: string;
   mobileOpen: boolean;
   onClose: () => void;
 }) {
-  const { role, setRole } = useRole();
   const functions = ROLE_FUNCTIONS[role];
 
   const content = (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-      <div>
-        <label
-          htmlFor="role-select"
-          className="block px-1 pb-1 text-xs font-semibold uppercase tracking-wide text-text-muted"
-        >
-          Current Role (Demo)
-        </label>
-        <select
-          id="role-select"
-          value={role}
-          onChange={(event) => setRole(event.target.value as Role)}
-          className="w-full rounded-[12px] border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-        >
-          {ROLES.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
+      <div className="rounded-[12px] border border-border bg-surface px-3 py-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+          Signed in as
+        </p>
+        <p className="truncate text-sm font-semibold text-text">
+          {displayName}
+        </p>
+        <p className="text-xs text-text-muted">{role}</p>
       </div>
 
       <nav aria-label="Primary" className="flex flex-1 flex-col gap-4">

@@ -4,13 +4,15 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 interface HeaderIconButtonProps {
   label: string;
+  onClick?: () => void;
   children: React.ReactNode;
 }
 
-function HeaderIconButton({ label, children }: HeaderIconButtonProps) {
+function HeaderIconButton({ label, onClick, children }: HeaderIconButtonProps) {
   return (
     <button
       type="button"
+      onClick={onClick}
       title={label}
       aria-label={label}
       className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-text transition-colors duration-150 hover:bg-surface-active focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
@@ -20,7 +22,13 @@ function HeaderIconButton({ label, children }: HeaderIconButtonProps) {
   );
 }
 
-export function AppHeader({ onToggleNav }: { onToggleNav: () => void }) {
+export function AppHeader({
+  onToggleNav,
+  onSignOut,
+}: {
+  onToggleNav: () => void;
+  onSignOut: () => void;
+}) {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] sm:px-6">
       <button
@@ -96,7 +104,7 @@ export function AppHeader({ onToggleNav }: { onToggleNav: () => void }) {
           </svg>
         </HeaderIconButton>
         <ThemeToggle />
-        <HeaderIconButton label="Sign Out">
+        <HeaderIconButton label="Sign Out" onClick={onSignOut}>
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"

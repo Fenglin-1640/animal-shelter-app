@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bitter, Figtree } from "next/font/google";
 import Script from "next/script";
 import { THEME_INIT_SCRIPT, ThemeProvider } from "@/lib/theme/theme-context";
+import { AuthProvider } from "@/lib/auth/auth-context";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Script id="asams-theme-init" strategy="beforeInteractive">
           {THEME_INIT_SCRIPT}
         </Script>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

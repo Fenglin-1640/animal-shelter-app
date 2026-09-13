@@ -1,19 +1,20 @@
 "use client";
 
 import { FunctionCardGroup } from "@/components/landing/function-card";
-import { useRole } from "@/lib/roles/role-context";
+import { useAuth } from "@/lib/auth/auth-context";
 import { ROLE_FUNCTIONS } from "@/lib/roles/roles";
 
 export function LandingScreen() {
-  const { role } = useRole();
-  const functions = ROLE_FUNCTIONS[role];
+  const { user } = useAuth();
+  if (!user) return null;
+  const functions = ROLE_FUNCTIONS[user.role];
 
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-bold text-text">Landing Screen</h1>
         <p className="mt-1 text-sm text-text-muted">
-          Signed in as {role} (demo role, no authentication yet).
+          Signed in as {user.displayName} ({user.role}).
         </p>
       </div>
 
