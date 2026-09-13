@@ -1,26 +1,83 @@
 @import "tailwindcss";
 
+/*
+ * ASAMS design tokens (PRD 5.7). Two themes share one token set:
+ * ASAMS Dawn (light) is the default, ASAMS Moon Cool (dark) is applied
+ * via [data-theme="moon"] on <html>, set by ThemeProvider before paint.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --asams-color-page: #faf4ed;
+  --asams-color-surface: #fffaf5;
+  --asams-color-surface-active: #fff7f2;
+  --asams-color-text: #575279;
+  --asams-color-text-muted: #797593;
+  --asams-color-border: #e7d3cb;
+  --asams-color-border-strong: #d7bfb6;
+  --asams-color-primary: #eb6f92;
+  --asams-color-secondary: #3e8fb0;
+  --asams-color-rose: #ea9a97;
+  --asams-color-gold: #f6c177;
+  --asams-color-danger: #eb6f92;
+  --asams-color-focus: #3e8fb0;
+  --asams-shadow-card: 0 2px 8px rgba(200, 182, 173, 0.2);
+}
+
+:root[data-theme="moon"] {
+  color-scheme: dark;
+
+  --asams-color-page: #232136;
+  --asams-color-surface: #2a273f;
+  --asams-color-surface-active: #34304f;
+  --asams-color-text: #e0def4;
+  --asams-color-text-muted: #908caa;
+  --asams-color-border: #3f3857;
+  --asams-color-border-strong: #463e61;
+  --asams-color-primary: #9ccfd8;
+  --asams-color-secondary: #c4a7e7;
+  --asams-color-rose: #9ccfd8;
+  --asams-color-gold: #c4a7e7;
+  --asams-color-danger: #eb6f92;
+  --asams-color-focus: #c4a7e7;
+  --asams-shadow-card: 0 8px 28px rgba(20, 18, 32, 0.35);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-page: var(--asams-color-page);
+  --color-surface: var(--asams-color-surface);
+  --color-surface-active: var(--asams-color-surface-active);
+  --color-text: var(--asams-color-text);
+  --color-text-muted: var(--asams-color-text-muted);
+  --color-border: var(--asams-color-border);
+  --color-border-strong: var(--asams-color-border-strong);
+  --color-primary: var(--asams-color-primary);
+  --color-secondary: var(--asams-color-secondary);
+  --color-rose: var(--asams-color-rose);
+  --color-gold: var(--asams-color-gold);
+  --color-danger: var(--asams-color-danger);
+  --color-focus: var(--asams-color-focus);
+
+  --font-sans: var(--font-figtree), var(--font-bitter), Helvetica,
+    "Trebuchet MS", "Lucida Sans", Arial, sans-serif;
+
+  --radius-asams: 12px;
+
+  --shadow-asams-card: var(--asams-shadow-card);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-sans);
 }
