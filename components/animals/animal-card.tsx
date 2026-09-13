@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AttributeChip } from "@/components/shared/attribute-chip";
 import { StatusChip } from "@/components/shared/status-chip";
 import { getDisplayAge } from "@/lib/animals/age";
@@ -48,14 +49,12 @@ export function AnimalCard({ animal }: { animal: Animal }) {
       </div>
 
       <div className="flex items-start sm:items-center">
-        <button
-          type="button"
-          disabled
-          title="Animal detail pages are not built yet"
-          className="h-9 whitespace-nowrap rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text-muted disabled:cursor-not-allowed disabled:opacity-60"
+        <Link
+          href={`/animals/${animal.animalId}`}
+          className="h-9 whitespace-nowrap rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text inline-flex items-center hover:bg-surface-active"
         >
           View
-        </button>
+        </Link>
       </div>
     </article>
   );

@@ -1,4 +1,5 @@
-// Field subset of PRD 8.2 Animal needed for the Animals list/card (FR-AN-01).
+// Field subset of PRD 8.2 Animal needed for the Animals list/card and
+// Animal Profile detail page (FR-AN-01, FR-AN-02).
 export type Species = "Cat" | "Dog" | "Bird" | "Reptile";
 export type Sex = "Male" | "Female";
 
@@ -21,18 +22,35 @@ export type CurrentStatus =
 // PRD 7.2 Animal.listingStatus.
 export type ListingStatus = "Not Fit" | "Pre-Listing" | "Current" | "Adopted" | "Removed";
 
+export interface LinkedPerson {
+  role: "Registered Owner" | "Adopter";
+  name: string;
+}
+
 export interface Animal {
   animalId: string;
   shelterId: string;
   name: string;
+  // Identity
   species: Species;
   breed: string;
+  breedDescription: string;
   sex: Sex;
   dateOfBirth?: string;
   estimatedAge?: string;
+  coatColour: string;
+  coatMarkings: string;
+  microchipNumber?: string;
+  // Adoption
   generalDescription: string;
   temperaments: string[];
+  adoptionFee?: number;
   currentStatus: CurrentStatus;
   listingStatus: ListingStatus;
+  statusUpdatedAt: string;
+  // Lifecycle
   enteredAt: string;
+  lastModifiedAt: string;
+  intakeSource: string;
+  linkedPerson?: LinkedPerson;
 }
