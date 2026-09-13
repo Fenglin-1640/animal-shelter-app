@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FUNCTION_HREFS } from "@/lib/roles/function-links";
 import { ROLE_FUNCTIONS, type Role } from "@/lib/roles/roles";
 
 function NavItem({
@@ -45,7 +46,17 @@ function NavItem({
   );
 }
 
-function NavGroup({ heading, items }: { heading: string; items: string[] }) {
+function NavGroup({
+  heading,
+  items,
+  pathname,
+  onNavigate,
+}: {
+  heading: string;
+  items: string[];
+  pathname: string;
+  onNavigate: () => void;
+}) {
   if (items.length === 0) return null;
   return (
     <div className="border-t border-border pt-4 first:border-t-0 first:pt-0">
@@ -53,9 +64,18 @@ function NavGroup({ heading, items }: { heading: string; items: string[] }) {
         {heading}
       </h2>
       <ul className="flex flex-col gap-1">
-        {items.map((label) => (
-          <NavItem key={label} label={label} />
-        ))}
+        {items.map((label) => {
+          const href = FUNCTION_HREFS[label];
+          return (
+            <NavItem
+              key={label}
+              label={label}
+              href={href}
+              current={Boolean(href) && href === pathname}
+              onNavigate={onNavigate}
+            />
+          );
+        })}
       </ul>
     </div>
   );
@@ -101,10 +121,14 @@ export function RoleSidebar({
         <NavGroup
           heading="Administration Functions"
           items={functions.administration.map((f) => f.label)}
+          pathname={pathname}
+          onNavigate={onClose}
         />
         <NavGroup
           heading="User Functions"
           items={functions.user.map((f) => f.label)}
+          pathname={pathname}
+          onNavigate={onClose}
         />
       </nav>
     </div>

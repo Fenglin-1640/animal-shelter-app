@@ -1,12 +1,28 @@
+import Link from "next/link";
+import { FUNCTION_HREFS } from "@/lib/roles/function-links";
 import type { FunctionEntry } from "@/lib/roles/roles";
 
 export function FunctionCard({ label, description }: FunctionEntry) {
-  return (
-    <div className="flex flex-col gap-2 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] transition-colors duration-150 hover:bg-surface-active">
+  const href = FUNCTION_HREFS[label];
+  const className =
+    "flex flex-col gap-2 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] transition-colors duration-150 hover:bg-surface-active";
+
+  const content = (
+    <>
       <h3 className="text-base font-semibold text-text">{label}</h3>
       <p className="text-sm text-text-muted">{description}</p>
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }
 
 export function FunctionCardGroup({
