@@ -95,6 +95,21 @@ export function markTaskContinuable(
   return { ok: true };
 }
 
+// Used by a task's real, dedicated feature (e.g. Scan Microchip, FR-MC-01)
+// once it reaches a definitive outcome, superseding the generic "Mark
+// Continuable" stand-in for that specific task type.
+export function completeTaskByType(
+  animalId: string,
+  taskType: TaskType,
+  email: string,
+  name: string,
+): MutationResult {
+  const tasks = listTasksForAnimal(animalId);
+  const task = tasks.find((t) => t.taskType === taskType);
+  if (!task) return { ok: false, reason: "not_found" };
+  return markTaskContinuable(task.id, email, name);
+}
+
 export function getFitnessReview(animalId: string): FitnessReview | undefined {
   return loadAllReviews().find((r) => r.animalId === animalId);
 }

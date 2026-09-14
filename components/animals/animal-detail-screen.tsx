@@ -64,7 +64,7 @@ function AnimalNotFound() {
   );
 }
 
-function AnimalDetailContent({ animal }: { animal: Animal }) {
+function AnimalDetailContent({ animal, role }: { animal: Animal; role: Role }) {
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -121,6 +121,16 @@ function AnimalDetailContent({ animal }: { animal: Animal }) {
           label="Microchip Number"
           value={animal.microchipNumber ?? "No chip recorded"}
         />
+        {["Administrator", "Shelter Staff Member"].includes(role) && (
+          <div className="sm:col-span-2">
+            <Link
+              href={`/animals/${animal.animalId}/scan-microchip`}
+              className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Scan Microchip
+            </Link>
+          </div>
+        )}
       </InfoGroup>
 
       <InfoGroup heading="Adoption">
@@ -240,5 +250,9 @@ export function AnimalDetailScreen() {
 
   const animal = getAnimalById(params.animalId);
 
-  return <AppShell>{animal ? <AnimalDetailContent animal={animal} /> : <AnimalNotFound />}</AppShell>;
+  return (
+    <AppShell>
+      {animal ? <AnimalDetailContent animal={animal} role={user.role} /> : <AnimalNotFound />}
+    </AppShell>
+  );
 }

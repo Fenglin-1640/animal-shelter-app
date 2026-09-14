@@ -6,6 +6,13 @@ import type { Animal } from "@/lib/animals/types";
 // no backend.
 const STORAGE_KEY = "asams-created-animals";
 
+// Field-level edits (e.g. microchipNumber written back by Scan Microchip,
+// FR-MC-01) layered on top of a base record - same overlay pattern as
+// lib/user-administration/directory-store.ts, needed because the 10 PRD
+// 12.1 seed animals are static imports, not localStorage-backed records
+// that could otherwise be mutated in place.
+const OVERRIDES_KEY = "asams-animal-overrides";
+
 function loadCreatedAnimals(): Animal[] {
   if (typeof window === "undefined") return [];
   try {
@@ -23,12 +30,38 @@ function saveCreatedAnimals(animals: Animal[]) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(animals));
 }
 
+function loadOverrides(): Record<string, Partial<Animal>> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(OVERRIDES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveOverrides(overrides: Record<string, Partial<Animal>>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+}
+
 export function addAnimal(animal: Animal) {
   saveCreatedAnimals([...loadCreatedAnimals(), animal]);
 }
 
+export function updateAnimal(animalId: string, patch: Partial<Animal>) {
+  const overrides = loadOverrides();
+  overrides[animalId] = { ...overrides[animalId], ...patch };
+  saveOverrides(overrides);
+}
+
 export function getAllAnimals(): Animal[] {
-  return [...MOCK_ANIMALS, ...loadCreatedAnimals()];
+  const overrides = loadOverrides();
+  return [...MOCK_ANIMALS, ...loadCreatedAnimals()].map((animal) =>
+    overrides[animal.animalId] ? { ...animal, ...overrides[animal.animalId] } : animal,
+  );
 }
 
 export function getAnimalById(animalId: string): Animal | undefined {

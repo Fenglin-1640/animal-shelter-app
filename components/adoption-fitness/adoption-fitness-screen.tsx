@@ -105,10 +105,10 @@ function AdoptionFitnessContent({
           {animal.name} &middot; {animal.shelterId}
         </p>
         <p className="mt-2 text-sm text-text-muted">
-          Recording each task&apos;s full result is the job of Scan Microchip (FR-MC-01), Health
-          Assessment (FR-MED-01) and Temperament Assessment (FR-BEH-01) - not built yet in this
-          prototype. Marking a task Continuable here is a simplified stand-in that only tracks
-          whether each track is ready for Review Adoption Fitness, per BR-016.
+          Microchip Check is completed via Scan Microchip (FR-MC-01). Health Assessment
+          (FR-MED-01) and Temperament Assessment (FR-BEH-01) are not built yet in this
+          prototype - marking either Continuable here is a simplified stand-in that only tracks
+          whether that track is ready for Review Adoption Fitness, per BR-016.
         </p>
       </div>
 
@@ -154,22 +154,44 @@ function AdoptionFitnessContent({
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusChip label={status} category={TASK_STATUS_CATEGORY[status]} />
-                  {status === "Pending" && (
-                    <button
-                      type="button"
-                      onClick={() => task && handleMarkContinuable(task.id)}
-                      disabled={!canAct || complete}
-                      title={
-                        complete
-                          ? "This Fitness Review has already been confirmed."
-                          : !canAct
-                            ? `Only ${actorRoles.join(" or ")} can complete this task.`
-                            : undefined
-                      }
-                      className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Mark Continuable
-                    </button>
+                  {status === "Pending" && taskType === "Microchip Check" ? (
+                    canAct && !complete ? (
+                      <Link
+                        href={`/animals/${animalId}/scan-microchip`}
+                        className="inline-flex h-9 items-center rounded-[12px] border border-border bg-surface px-3 text-sm font-semibold text-text hover:bg-surface-active"
+                      >
+                        Scan Microchip
+                      </Link>
+                    ) : (
+                      <span
+                        title={
+                          complete
+                            ? "This Fitness Review has already been confirmed."
+                            : `Only ${actorRoles.join(" or ")} can complete this task.`
+                        }
+                        className="inline-flex h-9 cursor-not-allowed items-center rounded-[12px] border border-border bg-surface px-3 text-sm font-semibold text-text opacity-60"
+                      >
+                        Scan Microchip
+                      </span>
+                    )
+                  ) : (
+                    status === "Pending" && (
+                      <button
+                        type="button"
+                        onClick={() => task && handleMarkContinuable(task.id)}
+                        disabled={!canAct || complete}
+                        title={
+                          complete
+                            ? "This Fitness Review has already been confirmed."
+                            : !canAct
+                              ? `Only ${actorRoles.join(" or ")} can complete this task.`
+                              : undefined
+                        }
+                        className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Mark Continuable
+                      </button>
+                    )
                   )}
                 </div>
               </div>
