@@ -3,6 +3,7 @@ import type { Role } from "@/lib/roles/roles";
 // The 5 demo accounts and shared password from docs/PRD.md section 4.2.
 // Prototype only: there is no backend, so credentials live in client code.
 export interface DemoAccount {
+  userId: string;
   email: string;
   password: string;
   role: Role;
@@ -18,6 +19,7 @@ export const DEMO_PASSWORD = "Demo123!";
 
 export const DEMO_ACCOUNTS: DemoAccount[] = [
   {
+    userId: "U-DEMO-ADMIN",
     email: "admin@asams.demo",
     password: DEMO_PASSWORD,
     role: "Administrator",
@@ -29,6 +31,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
+    userId: "U-DEMO-STAFF",
     email: "staff@asams.demo",
     password: DEMO_PASSWORD,
     role: "Shelter Staff Member",
@@ -40,6 +43,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
+    userId: "U-DEMO-VET",
     email: "vet@asams.demo",
     password: DEMO_PASSWORD,
     role: "Veterinarian",
@@ -51,6 +55,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
+    userId: "U-DEMO-COUNCIL",
     email: "council@asams.demo",
     password: DEMO_PASSWORD,
     role: "Council Animal Control Officer",
@@ -62,6 +67,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     signUpAt: "2024-01-08T09:00:00.000Z",
   },
   {
+    userId: "U-DEMO-ADOPTER",
     email: "adopter@asams.demo",
     password: DEMO_PASSWORD,
     role: "Adopter",

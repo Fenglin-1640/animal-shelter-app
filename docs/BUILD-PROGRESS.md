@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-14, after adding My Adopter Profile (FR-ADP-01)._
+_Last updated: 2026-09-14, after adding User Administration (FR-UA-01, FR-UA-02)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 4 |
+| Done | 6 |
 | In Progress | 5 |
-| Not Started | 25 |
+| Not Started | 23 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -32,8 +32,8 @@ _Last updated: 2026-09-14, after adding My Adopter Profile (FR-ADP-01)._
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-UA-01 | 用户列表与详情 | P0 | Not Started | No User Administration screen exists. |
-| FR-UA-02 | 角色与状态维护 | P0 | Not Started | No role/status maintenance, unique-Administrator enforcement, or admin transfer flow exists. |
+| FR-UA-01 | 用户列表与详情 | P0 | Done | `/user-administration` (`components/user-administration`) lists all users (Title/Name/Role/Status) in a compact table with search/role/status filters and Add User; a detail drawer shows Sign Up Date Time, Last Login, Role/Status Updated By and At, and Lock status. Merges `DEMO_ACCOUNTS` + Sign-Up-created accounts via `lib/user-administration/directory-store.ts`. |
+| FR-UA-02 | 角色与状态维护 | P0 | Done | All 7 acceptance criteria implemented: Administrator-only gate; Role select (Vet/Council/Staff/Administrator/Adopter); Status select (Active/Inactive only, Locked handled by a separate Unlock action); every role/status change records actor+timestamp+old/new; a second concurrent Active Administrator is prevented by auto-demoting the outgoing one; assigning Administrator requires a confirm dialog ("Confirm Transfer"); the current Administrator's own row can't be set Inactive. Also required moving failed-login lockout from per-tab sessionStorage to a persistent `lib/auth/lockout-store.ts` so it's visible/unlockable across sessions. |
 
 ## 6.3 System Administration
 

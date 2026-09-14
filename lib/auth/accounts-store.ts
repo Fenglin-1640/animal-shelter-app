@@ -1,13 +1,17 @@
-// Registered (Sign Up) accounts, kept separate from the static PRD demo
-// accounts. Persisted to localStorage (not sessionStorage) so a newly
-// created account can still sign in after the tab/session is closed.
+import type { Role } from "@/lib/roles/roles";
+
+// Registered accounts: created either via public Sign Up (always role
+// Adopter) or by an Administrator via User Administration (any role).
+// Kept separate from the static PRD demo accounts. Persisted to
+// localStorage (not sessionStorage) so a newly created account can still
+// sign in after the tab/session is closed.
 const STORAGE_KEY = "asams-registered-accounts";
 
 export interface RegisteredAccount {
   id: string;
   email: string;
   password: string;
-  role: "Adopter";
+  role: Role;
   status: "Active";
   title: string;
   firstName: string;

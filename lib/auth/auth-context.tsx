@@ -17,11 +17,18 @@ import {
 } from "@/lib/auth/accounts-store";
 import { formatDisplayName } from "@/lib/auth/format-name";
 import { getProfileOverride, mergeProfileOverride } from "@/lib/auth/profile-store";
+import {
+  getLockoutState,
+  recordFailedAttempt,
+  resetLockout,
+  LOCKOUT_THRESHOLD,
+} from "@/lib/auth/lockout-store";
+import { getDirectoryOverride } from "@/lib/user-administration/directory-store";
 import type { Role } from "@/lib/roles/roles";
 
 // Prototype auth per PRD FR-AUTH-01 / section 4.1: lock after 6 failed
-// attempts, no real database, session lives in sessionStorage only.
-const LOCKOUT_THRESHOLD = 6;
+// attempts (tracked globally in lib/auth/lockout-store.ts, not per
+// session, so an Administrator can see and unlock it from any session).
 const STORAGE_KEY = "asams-session";
 
 export interface SessionUser {
@@ -71,7 +78,6 @@ type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 interface StoredSession {
   user: SessionUser | null;
-  failedAttempts: Record<string, number>;
 }
 
 interface SessionState extends StoredSession {
@@ -89,6 +95,7 @@ interface AuthContextValue {
     currentPassword: string,
     newPassword: string,
   ) => ChangePasswordResult;
+  refreshCurrentUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -109,15 +116,17 @@ function applyOverride(
   account: LookupAccount,
   normalizedEmail: string,
 ): LookupAccount {
-  const override = getProfileOverride(normalizedEmail);
-  if (!override) return account;
+  const profileOverride = getProfileOverride(normalizedEmail);
+  const directoryOverride = getDirectoryOverride(normalizedEmail);
   return {
     ...account,
-    title: override.title ?? account.title,
-    firstName: override.firstName ?? account.firstName,
-    lastName: override.lastName ?? account.lastName,
-    phone: override.phone ?? account.phone,
-    password: override.password ?? account.password,
+    title: profileOverride?.title ?? account.title,
+    firstName: profileOverride?.firstName ?? account.firstName,
+    lastName: profileOverride?.lastName ?? account.lastName,
+    phone: profileOverride?.phone ?? account.phone,
+    password: profileOverride?.password ?? account.password,
+    role: directoryOverride?.role ?? account.role,
+    status: directoryOverride?.status ?? account.status,
   };
 }
 
@@ -163,17 +172,14 @@ function toSessionUser(account: LookupAccount, lastLoginAt: string): SessionUser
 }
 
 function loadSession(): StoredSession {
-  if (typeof window === "undefined") return { user: null, failedAttempts: {} };
+  if (typeof window === "undefined") return { user: null };
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return { user: null, failedAttempts: {} };
+    if (!raw) return { user: null };
     const parsed = JSON.parse(raw) as StoredSession;
-    return {
-      user: parsed.user ?? null,
-      failedAttempts: parsed.failedAttempts ?? {},
-    };
+    return { user: parsed.user ?? null };
   } catch {
-    return { user: null, failedAttempts: {} };
+    return { user: null };
   }
 }
 
@@ -186,7 +192,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<SessionState>({
     status: "loading",
     user: null,
-    failedAttempts: {},
   });
 
   useEffect(() => {
@@ -197,58 +202,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession({
       status: stored.user ? "authenticated" : "unauthenticated",
       user: stored.user,
-      failedAttempts: stored.failedAttempts,
     });
   }, []);
 
-  const signIn = useCallback(
-    (rawEmail: string, password: string): SignInResult => {
-      const email = rawEmail.trim().toLowerCase();
-      const account = findAccount(email);
-      const currentFailures = session.failedAttempts[email] ?? 0;
+  const signIn = useCallback((rawEmail: string, password: string): SignInResult => {
+    const email = rawEmail.trim().toLowerCase();
 
-      if (currentFailures >= LOCKOUT_THRESHOLD) {
+    if (getLockoutState(email).lockedAt) {
+      return { ok: false, reason: "locked" };
+    }
+
+    const account = findAccount(email);
+
+    const recordFailure = (): SignInResult => {
+      const next = recordFailedAttempt(email);
+      if (next.lockedAt) {
         return { ok: false, reason: "locked" };
       }
-
-      const recordFailure = (): SignInResult => {
-        const nextFailures = currentFailures + 1;
-        const nextAttempts = { ...session.failedAttempts, [email]: nextFailures };
-        setSession((prev) => ({ ...prev, failedAttempts: nextAttempts }));
-        saveSession({ user: session.user, failedAttempts: nextAttempts });
-        if (nextFailures >= LOCKOUT_THRESHOLD) {
-          return { ok: false, reason: "locked" };
-        }
-        return {
-          ok: false,
-          reason: "invalid",
-          attemptsRemaining: LOCKOUT_THRESHOLD - nextFailures,
-        };
+      return {
+        ok: false,
+        reason: "invalid",
+        attemptsRemaining: LOCKOUT_THRESHOLD - next.failedAttempts,
       };
+    };
 
-      if (!account) return recordFailure();
-      if (account.status === "Inactive") return { ok: false, reason: "inactive" };
-      if (account.password !== password) return recordFailure();
+    if (!account) return recordFailure();
+    if (account.status === "Inactive") return { ok: false, reason: "inactive" };
+    if (account.password !== password) return recordFailure();
 
-      const nextAttempts = { ...session.failedAttempts, [email]: 0 };
-      const lastLoginAt = new Date().toISOString();
-      mergeProfileOverride(email, { lastLoginAt });
-      const sessionUser = toSessionUser(account, lastLoginAt);
-      setSession({
-        status: "authenticated",
-        user: sessionUser,
-        failedAttempts: nextAttempts,
-      });
-      saveSession({ user: sessionUser, failedAttempts: nextAttempts });
-      return { ok: true };
-    },
-    [session],
-  );
+    resetLockout(email);
+    const lastLoginAt = new Date().toISOString();
+    mergeProfileOverride(email, { lastLoginAt });
+    const sessionUser = toSessionUser(account, lastLoginAt);
+    setSession({ status: "authenticated", user: sessionUser });
+    saveSession({ user: sessionUser });
+    return { ok: true };
+  }, []);
 
   const signOut = useCallback(() => {
     setSession((prev) => ({ ...prev, status: "unauthenticated", user: null }));
-    saveSession({ user: null, failedAttempts: session.failedAttempts });
-  }, [session.failedAttempts]);
+    saveSession({ user: null });
+  }, []);
 
   const signUp = useCallback((input: SignUpInput): SignUpResult => {
     const email = input.email.trim().toLowerCase();
@@ -295,9 +289,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ),
       };
       setSession((prev) => ({ ...prev, user: updatedUser }));
-      saveSession({ user: updatedUser, failedAttempts: session.failedAttempts });
+      saveSession({ user: updatedUser });
     },
-    [session],
+    [session.user],
   );
 
   const changePassword = useCallback(
@@ -316,6 +310,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [session.user],
   );
 
+  // Re-derives the session user from the account store, applying the
+  // latest overrides. Call after an action that may have changed the
+  // signed-in user's own role/status (e.g. an Administrator transfer
+  // that demotes themselves) so the shell reflects it immediately.
+  const refreshCurrentUser = useCallback(() => {
+    if (!session.user) return;
+    const email = session.user.email.toLowerCase();
+    const account = findAccount(email);
+    if (!account) return;
+    const updatedUser = toSessionUser(account, session.user.lastLoginAt);
+    setSession((prev) => ({ ...prev, user: updatedUser }));
+    saveSession({ user: updatedUser });
+  }, [session.user]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -326,6 +334,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         updateProfile,
         changePassword,
+        refreshCurrentUser,
       }}
     >
       {children}
