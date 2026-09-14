@@ -1,4 +1,4 @@
-import { getAnimalById, updateAnimal } from "@/lib/animals/animal-store";
+import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import type {
   BehaviourProgram,
@@ -93,7 +93,39 @@ export function recordTemperamentAssessment(
   };
   saveList(ASSESSMENT_KEY, [...loadList<TemperamentAssessment>(ASSESSMENT_KEY), assessment]);
 
-  if (input.outcome === "Requires Behaviour Modification") {
+  // PRD 7.1's state table only allows Under Assessment -> In Behaviour
+  // Program for a negative outcome - there is no direct Under Assessment
+  // -> Unsuitable For Adoption edge. So on a FIRST-time assessment (no
+  // active program), both negative outcomes (Requires Behaviour
+  // Modification and Unsuitable for Public Adoption) start/continue a
+  // Behaviour Program; "Permanently Unsuitable" only finalises to
+  // Unsuitable For Adoption when chosen on a REASSESSMENT within an
+  // active program, matching FR-BEH-02's prose sequence (Program ->
+  // reassessment -> Suitable after Program | Permanently Unsuitable).
+  if (input.outcome === "Suitable for Adoption") {
+    if (activeProgram) {
+      resolveProgram(activeProgram.id, "Completed - Suitable", now);
+      changeAnimalStatus(
+        animalId,
+        { currentStatus: "Under Assessment", statusUpdatedAt: now },
+        { email, name },
+        "Behaviour Program - Suitable After Program",
+      );
+    }
+    completeTaskByType(animalId, "Temperament Assessment", email, name);
+  } else if (activeProgram && input.outcome === "Unsuitable for Public Adoption") {
+    resolveProgram(activeProgram.id, "Completed - Permanently Unsuitable", now);
+    changeAnimalStatus(
+      animalId,
+      {
+        currentStatus: "Unsuitable For Adoption",
+        listingStatus: "Removed",
+        statusUpdatedAt: now,
+      },
+      { email, name },
+      "Behaviour Program - Permanently Unsuitable",
+    );
+  } else {
     if (!activeProgram) {
       const program: BehaviourProgram = {
         id: generateId("BP"),
@@ -104,20 +136,12 @@ export function recordTemperamentAssessment(
       };
       saveList(PROGRAM_KEY, [...loadList<BehaviourProgram>(PROGRAM_KEY), program]);
     }
-    updateAnimal(animalId, { currentStatus: "In Behaviour Program", statusUpdatedAt: now });
-  } else if (input.outcome === "Suitable for Adoption") {
-    if (activeProgram) {
-      resolveProgram(activeProgram.id, "Completed - Suitable", now);
-      updateAnimal(animalId, { currentStatus: "Under Assessment", statusUpdatedAt: now });
-    }
-    completeTaskByType(animalId, "Temperament Assessment", email, name);
-  } else {
-    if (activeProgram) resolveProgram(activeProgram.id, "Completed - Permanently Unsuitable", now);
-    updateAnimal(animalId, {
-      currentStatus: "Unsuitable For Adoption",
-      listingStatus: "Removed",
-      statusUpdatedAt: now,
-    });
+    changeAnimalStatus(
+      animalId,
+      { currentStatus: "In Behaviour Program", statusUpdatedAt: now },
+      { email, name },
+      `Temperament Assessment - ${input.outcome}`,
+    );
   }
 
   return { ok: true };
@@ -139,12 +163,21 @@ function resolveProgram(
 // Archived" - a separate Staff-confirmed step, not automatic, so the
 // animal remains inspectable in the Unsuitable For Adoption state first
 // (matches the PRD 12.1 Rocky seed scenario, "Archive 路径").
-export function archiveUnsuitableAnimal(animalId: string): MutationResult {
+export function archiveUnsuitableAnimal(
+  animalId: string,
+  email: string,
+  name: string,
+): MutationResult {
   const animal = getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
   if (animal.currentStatus !== "Unsuitable For Adoption") {
     return { ok: false, reason: "invalid_state" };
   }
-  updateAnimal(animalId, { currentStatus: "Archived", statusUpdatedAt: new Date().toISOString() });
+  changeAnimalStatus(
+    animalId,
+    { currentStatus: "Archived", statusUpdatedAt: new Date().toISOString() },
+    { email, name },
+    "Archive Record",
+  );
   return { ok: true };
 }

@@ -77,14 +77,18 @@ function AnimalNotFound() {
 function AnimalDetailContent({
   animal: initialAnimal,
   role,
+  email,
+  displayName,
 }: {
   animal: Animal;
   role: Role;
+  email: string;
+  displayName: string;
 }) {
   const [animal, setAnimal] = useState(initialAnimal);
 
   const handleArchive = () => {
-    const result = archiveUnsuitableAnimal(animal.animalId);
+    const result = archiveUnsuitableAnimal(animal.animalId, email, displayName);
     if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
   };
 
@@ -358,7 +362,16 @@ export function AnimalDetailScreen() {
 
   return (
     <AppShell>
-      {animal ? <AnimalDetailContent animal={animal} role={user.role} /> : <AnimalNotFound />}
+      {animal ? (
+        <AnimalDetailContent
+          animal={animal}
+          role={user.role}
+          email={user.email}
+          displayName={user.displayName}
+        />
+      ) : (
+        <AnimalNotFound />
+      )}
     </AppShell>
   );
 }

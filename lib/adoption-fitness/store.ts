@@ -1,4 +1,5 @@
 import { getAnimalById } from "@/lib/animals/animal-store";
+import { writeAuditLog } from "@/lib/audit/store";
 import {
   getFitnessBlockers,
   TASK_TYPES,
@@ -145,6 +146,18 @@ function confirm(
       : { ...existing, vetConfirmedByEmail: email, vetConfirmedByName: name, vetConfirmedAt: now };
 
   upsertReview(updated);
+
+  writeAuditLog({
+    userId: email,
+    userName: name,
+    action: side === "staff" ? "Review Adoption Fitness - Staff Confirmation" : "Review Adoption Fitness - Veterinarian Confirmation",
+    entityType: "Animal",
+    entityId: animalId,
+    oldValue: "",
+    newValue: `Confirmed by ${name}`,
+    result: "Success",
+  });
+
   return { ok: true };
 }
 
@@ -156,8 +169,12 @@ export function confirmAsVet(animalId: string, email: string, name: string): Mut
   return confirm(animalId, email, name, "vet");
 }
 
+// PRD 9 permission matrix: MedicalRecord (Health Assessment) is
+// Veterinarian-only, not Administrator - see the note on
+// components/medical/medical-screen.tsx's CAN_ACT_ROLES for why
+// Administrator does not inherit this one.
 export function taskActorRoles(taskType: TaskType): Role[] {
   return taskType === "Health Assessment"
-    ? ["Administrator", "Veterinarian"]
+    ? ["Veterinarian"]
     : ["Administrator", "Shelter Staff Member"];
 }

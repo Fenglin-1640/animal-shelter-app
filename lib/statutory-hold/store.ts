@@ -1,4 +1,5 @@
-import { getAnimalById, updateAnimal } from "@/lib/animals/animal-store";
+import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
+import { SYSTEM_ACTOR } from "@/lib/audit/types";
 import { linkRegisteredOwnerContact } from "@/lib/intake-records/store";
 import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 import {
@@ -54,7 +55,12 @@ function resolveExpiredHolds() {
 
     const animal = getAnimalById(hold.animalId);
     if (animal?.currentStatus === "On Statutory Hold") {
-      updateAnimal(hold.animalId, { currentStatus: "Under Assessment", statusUpdatedAt: expiredAt });
+      changeAnimalStatus(
+        hold.animalId,
+        { currentStatus: "Under Assessment", statusUpdatedAt: expiredAt },
+        SYSTEM_ACTOR,
+        "Statutory Hold Expired (holdPeriodExpired)",
+      );
     }
   }
 
@@ -85,6 +91,8 @@ export type HoldResult = { ok: true; hold: StatutoryHold } | { ok: false; reason
 export function createHoldForOwnerMatch(
   animalId: string,
   ownerContact: RegisteredOwnerContact,
+  email: string,
+  name: string,
 ): HoldResult {
   const animal = getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
@@ -109,11 +117,16 @@ export function createHoldForOwnerMatch(
   };
   saveAll([...loadAll(), hold]);
 
-  updateAnimal(animalId, {
-    currentStatus: "On Statutory Hold",
-    statusUpdatedAt: now,
-    linkedPerson: { role: "Registered Owner", name: ownerContact.name },
-  });
+  changeAnimalStatus(
+    animalId,
+    {
+      currentStatus: "On Statutory Hold",
+      statusUpdatedAt: now,
+      linkedPerson: { role: "Registered Owner", name: ownerContact.name },
+    },
+    { email, name },
+    "Owner Match - Statutory Hold Created",
+  );
   linkRegisteredOwnerContact(animalId, ownerContact);
 
   return { ok: true, hold };
@@ -143,11 +156,12 @@ export function recordOwnerReclamation(
   };
   saveAll(all);
 
-  updateAnimal(animalId, {
-    currentStatus: "Reclaimed By Owner",
-    statusUpdatedAt: now,
-    listingStatus: "Removed",
-  });
+  changeAnimalStatus(
+    animalId,
+    { currentStatus: "Reclaimed By Owner", statusUpdatedAt: now, listingStatus: "Removed" },
+    { email, name },
+    "Record Owner Reclamation",
+  );
 
   return { ok: true };
 }
@@ -175,7 +189,12 @@ export function confirmCustodyTransfer(
   };
   saveAll(all);
 
-  updateAnimal(animalId, { currentStatus: "ReturnedToOwner", statusUpdatedAt: now });
+  changeAnimalStatus(
+    animalId,
+    { currentStatus: "ReturnedToOwner", statusUpdatedAt: now },
+    { email, name },
+    "Confirm Custody Transfer Completed",
+  );
 
   return { ok: true };
 }

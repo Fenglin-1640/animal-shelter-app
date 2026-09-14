@@ -244,12 +244,12 @@ function AdoptionFitnessContent({
               <button
                 type="button"
                 onClick={handleConfirmVet}
-                disabled={!["Administrator", "Veterinarian"].includes(role) || blockers.length > 0}
+                disabled={role !== "Veterinarian" || blockers.length > 0}
                 title={
                   blockers.length > 0
                     ? "Resolve the blocking items above before confirming."
-                    : !["Administrator", "Veterinarian"].includes(role)
-                      ? "Only Veterinarian or Administrator can give this confirmation."
+                    : role !== "Veterinarian"
+                      ? "Only Veterinarian can give this confirmation - Administrator does not inherit clinical authority (BR-005), and allowing one person to give both sign-offs would defeat the point of a joint confirmation."
                       : undefined
                 }
                 className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"

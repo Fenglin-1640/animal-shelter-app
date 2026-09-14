@@ -40,7 +40,14 @@ import { getActiveValues } from "@/lib/system-administration/store";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
-const CAN_ACT_ROLES: Role[] = ["Administrator", "Veterinarian"];
+// PRD 9 permission matrix: MedicalRecord is 只读 (read-only) for BOTH
+// Administrator and Shelter Staff Member - only Veterinarian may
+// create/edit/finalise (BR-005: "只有 Veterinarian 可编辑医疗记录和签发 Medical
+// Clearance"). Administrator's "全部 Staff 操作" (PRD 9's Animal General
+// Profile row) means it inherits Staff's permissions specifically, not a
+// blanket "can do everything any role can" - this is the one place in
+// this prototype where that distinction actually matters.
+const CAN_ACT_ROLES: Role[] = ["Veterinarian"];
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
@@ -474,8 +481,8 @@ function MedicalContent({
         </p>
         {!canAct && (
           <p className="mt-2 text-sm text-text-muted">
-            Shelter Staff Member can read the full Medical History but cannot create, edit or
-            finalise medical content.
+            Shelter Staff Member and Administrator can read the full Medical History but cannot
+            create, edit or finalise medical content - only Veterinarian can.
           </p>
         )}
       </div>

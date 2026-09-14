@@ -8,6 +8,7 @@ import {
 import { formatDisplayName } from "@/lib/auth/format-name";
 import { getProfileOverride } from "@/lib/auth/profile-store";
 import { getLockoutState } from "@/lib/auth/lockout-store";
+import { writeAuditLog } from "@/lib/audit/store";
 import type { Role } from "@/lib/roles/roles";
 import type { DirectoryUser } from "@/lib/user-administration/types";
 
@@ -208,6 +209,16 @@ export function updateUserRoleStatus(input: UpdateRoleStatusInput): UpdateRoleSt
         roleUpdatedBy: input.actingAdminDisplayName,
         roleUpdatedAt: now,
       });
+      writeAuditLog({
+        userId: input.actingAdminEmail,
+        userName: input.actingAdminDisplayName,
+        action: "Role Transfer - Auto-demote Outgoing Administrator",
+        entityType: "UserAccount",
+        entityId: existingAdmin.email,
+        oldValue: "role=Administrator",
+        newValue: "role=Shelter Staff Member",
+        result: "Success",
+      });
     }
   }
 
@@ -225,6 +236,16 @@ export function updateUserRoleStatus(input: UpdateRoleStatusInput): UpdateRoleSt
   }
   if (Object.keys(patch).length > 0) {
     mergeDirectoryOverride(normalizedTarget, patch);
+    writeAuditLog({
+      userId: input.actingAdminEmail,
+      userName: input.actingAdminDisplayName,
+      action: "User Role/Status Change",
+      entityType: "UserAccount",
+      entityId: normalizedTarget,
+      oldValue: `role=${current.role}, status=${current.status}`,
+      newValue: `role=${input.newRole}, status=${input.newStatus}`,
+      result: "Success",
+    });
   }
 
   return { ok: true };

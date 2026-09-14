@@ -77,7 +77,7 @@ export async function performScan(
   // Statutory Hold - a direct system consequence of the lookup result,
   // not a separate Staff action.
   if (outcome.result === "Owner Match" && outcome.ownerContact) {
-    createHoldForOwnerMatch(animalId, outcome.ownerContact);
+    createHoldForOwnerMatch(animalId, outcome.ownerContact, email, name);
   }
 
   return { ok: true, lookup };

@@ -1,5 +1,6 @@
-import { getAnimalById, updateAnimal } from "@/lib/animals/animal-store";
+import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
+import { writeAuditLog } from "@/lib/audit/store";
 import type {
   DesexingSchedule,
   HealthAssessment,
@@ -100,7 +101,12 @@ export function recordHealthAssessment(
   saveList(HEALTH_KEY, [...loadList<HealthAssessment>(HEALTH_KEY), assessment]);
 
   if (input.urgentTreatmentRequired) {
-    updateAnimal(animalId, { currentStatus: "Under Treatment", statusUpdatedAt: now });
+    changeAnimalStatus(
+      animalId,
+      { currentStatus: "Under Treatment", statusUpdatedAt: now },
+      { email, name },
+      "Health Assessment - Urgent Treatment Required",
+    );
   } else {
     completeTaskByType(animalId, "Health Assessment", email, name);
   }
@@ -148,7 +154,12 @@ export function addTreatmentEvent(
   if (!input.furtherTreatmentRequired) {
     const pathway = trigger.treatmentPathway ?? "intake";
     const nextStatus = pathway === "pre-release" ? "Awaiting Release" : "Under Assessment";
-    updateAnimal(animalId, { currentStatus: nextStatus, statusUpdatedAt: now });
+    changeAnimalStatus(
+      animalId,
+      { currentStatus: nextStatus, statusUpdatedAt: now },
+      { email, name },
+      "Treatment Recovery Complete",
+    );
     if (pathway === "intake") completeTaskByType(animalId, "Health Assessment", email, name);
   }
 
@@ -269,5 +280,21 @@ export function issueMedicalClearance(
     issuedAt: new Date().toISOString(),
   };
   saveList(CLEARANCE_KEY, [...loadList<MedicalClearance>(CLEARANCE_KEY), clearance]);
+
+  // Doesn't itself change currentStatus/listingStatus (that's a separate
+  // evaluatePreListingEligibility() call from the UI layer, see
+  // lib/adoption-listings/pre-listing.ts), but PRD BR-014 still wants
+  // this significant action in the AuditLog.
+  writeAuditLog({
+    userId: email,
+    userName: name,
+    action: "Issue Medical Clearance",
+    entityType: "MedicalRecord",
+    entityId: animalId,
+    oldValue: "Not issued",
+    newValue: `Issued by ${name}`,
+    result: "Success",
+  });
+
   return { ok: true };
 }
