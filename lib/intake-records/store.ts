@@ -1,5 +1,11 @@
-import { acceptTransfer } from "@/lib/council-transfers/store";
-import type { IntakeRecord, IntakeRecordFormInput } from "@/lib/intake-records/types";
+import { acceptTransfer, getTransfer } from "@/lib/council-transfers/store";
+import { addAnimal, generateShelterId } from "@/lib/animals/animal-store";
+import type { Animal } from "@/lib/animals/types";
+import {
+  getFinaliseBlockers,
+  type IntakeRecord,
+  type IntakeRecordFormInput,
+} from "@/lib/intake-records/types";
 
 // FR-INT-02: formal Intake Records, persisted to localStorage since
 // there is no backend.
@@ -88,6 +94,59 @@ export function updateIntakeRecord(
   if (input.councilTransferSubmissionId) {
     acceptTransfer(input.councilTransferSubmissionId);
   }
+
+  return { ok: true };
+}
+
+export type FinaliseResult =
+  | { ok: true }
+  | { ok: false; reason: "not_found" | "already_finalised" | "blocked"; blockers?: string[] };
+
+// FR-INT-03: Finalise Intake creates the Animal record (+ initial status
+// fields) from a completed Intake Record. A separate MedicalRecord is not
+// persisted here - nothing in this prototype reads/displays one yet, so an
+// empty shell object would have no observable effect.
+export function finaliseIntake(intakeId: string): FinaliseResult {
+  const all = loadAll();
+  const index = all.findIndex((r) => r.intakeId === intakeId);
+  if (index === -1) return { ok: false, reason: "not_found" };
+
+  const record = all[index];
+  if (record.finalisedAt) return { ok: false, reason: "already_finalised" };
+
+  const linkedTransfer = record.councilTransferSubmissionId
+    ? getTransfer(record.councilTransferSubmissionId)
+    : undefined;
+  const blockers = getFinaliseBlockers(record, linkedTransfer);
+  if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
+
+  const now = new Date().toISOString();
+  const animal: Animal = {
+    animalId: record.animalId,
+    shelterId: generateShelterId(),
+    name: record.animalName,
+    species: record.species || "Cat",
+    breed: "Unknown",
+    breedDescription: "",
+    sex: record.sex || "Male",
+    dateOfBirth: record.dateOfBirth || undefined,
+    estimatedAge: record.estimatedAge || undefined,
+    coatColour: record.coatColour,
+    coatMarkings: record.coatMarkings,
+    generalDescription: record.arrivalCircumstance,
+    temperaments: [],
+    currentStatus: "Under Assessment",
+    listingStatus: "Not Fit",
+    statusUpdatedAt: now,
+    enteredAt: now,
+    lastModifiedAt: now,
+    intakeSource: record.intakeSource,
+    photos: record.photos,
+  };
+  addAnimal(animal);
+
+  all[index] = { ...record, finalisedAt: now, updatedAt: now };
+  saveAll(all);
 
   return { ok: true };
 }

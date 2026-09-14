@@ -27,6 +27,19 @@ export interface LinkedPerson {
   name: string;
 }
 
+// Metadata only (no file content stored - no backend in this prototype,
+// consistent with Council Transfer attachments). Full Photo management
+// (altText, selecting the public listing photo, Adopter visibility) is
+// FR-AN-02, not built yet; this just satisfies FR-INT-03's "at least one
+// photo uploaded" Finalise Intake gate and gives the Photos subscreen
+// something real to display for animals created that way.
+export interface AnimalPhoto {
+  id: string;
+  fileName: string;
+  fileSizeKB: number;
+  uploadedAt: string;
+}
+
 export interface Animal {
   animalId: string;
   shelterId: string;
@@ -53,4 +66,5 @@ export interface Animal {
   lastModifiedAt: string;
   intakeSource: string;
   linkedPerson?: LinkedPerson;
+  photos?: AnimalPhoto[];
 }

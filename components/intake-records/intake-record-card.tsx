@@ -10,6 +10,7 @@ function formatDate(iso: string): string {
 
 export function IntakeRecordCard({ record }: { record: IntakeRecord }) {
   const complete = isIntakeRecordComplete(record);
+  const finalised = Boolean(record.finalisedAt);
 
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
@@ -19,7 +20,7 @@ export function IntakeRecordCard({ record }: { record: IntakeRecord }) {
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <h3 className="text-base font-semibold text-text">
-              {record.species || "Species not yet recorded"}
+              {record.animalName || record.species || "Species not yet recorded"}
               {record.sex ? ` · ${record.sex}` : ""}
             </h3>
             <p className="text-xs text-text-muted">
@@ -27,8 +28,12 @@ export function IntakeRecordCard({ record }: { record: IntakeRecord }) {
             </p>
           </div>
           <StatusChip
-            label={complete ? "Complete" : "Incomplete"}
-            category={INTAKE_COMPLETENESS_CATEGORY[complete ? "Complete" : "Incomplete"]}
+            label={finalised ? "Finalised" : complete ? "Complete" : "Incomplete"}
+            category={
+              finalised
+                ? "complete"
+                : INTAKE_COMPLETENESS_CATEGORY[complete ? "Complete" : "Incomplete"]
+            }
           />
         </div>
         <p className="text-sm text-text-muted">

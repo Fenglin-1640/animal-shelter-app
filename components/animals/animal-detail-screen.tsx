@@ -12,7 +12,7 @@ import { StatusChip } from "@/components/shared/status-chip";
 import { Tabs } from "@/components/shared/tabs";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getDisplayAge } from "@/lib/animals/age";
-import { MOCK_ANIMALS } from "@/lib/animals/mock-animals";
+import { getAnimalById } from "@/lib/animals/animal-store";
 import { CURRENT_STATUS_CATEGORY, LISTING_STATUS_CATEGORY } from "@/lib/animals/status";
 import type { Animal } from "@/lib/animals/types";
 import type { Role } from "@/lib/roles/roles";
@@ -150,12 +150,36 @@ function AnimalDetailContent({ animal }: { animal: Animal }) {
             {
               id: "photos",
               label: "Photos",
-              content: (
-                <EmptySubscreen
-                  description="No photos uploaded yet. Photo management will be available once Animal Intake is built."
-                  action={{ label: "Upload Photo", disabledReason: "Photo upload is not built yet" }}
-                />
-              ),
+              content:
+                animal.photos && animal.photos.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {animal.photos.map((photo) => (
+                      <div
+                        key={photo.id}
+                        className="flex items-center gap-3 rounded-[12px] border border-border bg-page p-3"
+                      >
+                        <PlaceholderThumbnail species={animal.species} className="w-20" />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-text">{photo.fileName}</p>
+                          <p className="text-xs text-text-muted">{photo.fileSizeKB} KB</p>
+                          <p className="text-xs text-text-muted">
+                            Uploaded {formatDateTime(photo.uploadedAt)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="col-span-full text-xs text-text-muted">
+                      Photo metadata only is stored in this prototype; no file content is uploaded to a
+                      server. Full photo management (captions, selecting the public listing photo) is not
+                      built yet.
+                    </p>
+                  </div>
+                ) : (
+                  <EmptySubscreen
+                    description="No photos uploaded yet. Photo management will be available once Animal Intake is built."
+                    action={{ label: "Upload Photo", disabledReason: "Photo upload is not built yet" }}
+                  />
+                ),
             },
             {
               id: "medical",
@@ -204,7 +228,7 @@ export function AnimalDetailScreen() {
     );
   }
 
-  const animal = MOCK_ANIMALS.find((a) => a.animalId === params.animalId);
+  const animal = getAnimalById(params.animalId);
 
   return <AppShell>{animal ? <AnimalDetailContent animal={animal} /> : <AnimalNotFound />}</AppShell>;
 }

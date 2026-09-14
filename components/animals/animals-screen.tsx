@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { AnimalCard } from "@/components/animals/animal-card";
 import { useAuth } from "@/lib/auth/auth-context";
-import { MOCK_ANIMALS } from "@/lib/animals/mock-animals";
+import { getAllAnimals } from "@/lib/animals/animal-store";
 import type { CurrentStatus, Species } from "@/lib/animals/types";
 import { getBreedSpeciesList, getBreedsForSpecies } from "@/lib/options/breeds";
 import type { Role } from "@/lib/roles/roles";
@@ -214,9 +214,11 @@ function AnimalsContent() {
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
+  const allAnimals = useMemo(() => getAllAnimals(), []);
+
   const availableStatuses = useMemo(
-    () => Array.from(new Set(MOCK_ANIMALS.map((a) => a.currentStatus))),
-    [],
+    () => Array.from(new Set(allAnimals.map((a) => a.currentStatus))),
+    [allAnimals],
   );
 
   // Matches search + Status only, deliberately excluding the Species and
@@ -225,7 +227,7 @@ function AnimalsContent() {
   // picked this one" rather than shrinking as more boxes are checked.
   const baseFiltered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return MOCK_ANIMALS.filter((animal) => {
+    return allAnimals.filter((animal) => {
       if (query) {
         const haystack = `${animal.name} ${animal.shelterId} ${animal.breed}`.toLowerCase();
         if (!haystack.includes(query)) return false;
@@ -235,7 +237,7 @@ function AnimalsContent() {
       }
       return true;
     });
-  }, [search, statusSelection]);
+  }, [allAnimals, search, statusSelection]);
 
   const speciesCounts = useMemo(() => {
     const counts = new Map<Species, number>();

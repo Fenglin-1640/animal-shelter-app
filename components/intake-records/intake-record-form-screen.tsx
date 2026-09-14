@@ -11,13 +11,18 @@ import { listAllTransfers } from "@/lib/council-transfers/store";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
 import {
   createIntakeRecord,
+  finaliseIntake,
   getIntakeRecord,
   listLinkedTransferIds,
   updateIntakeRecord,
 } from "@/lib/intake-records/store";
 import { INTAKE_COMPLETENESS_CATEGORY } from "@/lib/intake-records/status";
-import { isIntakeRecordComplete, type IntakeRecordFormInput } from "@/lib/intake-records/types";
-import type { Sex, Species } from "@/lib/animals/types";
+import {
+  getFinaliseBlockers,
+  isIntakeRecordComplete,
+  type IntakeRecordFormInput,
+} from "@/lib/intake-records/types";
+import type { AnimalPhoto, Sex, Species } from "@/lib/animals/types";
 import type { Role } from "@/lib/roles/roles";
 import { getActiveValues } from "@/lib/system-administration/store";
 
@@ -38,6 +43,10 @@ function toDatetimeLocalValue(iso: string): string {
 function fromDatetimeLocalValue(value: string): string {
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString();
+}
+
+function formatSize(kb: number): string {
+  return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
 }
 
 function LoadingBlock() {
@@ -103,6 +112,8 @@ function IntakeRecordFormContent({
 }) {
   const [existing] = useState(() => (intakeId ? getIntakeRecord(intakeId) : undefined));
   const notFound = Boolean(intakeId) && !existing;
+  const [finalisedAt, setFinalisedAt] = useState(existing?.finalisedAt);
+  const isReadOnly = Boolean(finalisedAt);
 
   const intakeSourceOptions = getActiveValues("Intake Source");
   const allTransfers = listAllTransfers();
@@ -116,6 +127,7 @@ function IntakeRecordFormContent({
   const initialTransferId = existing?.councilTransferSubmissionId ?? prefillTransferId ?? "";
   const prefillTransfer = allTransfers.find((t) => t.id === initialTransferId);
 
+  const [animalName, setAnimalName] = useState(existing?.animalName ?? "");
   const [arrivalCircumstance, setArrivalCircumstance] = useState(
     existing?.arrivalCircumstance ?? prefillTransfer?.arrivalCircumstance ?? "",
   );
@@ -138,9 +150,13 @@ function IntakeRecordFormContent({
   const [sex, setSex] = useState<Sex | "">(existing?.sex ?? "");
   const [coatColour, setCoatColour] = useState(existing?.coatColour ?? "");
   const [coatMarkings, setCoatMarkings] = useState(existing?.coatMarkings ?? "");
+  const [photos, setPhotos] = useState<AnimalPhoto[]>(existing?.photos ?? []);
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [photoInputKey, setPhotoInputKey] = useState(0);
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [isFinalising, setIsFinalising] = useState(false);
 
   if (notFound) return <NotFound />;
 
@@ -150,6 +166,7 @@ function IntakeRecordFormContent({
     : undefined;
 
   const buildInput = (): IntakeRecordFormInput => ({
+    animalName,
     arrivalCircumstance,
     arrivalDateTime: fromDatetimeLocalValue(arrivalDateTime),
     intakeSource,
@@ -161,9 +178,28 @@ function IntakeRecordFormContent({
     sex,
     coatColour,
     coatMarkings,
+    photos,
   });
 
   const complete = isIntakeRecordComplete(buildInput());
+  const liveBlockers = getFinaliseBlockers(buildInput(), linkedTransfer);
+
+  const handleAddPhoto = () => {
+    if (!pendingPhotoFile) return;
+    const photo: AnimalPhoto = {
+      id: `PH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+      fileName: pendingPhotoFile.name,
+      fileSizeKB: Math.max(1, Math.round(pendingPhotoFile.size / 1024)),
+      uploadedAt: new Date().toISOString(),
+    };
+    setPhotos((prev) => [...prev, photo]);
+    setPendingPhotoFile(null);
+    setPhotoInputKey((k) => k + 1);
+  };
+
+  const handleRemovePhoto = (id: string) => {
+    setPhotos((prev) => prev.filter((p) => p.id !== id));
+  };
 
   const handleSave = async () => {
     setSavedMessage(null);
@@ -183,6 +219,33 @@ function IntakeRecordFormContent({
     onCreated(id);
   };
 
+  const handleFinalise = async () => {
+    if (!existing) return;
+    setSavedMessage(null);
+    setIsFinalising(true);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    // Persist the latest edits first so Finalise checks against current data.
+    updateIntakeRecord(existing.intakeId, buildInput());
+    const result = finaliseIntake(existing.intakeId);
+    setIsFinalising(false);
+
+    if (!result.ok) {
+      // The Finalise button is disabled whenever liveBlockers is non-empty,
+      // so "blocked" here would only happen from a stale read - defensive,
+      // not expected in normal use.
+      setSavedMessage(
+        result.reason === "blocked"
+          ? (result.blockers?.[0] ?? "Some required items are still missing.")
+          : "Something went wrong finalising this intake. Please try again.",
+      );
+      return;
+    }
+
+    const refreshed = getIntakeRecord(existing.intakeId);
+    setFinalisedAt(refreshed?.finalisedAt);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -197,8 +260,12 @@ function IntakeRecordFormContent({
             {existing ? "Intake Record" : "New Intake Record"}
           </h1>
           <StatusChip
-            label={complete ? "Complete" : "Incomplete"}
-            category={INTAKE_COMPLETENESS_CATEGORY[complete ? "Complete" : "Incomplete"]}
+            label={isReadOnly ? "Finalised" : complete ? "Complete" : "Incomplete"}
+            category={
+              isReadOnly
+                ? "complete"
+                : INTAKE_COMPLETENESS_CATEGORY[complete ? "Complete" : "Incomplete"]
+            }
           />
         </div>
         {existing && (
@@ -207,15 +274,42 @@ function IntakeRecordFormContent({
             {formatDateTime(existing.createdAt)}
           </p>
         )}
-        <p className="mt-2 text-sm text-text-muted">
-          All fields can be saved incrementally. Finalising intake into a
-          full Animal Profile is a later step, not built yet.
-        </p>
+        {isReadOnly ? (
+          <p className="mt-2 text-sm text-text">
+            This intake has been finalised into an Animal Profile and is
+            read-only.{" "}
+            <Link
+              href={`/animals/${existing?.animalId}`}
+              className="font-semibold text-secondary underline underline-offset-2 hover:no-underline"
+            >
+              View Animal Profile
+            </Link>
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-text-muted">
+            All fields can be saved incrementally. Finalising intake creates
+            the Animal Profile and cannot be undone.
+          </p>
+        )}
       </div>
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Arrival</h2>
         <div className="mt-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-1 sm:max-w-xs">
+            <label htmlFor="animalName" className="text-sm font-semibold text-text">
+              Animal Name
+            </label>
+            <input
+              id="animalName"
+              type="text"
+              value={animalName}
+              onChange={(e) => setAnimalName(e.target.value)}
+              disabled={isReadOnly}
+              className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
+            />
+          </div>
+
           <div className="flex flex-col gap-1">
             <label htmlFor="arrivalCircumstance" className="text-sm font-semibold text-text">
               Arrival Circumstance
@@ -225,7 +319,8 @@ function IntakeRecordFormContent({
               rows={2}
               value={arrivalCircumstance}
               onChange={(e) => setArrivalCircumstance(e.target.value)}
-              className="rounded-[12px] border border-border bg-page px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              disabled={isReadOnly}
+              className="rounded-[12px] border border-border bg-page px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
             />
           </div>
 
@@ -239,7 +334,8 @@ function IntakeRecordFormContent({
                 type="datetime-local"
                 value={arrivalDateTime}
                 onChange={(e) => setArrivalDateTime(e.target.value)}
-                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               />
             </div>
 
@@ -254,7 +350,8 @@ function IntakeRecordFormContent({
                   setIntakeSource(e.target.value);
                   if (e.target.value !== "Council Transfer") setCouncilTransferSubmissionId("");
                 }}
-                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               >
                 <option value="">Select</option>
                 {intakeSourceOptions.map((option) => (
@@ -273,7 +370,8 @@ function IntakeRecordFormContent({
                 id="councilTransfer"
                 value={councilTransferSubmissionId}
                 onChange={(e) => setCouncilTransferSubmissionId(e.target.value)}
-                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               >
                 <option value="">Select</option>
                 {eligibleTransfers.map((t) => (
@@ -284,7 +382,8 @@ function IntakeRecordFormContent({
               </select>
               {linkedTransfer && (
                 <p className="mt-1 rounded-[12px] border border-border bg-page p-3 text-sm text-text-muted">
-                  {linkedTransfer.animalDescription}
+                  {linkedTransfer.animalDescription} &middot; {linkedTransfer.attachments.length}{" "}
+                  supporting document{linkedTransfer.attachments.length === 1 ? "" : "s"}
                 </p>
               )}
             </div>
@@ -298,7 +397,8 @@ function IntakeRecordFormContent({
                 type="text"
                 value={surrenderingPartyName}
                 onChange={(e) => setSurrenderingPartyName(e.target.value)}
-                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               />
             </div>
           )}
@@ -317,7 +417,8 @@ function IntakeRecordFormContent({
                 id="species"
                 value={species}
                 onChange={(e) => setSpecies(e.target.value as Species)}
-                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               >
                 <option value="">Select</option>
                 {SPECIES_OPTIONS.map((s) => (
@@ -334,7 +435,8 @@ function IntakeRecordFormContent({
                 id="sex"
                 value={sex}
                 onChange={(e) => setSex(e.target.value as Sex)}
-                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               >
                 <option value="">Select</option>
                 {SEX_OPTIONS.map((s) => (
@@ -350,7 +452,8 @@ function IntakeRecordFormContent({
                 type="checkbox"
                 checked={hasKnownDob}
                 onChange={(e) => setHasKnownDob(e.target.checked)}
-                className="h-4 w-4 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-4 w-4 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               />
               Date of birth is known
             </label>
@@ -365,7 +468,8 @@ function IntakeRecordFormContent({
                   value={dateOfBirth}
                   max={new Date().toISOString().slice(0, 10)}
                   onChange={(e) => setDateOfBirth(e.target.value)}
-                  className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  disabled={isReadOnly}
+                  className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
                 />
               </div>
             ) : (
@@ -379,7 +483,8 @@ function IntakeRecordFormContent({
                   placeholder="e.g. Approx. 2 years"
                   value={estimatedAge}
                   onChange={(e) => setEstimatedAge(e.target.value)}
-                  className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  disabled={isReadOnly}
+                  className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
                 />
               </div>
             )}
@@ -395,7 +500,8 @@ function IntakeRecordFormContent({
                 type="text"
                 value={coatColour}
                 onChange={(e) => setCoatColour(e.target.value)}
-                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -407,28 +513,123 @@ function IntakeRecordFormContent({
                 type="text"
                 value={coatMarkings}
                 onChange={(e) => setCoatMarkings(e.target.value)}
-                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               />
             </div>
           </div>
         </div>
       </section>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isSaving}
-          className="h-10 rounded-[12px] bg-primary px-5 text-sm font-semibold text-page hover:opacity-90 disabled:opacity-60"
-        >
-          {isSaving ? "Saving..." : "Save Intake Record"}
-        </button>
-        {savedMessage && (
-          <span role="status" className="text-sm text-text">
-            {savedMessage}
-          </span>
+      <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+        <h2 className="text-lg font-bold text-text">
+          Photos <span aria-hidden="true">*</span>
+        </h2>
+        <p className="mt-1 text-sm text-text-muted">
+          At least one photo is required before Finalise Intake. This
+          prototype records the file name only; file content is not stored.
+        </p>
+
+        {photos.length > 0 && (
+          <ul className="mt-4 flex flex-col gap-2">
+            {photos.map((p) => (
+              <li
+                key={p.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-page px-3 py-2 text-sm"
+              >
+                <div>
+                  <span className="font-semibold text-text">{p.fileName}</span>
+                  <span className="text-text-muted"> ({formatSize(p.fileSizeKB)})</span>
+                </div>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(p.id)}
+                    className="text-xs font-semibold text-danger underline underline-offset-2 hover:no-underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
-      </div>
+
+        {!isReadOnly && (
+          <div className="mt-4 flex flex-wrap items-end gap-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="pendingPhoto" className="text-xs font-semibold text-text-muted">
+                Photo File
+              </label>
+              <input
+                key={photoInputKey}
+                id="pendingPhoto"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPendingPhotoFile(e.target.files?.[0] ?? null)}
+                className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleAddPhoto}
+              disabled={!pendingPhotoFile}
+              className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Add Photo
+            </button>
+          </div>
+        )}
+      </section>
+
+      {!isReadOnly && (
+        <div className="flex flex-col gap-3">
+          {liveBlockers.length > 0 && (
+            <div
+              role="status"
+              className="flex flex-col gap-1 rounded-[12px] border border-gold bg-gold/10 px-3 py-3 text-sm text-text"
+            >
+              <p className="font-semibold">Not ready to finalise:</p>
+              <ul className="list-inside list-disc">
+                {liveBlockers.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving || isFinalising}
+              className="h-10 rounded-[12px] border border-border bg-surface px-5 text-sm font-semibold text-text hover:bg-surface-active disabled:opacity-60"
+            >
+              {isSaving ? "Saving..." : "Save Intake Record"}
+            </button>
+            <button
+              type="button"
+              onClick={handleFinalise}
+              disabled={!existing || isSaving || isFinalising || liveBlockers.length > 0}
+              title={
+                !existing
+                  ? "Save the intake record before finalising"
+                  : liveBlockers.length > 0
+                    ? "Resolve the items listed above before finalising"
+                    : undefined
+              }
+              className="h-10 rounded-[12px] bg-primary px-5 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isFinalising ? "Finalising..." : "Finalise Intake"}
+            </button>
+            {savedMessage && (
+              <span role="status" className="text-sm text-text">
+                {savedMessage}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

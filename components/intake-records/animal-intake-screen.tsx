@@ -33,7 +33,7 @@ function AnimalIntakeContent() {
     .filter((r) => {
       const query = search.trim().toLowerCase();
       if (query) {
-        const haystack = `${r.species} ${r.intakeSource} ${r.surrenderingPartyName} ${r.arrivalCircumstance}`.toLowerCase();
+        const haystack = `${r.animalName} ${r.species} ${r.intakeSource} ${r.surrenderingPartyName} ${r.arrivalCircumstance}`.toLowerCase();
         if (!haystack.includes(query)) return false;
       }
       const complete = isIntakeRecordComplete(r);

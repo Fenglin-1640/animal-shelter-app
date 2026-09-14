@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-14, after adding Create Intake Record (FR-INT-02)._
+_Last updated: 2026-09-14, after adding Animal Profile Initialization / Finalise Intake (FR-INT-03)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 9 |
+| Done | 10 |
 | In Progress | 5 |
-| Not Started | 20 |
+| Not Started | 19 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -48,14 +48,14 @@ _Last updated: 2026-09-14, after adding Create Intake Record (FR-INT-02)._
 |---|---|---|---|---|
 | FR-INT-01 | Council Transfer Submission | P0 | Done | `/new-council-transfer` and `/my-transfers` (`components/council-transfers`) let a Council Officer create, save as Draft, edit and Submit a transfer (source, arrival circumstance, found location, preliminary animal description, plus real file attachments — file metadata only, no backend to store content, disclosed in the UI). All 4 acceptance criteria met: own-record-only view/edit via an ownership check; read-only after Submit with a status chip (Submitted and Accepted both demonstrated live; Returned for Information is a reachable type with no reject action built yet); no cross-links to unrelated Animal/Adopter/Behaviour/Medical records; and criterion 4 (Staff accepting a transfer links it to a formal IntakeRecord) is satisfied as a side effect of linking in FR-INT-02 — creating or editing an Intake Record with a Council Transfer reference calls `acceptTransfer()` (`lib/council-transfers/store.ts`), verified end-to-end. |
 | FR-INT-02 | Create Intake Record | P0 | Done | `/animal-intake` (`components/intake-records`) lists pending Submitted Council Transfers (Staff sees all officers', not just their own) each with a "Create Intake Record" action, plus existing Intake Records with search/completeness filter. `/intake-records/new` (optionally pre-filled via `?transferId=`) and `/intake-records/[intakeId]` (`components/intake-records/intake-record-form-screen.tsx`) implement all 9 required fields (arrivalCircumstance, arrivalDateTime, intakeSource, surrenderingPartyName-or-council-reference, species, estimatedAge-or-dateOfBirth, sex, coatColour, coatMarkings) with system-generated unique `intakeId`/`animalId` and a live Complete/Incomplete indicator. Gated to Administrator/Shelter Staff Member per PRD section 9. Saving is incremental (no block on incompleteness), since only the not-yet-built Finalise Intake action (FR-INT-03) is meant to gate on completeness, not creation itself. |
-| FR-INT-03 | Animal Profile 初始化 | P0 | Not Started | No Finalise Intake action. All Animal records are static PRD 12.1 seed data, not created through an intake workflow. |
+| FR-INT-03 | Animal Profile 初始化 | P0 | Done | Finalise Intake (`finaliseIntake()` in `lib/intake-records/store.ts`, wired to a "Finalise Intake" button on `/intake-records/[intakeId]`) creates a real `Animal` record with `currentStatus = Under Assessment`, `listingStatus = Not Fit`, and `enteredAt`/`lastModifiedAt` set to the current timestamp, then persists it (`lib/animals/animal-store.ts`, merged with the static PRD 12.1 seed animals everywhere Animals are read/listed). Both required gates are enforced and surfaced as an item-by-item unmet-conditions list (updated live as Staff edits the form): at least one photo uploaded (a new metadata-only `Animal.photos`/intake `photos` field, mirroring the Council Transfer attachment pattern — no file content stored), and, when `intakeSource = Council Transfer`, the linked transfer having at least one supporting document. Once finalised, the Intake Record becomes read-only (`finalisedAt` set, re-finalising blocked) and links to the new Animal Profile, whose Photos tab now shows the uploaded photo metadata read-only. Not persisted: a separate `MedicalRecord` shell, since no Medical feature yet reads or displays one — scoped out as having no observable effect. `animalName` was added to `IntakeRecord` beyond FR-INT-02's literal 9-field list, since `Animal.name` is used throughout the rest of the UI. Verified end-to-end via Playwright (photo-gate, council-document-gate, read-only-after-finalise, idempotency, Animals list/detail integration), zero console/page errors. |
 | FR-INT-04 | 并行评估与 Review Adoption Fitness | P0 | Not Started | No Microchip/Temperament/Health task creation or Review Adoption Fitness screen. |
 
 ## 6.5 Animal Profile 与照片
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-AN-01 | Animal Profile | P0 | In Progress | `/animals` and `/animals/[animalId]` (`components/animals`) display every listed field (Identity/Adoption/Lifecycle groups, calculated-vs-estimated age per the DOB rule) against the 10 static seed animals. Read-only only — no create/edit, and not yet linked to a real Intake/Medical/Behaviour pipeline. |
+| FR-AN-01 | Animal Profile | P0 | In Progress | `/animals` and `/animals/[animalId]` (`components/animals`) display every listed field (Identity/Adoption/Lifecycle groups, calculated-vs-estimated age per the DOB rule) against the 10 static seed animals plus any Animal created via Finalise Intake (FR-INT-03, `lib/animals/animal-store.ts`). Read-only only — no direct create/edit UI (Animal creation happens only through Finalise Intake), and not yet linked to a real Medical/Behaviour pipeline. |
 | FR-AN-02 | Photos | P0 | Not Started | The Photos subscreen tab is an honest empty-state placeholder only; no upload, primary-photo selection, or altText handling. |
 
 ## 6.6 Microchip 与 Statutory Hold
