@@ -33,6 +33,16 @@ export function getTransfer(id: string): CouncilTransferSubmission | undefined {
   return loadAll().find((t) => t.id === id);
 }
 
+// Staff/Administrator see all officers' submissions (PRD section 9:
+// Council Transfer "查看全部、接受"), not just their own.
+export function listAllTransfers(): CouncilTransferSubmission[] {
+  return loadAll();
+}
+
+export function listSubmittedTransfers(): CouncilTransferSubmission[] {
+  return loadAll().filter((t) => t.status === "Submitted");
+}
+
 function generateId(): string {
   return `CTS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
@@ -96,6 +106,22 @@ export function submitTransfer(id: string): MutationResult {
 
   const now = new Date().toISOString();
   all[index] = { ...record, status: "Submitted", submissionDate: now, updatedAt: now };
+  saveAll(all);
+  return { ok: true };
+}
+
+// FR-INT-01 acceptance criterion 4: "Staff 接受转移后，相关资料链接到正式
+// IntakeRecord" - accepting a transfer IS Staff linking it to a formal
+// Intake Record, so this is called as a side effect of that linkage
+// (lib/intake-records/store.ts), not from a separate "Accept" button.
+// A no-op if the transfer isn't currently Submitted (idempotent).
+export function acceptTransfer(id: string): MutationResult {
+  const all = loadAll();
+  const index = all.findIndex((t) => t.id === id);
+  if (index === -1) return { ok: false, reason: "not_found" };
+  if (all[index].status !== "Submitted") return { ok: true };
+
+  all[index] = { ...all[index], status: "Accepted", updatedAt: new Date().toISOString() };
   saveAll(all);
   return { ok: true };
 }

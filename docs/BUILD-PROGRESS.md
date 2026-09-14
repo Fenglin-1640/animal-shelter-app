@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-14, after adding Council Transfer Submission (FR-INT-01)._
+_Last updated: 2026-09-14, after adding Create Intake Record (FR-INT-02)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 7 |
-| In Progress | 6 |
-| Not Started | 21 |
+| Done | 9 |
+| In Progress | 5 |
+| Not Started | 20 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -46,8 +46,8 @@ _Last updated: 2026-09-14, after adding Council Transfer Submission (FR-INT-01).
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-INT-01 | Council Transfer Submission | P0 | In Progress | `/new-council-transfer` and `/my-transfers` (`components/council-transfers`) let a Council Officer create, save as Draft, edit and Submit a transfer (source, arrival circumstance, found location, preliminary animal description, plus real file attachments via a Document Type sourced from System Administration — file metadata only, no backend to store content, and this is disclosed in the UI). Meets acceptance criteria 1-3: own-record-only view/edit via an ownership check, read-only after Submit with a status chip (Submitted; Accepted/Returned for Information are reachable types but nothing sets them yet), and no cross-links to unrelated Animal/Adopter/Behaviour/Medical records. Criterion 4 (Staff accepting a transfer and linking it to a formal IntakeRecord) is Staff-side and depends on FR-INT-02, not built. |
-| FR-INT-02 | Create Intake Record | P0 | Not Started | No Intake Record creation flow; Staff's "Animal Intake" nav entry is still inert. |
+| FR-INT-01 | Council Transfer Submission | P0 | Done | `/new-council-transfer` and `/my-transfers` (`components/council-transfers`) let a Council Officer create, save as Draft, edit and Submit a transfer (source, arrival circumstance, found location, preliminary animal description, plus real file attachments — file metadata only, no backend to store content, disclosed in the UI). All 4 acceptance criteria met: own-record-only view/edit via an ownership check; read-only after Submit with a status chip (Submitted and Accepted both demonstrated live; Returned for Information is a reachable type with no reject action built yet); no cross-links to unrelated Animal/Adopter/Behaviour/Medical records; and criterion 4 (Staff accepting a transfer links it to a formal IntakeRecord) is satisfied as a side effect of linking in FR-INT-02 — creating or editing an Intake Record with a Council Transfer reference calls `acceptTransfer()` (`lib/council-transfers/store.ts`), verified end-to-end. |
+| FR-INT-02 | Create Intake Record | P0 | Done | `/animal-intake` (`components/intake-records`) lists pending Submitted Council Transfers (Staff sees all officers', not just their own) each with a "Create Intake Record" action, plus existing Intake Records with search/completeness filter. `/intake-records/new` (optionally pre-filled via `?transferId=`) and `/intake-records/[intakeId]` (`components/intake-records/intake-record-form-screen.tsx`) implement all 9 required fields (arrivalCircumstance, arrivalDateTime, intakeSource, surrenderingPartyName-or-council-reference, species, estimatedAge-or-dateOfBirth, sex, coatColour, coatMarkings) with system-generated unique `intakeId`/`animalId` and a live Complete/Incomplete indicator. Gated to Administrator/Shelter Staff Member per PRD section 9. Saving is incremental (no block on incompleteness), since only the not-yet-built Finalise Intake action (FR-INT-03) is meant to gate on completeness, not creation itself. |
 | FR-INT-03 | Animal Profile 初始化 | P0 | Not Started | No Finalise Intake action. All Animal records are static PRD 12.1 seed data, not created through an intake workflow. |
 | FR-INT-04 | 并行评估与 Review Adoption Fitness | P0 | Not Started | No Microchip/Temperament/Health task creation or Review Adoption Fitness screen. |
 
