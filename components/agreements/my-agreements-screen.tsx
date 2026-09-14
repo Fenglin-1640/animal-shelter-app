@@ -7,7 +7,7 @@ import { AgreementCard } from "@/components/agreements/agreement-card";
 import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { useAuth } from "@/lib/auth/auth-context";
-import { getMyAgreements } from "@/lib/agreements/mock-agreements";
+import { listMyAgreements } from "@/lib/agreements/store";
 import { getAgreementStatus } from "@/lib/agreements/status";
 import type { AgreementStatus } from "@/lib/agreements/types";
 import type { Role } from "@/lib/roles/roles";
@@ -74,7 +74,7 @@ function MyAgreementsContent({ email }: { email: string }) {
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const allAgreements = useMemo(() => getMyAgreements(email), [email]);
+  const allAgreements = useMemo(() => listMyAgreements(email), [email]);
   const availableStatuses = useMemo(
     () =>
       Array.from(new Set(allAgreements.map((a) => getAgreementStatus(a.isSigned)))),

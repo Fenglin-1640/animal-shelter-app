@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-15, after adding Schedule and Conduct Meet and Greet (FR-MG-01)._
+_Last updated: 2026-09-15, after adding Adoption Agreement (FR-AGR-01) and Adoption Payment (FR-PAY-01)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 25 |
-| In Progress | 3 |
-| Not Started | 6 |
+| Done | 27 |
+| In Progress | 2 |
+| Not Started | 5 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -111,8 +111,8 @@ _Last updated: 2026-09-15, after adding Schedule and Conduct Meet and Greet (FR-
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-AGR-01 | Adoption Agreement | P0 | In Progress | `/my-agreements` shows the Adopter's own agreements, both Pending Signature and Signed states (mock data). Staff generation and Adopter online signing are disabled placeholders. Audited (step-5 data-source pass): references real seed animals (Charlie, Daisy) and the real demo Adopter account - unbuilt functionality, not a wiring bug. |
-| FR-PAY-01 | Adoption Payment | P0 | Not Started | No payment screen exists yet, for either Adopter or Staff. |
+| FR-AGR-01 | Adoption Agreement | P0 | Done | Real store (`lib/agreements/`), replacing the prior mock data. New Staff/Administrator screen `Adoptions` (`/adoptions`, wired to the previously-inert "Adoptions" nav entry) lists every application whose Meet and Greet outcome is Compatible (or already Finalised) and lets Staff generate an Agreement from the standard conditions template; the Adopter reviews and signs it at `/my-agreements/[applicationId]` (existing `/my-agreements` list screen switched from mock to real data). Once signed a version is immutable - Staff can only "Generate New Version" (a new unsigned version, `agreementVersion` incremented, e.g. v1.0 -> v2.0), with prior signed versions kept in history via `listAgreementsForApplication()`. Every generate/sign action writes an AuditLog entry (`document generation`/an equivalent action, per FR-AUD-01's trigger list). |
+| FR-PAY-01 | Adoption Payment | P0 | Done | Real store (`lib/payments/`). Judgment call, disclosed here and in the UI: since PRD 6.13 says Adopter "发起模拟付款" (initiates a simulated payment) and Staff "记录或验证付款结果" (records/verifies the result), and there is no real payment gateway, the flow is: Adopter picks a Payment Method (from System Administration's seeded, non-locked "Payment Method" options) and submits a simulated payment against the signed-or-unsigned Agreement (status `Pending`, amount pre-filled from the Animal's `adoptionFee`); Staff/Administrator then "Verify as Cleared" (generates a `receiptNumber`, shown to the Adopter) or "Mark as Failed" (with a required reason, after which the Adopter can retry). `paymentStatus` (`Pending`/`Cleared`/`Failed`) is an invented enum - not PRD/System-Administration-seeded, since PRD only defines the field, not its values. Critically, PRD 6.13 explicitly forbids forcing an order between Agreement signing and Payment ("系统不得强制两者的先后顺序") - `initiatePayment()` only requires the Agreement to exist, not be signed, and this was verified via Playwright by paying *before* signing. Every simulated payment (initiate/verify) writes an AuditLog entry (`payment verification` is explicitly named in FR-AUD-01's trigger list). Every screen and the receipt text explicitly disclose that no real payment gateway is connected. Veterinarian has no visibility of Payment at all (PRD 9: "无"), unlike Agreement where Veterinarian is read-only (PRD 9: "只读") - verified via Playwright that the Payment section is entirely absent from the Vet's `/adoptions/[id]` view while the Agreement section still renders read-only for them. `tsc`/`lint`/`build` all clean; zero console/page errors. |
 | FR-FIN-01 | Finalise Adoption Record | P0 | Not Started | No Finalise action or its prerequisite checks (Meet and Greet/Agreement/Payment). |
 
 ## 6.14 Pre-Release、Release 与 Follow Up
