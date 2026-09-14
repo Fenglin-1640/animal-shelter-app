@@ -13,7 +13,6 @@ import {
   confirmAsVet,
   getFitnessReview,
   listTasksForAnimal,
-  markTaskContinuable,
   taskActorRoles,
 } from "@/lib/adoption-fitness/store";
 import { TASK_STATUS_CATEGORY } from "@/lib/adoption-fitness/status";
@@ -23,10 +22,26 @@ import {
   TASK_TYPES,
   type AssessmentTask,
   type FitnessReview,
+  type TaskType,
 } from "@/lib/adoption-fitness/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
+
+// Each task now has a real, dedicated feature that completes it - the
+// Fitness screen just links to each rather than offering its own
+// "Mark Continuable" action.
+const TASK_ROUTES: Record<TaskType, string> = {
+  "Microchip Check": "scan-microchip",
+  "Health Assessment": "medical",
+  "Temperament Assessment": "behaviour",
+};
+
+const TASK_LABELS: Record<TaskType, string> = {
+  "Microchip Check": "Scan Microchip",
+  "Health Assessment": "Open Medical Record",
+  "Temperament Assessment": "Open Behaviour Record",
+};
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
@@ -58,7 +73,7 @@ function AdoptionFitnessContent({
   role: Role;
 }) {
   const [animal] = useState(() => getAnimalById(animalId));
-  const [tasks, setTasks] = useState<AssessmentTask[]>(() =>
+  const [tasks] = useState<AssessmentTask[]>(() =>
     animal ? listTasksForAnimal(animalId) : [],
   );
   const [review, setReview] = useState<FitnessReview | undefined>(() =>
@@ -69,11 +84,6 @@ function AdoptionFitnessContent({
 
   const complete = isFitnessReviewComplete(review);
   const blockers = getFitnessBlockers(animal, tasks);
-
-  const handleMarkContinuable = (taskId: string) => {
-    const result = markTaskContinuable(taskId, email, displayName);
-    if (result.ok) setTasks(listTasksForAnimal(animalId));
-  };
 
   const handleConfirmStaff = () => {
     const result = confirmAsStaff(animalId, email, displayName);
@@ -105,10 +115,8 @@ function AdoptionFitnessContent({
           {animal.name} &middot; {animal.shelterId}
         </p>
         <p className="mt-2 text-sm text-text-muted">
-          Microchip Check is completed via Scan Microchip (FR-MC-01). Health Assessment
-          (FR-MED-01) and Temperament Assessment (FR-BEH-01) are not built yet in this
-          prototype - marking either Continuable here is a simplified stand-in that only tracks
-          whether that track is ready for Review Adoption Fitness, per BR-016.
+          Each task is completed via its own feature: Scan Microchip (FR-MC-01), Health
+          Assessment (FR-MED-01) and Temperament Assessment (FR-BEH-01).
         </p>
       </div>
 
@@ -154,13 +162,13 @@ function AdoptionFitnessContent({
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusChip label={status} category={TASK_STATUS_CATEGORY[status]} />
-                  {status === "Pending" && taskType === "Microchip Check" ? (
-                    canAct && !complete ? (
+                  {status === "Pending" &&
+                    (canAct && !complete ? (
                       <Link
-                        href={`/animals/${animalId}/scan-microchip`}
+                        href={`/animals/${animalId}/${TASK_ROUTES[taskType]}`}
                         className="inline-flex h-9 items-center rounded-[12px] border border-border bg-surface px-3 text-sm font-semibold text-text hover:bg-surface-active"
                       >
-                        Scan Microchip
+                        {TASK_LABELS[taskType]}
                       </Link>
                     ) : (
                       <span
@@ -171,28 +179,9 @@ function AdoptionFitnessContent({
                         }
                         className="inline-flex h-9 cursor-not-allowed items-center rounded-[12px] border border-border bg-surface px-3 text-sm font-semibold text-text opacity-60"
                       >
-                        Scan Microchip
+                        {TASK_LABELS[taskType]}
                       </span>
-                    )
-                  ) : (
-                    status === "Pending" && (
-                      <button
-                        type="button"
-                        onClick={() => task && handleMarkContinuable(task.id)}
-                        disabled={!canAct || complete}
-                        title={
-                          complete
-                            ? "This Fitness Review has already been confirmed."
-                            : !canAct
-                              ? `Only ${actorRoles.join(" or ")} can complete this task.`
-                              : undefined
-                        }
-                        className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Mark Continuable
-                      </button>
-                    )
-                  )}
+                    ))}
                 </div>
               </div>
             );

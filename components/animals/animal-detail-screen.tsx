@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { EmptySubscreen } from "@/components/animals/empty-subscreen";
 import { AppShell } from "@/components/layout/app-shell";
@@ -15,6 +15,16 @@ import { getDisplayAge } from "@/lib/animals/age";
 import { getAnimalById } from "@/lib/animals/animal-store";
 import { CURRENT_STATUS_CATEGORY, LISTING_STATUS_CATEGORY } from "@/lib/animals/status";
 import type { Animal } from "@/lib/animals/types";
+import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
+import { archiveUnsuitableAnimal, getActiveBehaviourProgram, listTemperamentAssessments } from "@/lib/behaviour/store";
+import { OUTCOME_CATEGORY, PROGRAM_STATUS_CATEGORY } from "@/lib/behaviour/status";
+import {
+  getDesexingSchedule,
+  getMedicalClearance,
+  listHealthAssessments,
+  listVaccinations,
+} from "@/lib/medical/store";
+import { DESEXING_STATUS_CATEGORY } from "@/lib/medical/status";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -64,7 +74,28 @@ function AnimalNotFound() {
   );
 }
 
-function AnimalDetailContent({ animal, role }: { animal: Animal; role: Role }) {
+function AnimalDetailContent({
+  animal: initialAnimal,
+  role,
+}: {
+  animal: Animal;
+  role: Role;
+}) {
+  const [animal, setAnimal] = useState(initialAnimal);
+
+  const handleArchive = () => {
+    const result = archiveUnsuitableAnimal(animal.animalId);
+    if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
+  };
+
+  const healthAssessments = listHealthAssessments(animal.animalId);
+  const medicalClearance = getMedicalClearance(animal.animalId);
+  const desexing = getDesexingSchedule(animal.animalId);
+  const vaccinations = listVaccinations(animal.animalId);
+  const temperamentAssessments = listTemperamentAssessments(animal.animalId);
+  const latestBehaviour = temperamentAssessments[0];
+  const activeProgram = getActiveBehaviourProgram(animal.animalId);
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -173,6 +204,18 @@ function AnimalDetailContent({ animal, role }: { animal: Animal; role: Role }) {
               </Link>
             </div>
           )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          animal.currentStatus === "Unsuitable For Adoption" && (
+            <div className="sm:col-span-2">
+              <button
+                type="button"
+                onClick={handleArchive}
+                className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Archive Record
+              </button>
+            </div>
+          )}
       </InfoGroup>
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
@@ -217,20 +260,70 @@ function AnimalDetailContent({ animal, role }: { animal: Animal; role: Role }) {
               id: "medical",
               label: "Medical History",
               content: (
-                <EmptySubscreen
-                  description="No medical history recorded yet. Medical records will populate once Medical features are built."
-                  upcoming={["Health Assessments", "Treatments", "Vaccinations", "Desexing"]}
-                />
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    <StatusChip
+                      label={`${healthAssessments.length} Health Assessment${healthAssessments.length === 1 ? "" : "s"}`}
+                      category={healthAssessments.length > 0 ? "success" : "neutral"}
+                    />
+                    <StatusChip
+                      label={`${vaccinations.length} Vaccination${vaccinations.length === 1 ? "" : "s"}`}
+                      category={vaccinations.length > 0 ? "success" : "neutral"}
+                    />
+                    <StatusChip
+                      label={desexing ? `Desexing: ${desexing.status}` : "Desexing Not Scheduled"}
+                      category={
+                        desexing
+                          ? DESEXING_STATUS_CATEGORY[desexing.status]
+                          : "neutral"
+                      }
+                    />
+                    <StatusChip
+                      label={medicalClearance ? "Medical Clearance Issued" : "Medical Clearance Not Issued"}
+                      category={medicalClearance ? "success" : "neutral"}
+                    />
+                  </div>
+                  <div>
+                    <Link
+                      href={`/animals/${animal.animalId}/medical`}
+                      className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                    >
+                      Open Medical Record
+                    </Link>
+                  </div>
+                </div>
               ),
             },
             {
               id: "behaviour",
               label: "Behavioural Assessment",
               content: (
-                <EmptySubscreen
-                  description="No temperament assessments recorded yet. Behaviour records will populate once Behaviour Assessment features are built."
-                  upcoming={["Temperament Assessments", "Behaviour Program"]}
-                />
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    <StatusChip
+                      label={
+                        latestBehaviour
+                          ? `Latest outcome: ${latestBehaviour.outcome}`
+                          : "No assessment yet"
+                      }
+                      category={latestBehaviour ? OUTCOME_CATEGORY[latestBehaviour.outcome] : "neutral"}
+                    />
+                    {activeProgram && (
+                      <StatusChip
+                        label={`Behaviour Program: ${activeProgram.status}`}
+                        category={PROGRAM_STATUS_CATEGORY[activeProgram.status]}
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <Link
+                      href={`/animals/${animal.animalId}/behaviour`}
+                      className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                    >
+                      Open Behaviour Record
+                    </Link>
+                  </div>
+                </div>
               ),
             },
             {
@@ -260,6 +353,7 @@ export function AnimalDetailScreen() {
     );
   }
 
+  evaluatePreListingEligibility(params.animalId);
   const animal = getAnimalById(params.animalId);
 
   return (

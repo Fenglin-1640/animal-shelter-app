@@ -72,6 +72,12 @@ export function getLatestHold(animalId: string): StatutoryHold | undefined {
   return listHoldsForAnimal(animalId)[0];
 }
 
+// FR-LIST-01 precondition 3 / FR-MED-03's Pre-Listing gate: "不存在未结束的
+// Statutory Hold".
+export function hasUnresolvedHold(animalId: string): boolean {
+  return listHoldsForAnimal(animalId).some((h) => h.status === "Active");
+}
+
 export type HoldResult = { ok: true; hold: StatutoryHold } | { ok: false; reason: "not_found" };
 
 // FR-MC-02 steps 1-3, run automatically as a consequence of Scan
