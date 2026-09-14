@@ -1,5 +1,6 @@
 import { getAllAnimals } from "@/lib/animals/animal-store";
 import { getDisplayAge } from "@/lib/animals/age";
+import { getPrimaryPhoto } from "@/lib/photos/store";
 import type { PublicListing } from "@/lib/adoption-listings/types";
 
 // FR-LIST-02: only listingStatus = Current animals are publicly listed.
@@ -19,6 +20,7 @@ export function getPublicListings(): PublicListing[] {
       adoptionFee: animal.adoptionFee,
       generalDescription: animal.generalDescription,
       acceptingApplications: animal.currentStatus === "Available For Adoption",
+      photoAltText: getPrimaryPhoto(animal.animalId)?.altText,
     }),
   );
 }

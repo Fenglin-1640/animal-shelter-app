@@ -28,11 +28,11 @@ export interface LinkedPerson {
 }
 
 // Metadata only (no file content stored - no backend in this prototype,
-// consistent with Council Transfer attachments). Full Photo management
-// (altText, selecting the public listing photo, Adopter visibility) is
-// FR-AN-02, not built yet; this just satisfies FR-INT-03's "at least one
-// photo uploaded" Finalise Intake gate and gives the Photos subscreen
-// something real to display for animals created that way.
+// consistent with Council Transfer attachments). Used only by the Intake
+// Record form's simple "at least one photo uploaded" Finalise Intake
+// gate (FR-INT-03) - once the Animal exists, lib/photos/store.ts's
+// seedPhotosFromIntake() converts these into full Photo records (FR-AN-02:
+// altText, selecting the public listing photo, dateTaken/takenBy).
 export interface AnimalPhoto {
   id: string;
   fileName: string;
@@ -66,5 +66,4 @@ export interface Animal {
   lastModifiedAt: string;
   intakeSource: string;
   linkedPerson?: LinkedPerson;
-  photos?: AnimalPhoto[];
 }

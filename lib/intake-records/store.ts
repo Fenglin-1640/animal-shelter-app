@@ -1,6 +1,7 @@
 import { acceptTransfer, getTransfer } from "@/lib/council-transfers/store";
 import { addAnimal, generateShelterId } from "@/lib/animals/animal-store";
 import { createTasksForAnimal } from "@/lib/adoption-fitness/store";
+import { seedPhotosFromIntake } from "@/lib/photos/store";
 import type { Animal } from "@/lib/animals/types";
 import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 import {
@@ -159,10 +160,10 @@ export function finaliseIntake(intakeId: string, email: string, name: string): F
     enteredAt: now,
     lastModifiedAt: now,
     intakeSource: record.intakeSource,
-    photos: record.photos,
   };
   addAnimal(animal, { email, name });
   createTasksForAnimal(animal.animalId);
+  seedPhotosFromIntake(animal.animalId, record.photos, record.createdByEmail, record.createdByName);
 
   all[index] = { ...record, finalisedAt: now, updatedAt: now };
   saveAll(all);

@@ -17,4 +17,7 @@ export interface PublicListing {
   adoptionFee?: number;
   generalDescription: string;
   acceptingApplications: boolean;
+  // FR-AN-02's public listing photo, once selected (Adopter may only
+  // ever see this one approved photo, never the full Photos list).
+  photoAltText?: string;
 }

@@ -5,7 +5,7 @@ import type { PublicListing } from "@/lib/adoption-listings/types";
 export function ListingCard({ listing }: { listing: PublicListing }) {
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-      <PlaceholderThumbnail species={listing.species} />
+      <PlaceholderThumbnail species={listing.species} altText={listing.photoAltText} />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div>

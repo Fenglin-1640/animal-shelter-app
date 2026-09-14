@@ -12,8 +12,9 @@ import { StatusChip } from "@/components/shared/status-chip";
 import { Tabs } from "@/components/shared/tabs";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getDisplayAge } from "@/lib/animals/age";
-import { getAnimalById } from "@/lib/animals/animal-store";
+import { getAnimalById, updateAnimal } from "@/lib/animals/animal-store";
 import { CURRENT_STATUS_CATEGORY, LISTING_STATUS_CATEGORY } from "@/lib/animals/status";
+import { getActiveValues } from "@/lib/system-administration/store";
 import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 import { archiveUnsuitableAnimal, getActiveBehaviourProgram, listTemperamentAssessments } from "@/lib/behaviour/store";
@@ -25,6 +26,8 @@ import {
   listVaccinations,
 } from "@/lib/medical/store";
 import { DESEXING_STATUS_CATEGORY } from "@/lib/medical/status";
+import { getPublishBlockers, publishAdoptionProfile, unpublishAdoptionProfile } from "@/lib/adoption-listings/publish";
+import { getPrimaryPhoto, listPhotosForAnimal } from "@/lib/photos/store";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -87,8 +90,45 @@ function AnimalDetailContent({
 }) {
   const [animal, setAnimal] = useState(initialAnimal);
 
+  const [showEditAdoption, setShowEditAdoption] = useState(false);
+  const [feeInput, setFeeInput] = useState("");
+  const [breedInput, setBreedInput] = useState("");
+  const [descriptionInput, setDescriptionInput] = useState("");
+  const [temperamentSelection, setTemperamentSelection] = useState<Set<string>>(new Set());
+  const temperamentOptions = getActiveValues("Temperament");
+
+  const handleOpenEditAdoption = () => {
+    setFeeInput(animal.adoptionFee?.toString() ?? "");
+    setBreedInput(animal.breed === "Unknown" ? "" : animal.breed);
+    setDescriptionInput(animal.generalDescription);
+    setTemperamentSelection(new Set(animal.temperaments));
+    setShowEditAdoption(true);
+  };
+
+  const handleSaveAdoptionDetails = () => {
+    const fee = feeInput.trim() ? Number(feeInput) : undefined;
+    updateAnimal(animal.animalId, {
+      adoptionFee: fee != null && !Number.isNaN(fee) ? fee : undefined,
+      breed: breedInput.trim() || "Unknown",
+      generalDescription: descriptionInput,
+      temperaments: Array.from(temperamentSelection),
+    });
+    setAnimal(getAnimalById(animal.animalId) ?? animal);
+    setShowEditAdoption(false);
+  };
+
   const handleArchive = () => {
     const result = archiveUnsuitableAnimal(animal.animalId, email, displayName);
+    if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
+  };
+
+  const handlePublish = () => {
+    const result = publishAdoptionProfile(animal.animalId, email, displayName);
+    if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
+  };
+
+  const handleUnpublish = () => {
+    const result = unpublishAdoptionProfile(animal.animalId, email, displayName);
     if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
   };
 
@@ -99,6 +139,9 @@ function AnimalDetailContent({
   const temperamentAssessments = listTemperamentAssessments(animal.animalId);
   const latestBehaviour = temperamentAssessments[0];
   const activeProgram = getActiveBehaviourProgram(animal.animalId);
+  const photos = listPhotosForAnimal(animal.animalId);
+  const primaryPhoto = getPrimaryPhoto(animal.animalId);
+  const publishBlockers = getPublishBlockers(animal.animalId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -110,7 +153,7 @@ function AnimalDetailContent({
       </Link>
 
       <div className="flex flex-col gap-4 rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-        <PlaceholderThumbnail species={animal.species} className="sm:w-48" />
+        <PlaceholderThumbnail species={animal.species} altText={primaryPhoto?.altText} className="w-full sm:w-48" />
 
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-text">{animal.name}</h1>
@@ -179,6 +222,142 @@ function AnimalDetailContent({
         {animal.linkedPerson && (
           <InfoField label={animal.linkedPerson.role} value={animal.linkedPerson.name} />
         )}
+        {["Administrator", "Shelter Staff Member"].includes(role) && !showEditAdoption && (
+          <div className="sm:col-span-2">
+            <button
+              type="button"
+              onClick={handleOpenEditAdoption}
+              className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Edit Adoption Details
+            </button>
+          </div>
+        )}
+        {["Administrator", "Shelter Staff Member"].includes(role) && showEditAdoption && (
+          <div className="sm:col-span-2 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
+            <p className="text-xs text-text-muted">
+              Breed, Adoption Fee, Temperaments and General Description have no dedicated intake
+              step (Finalise Intake leaves Breed as &quot;Unknown&quot; and Temperaments/Adoption
+              Fee unset) - this is the minimal edit surface needed to fill in FR-LIST-01&apos;s
+              Publish prerequisites, not a general Animal Profile editor.
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="edit-breed" className="text-xs font-semibold text-text-muted">
+                  Breed
+                </label>
+                <input
+                  id="edit-breed"
+                  type="text"
+                  value={breedInput}
+                  onChange={(e) => setBreedInput(e.target.value)}
+                  className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="edit-fee" className="text-xs font-semibold text-text-muted">
+                  Adoption Fee
+                </label>
+                <input
+                  id="edit-fee"
+                  type="number"
+                  min="0"
+                  value={feeInput}
+                  onChange={(e) => setFeeInput(e.target.value)}
+                  className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="edit-description" className="text-xs font-semibold text-text-muted">
+                General Description
+              </label>
+              <textarea
+                id="edit-description"
+                rows={2}
+                value={descriptionInput}
+                onChange={(e) => setDescriptionInput(e.target.value)}
+                className="rounded-[12px] border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold text-text-muted">Temperaments</span>
+              <div className="flex flex-wrap gap-2">
+                {temperamentOptions.map((option) => (
+                  <label key={option} className="flex items-center gap-1.5 text-sm text-text">
+                    <input
+                      type="checkbox"
+                      checked={temperamentSelection.has(option)}
+                      onChange={() =>
+                        setTemperamentSelection((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(option)) next.delete(option);
+                          else next.add(option);
+                          return next;
+                        })
+                      }
+                      className="h-4 w-4 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleSaveAdoptionDetails}
+                className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEditAdoption(false)}
+                className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          animal.listingStatus === "Pre-Listing" && (
+            <div className="sm:col-span-2">
+              <button
+                type="button"
+                onClick={handlePublish}
+                disabled={publishBlockers.length > 0}
+                title={
+                  publishBlockers.length > 0
+                    ? `Not ready to publish: ${publishBlockers.join(" ")}`
+                    : undefined
+                }
+                className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Publish Adoption Profile
+              </button>
+              {publishBlockers.length > 0 && (
+                <ul className="mt-2 list-inside list-disc text-xs text-text-muted">
+                  {publishBlockers.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          animal.listingStatus === "Current" && (
+            <div className="sm:col-span-2">
+              <button
+                type="button"
+                onClick={handleUnpublish}
+                className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Withdraw Listing
+              </button>
+            </div>
+          )}
       </InfoGroup>
 
       <InfoGroup heading="Lifecycle">
@@ -229,36 +408,28 @@ function AnimalDetailContent({
             {
               id: "photos",
               label: "Photos",
-              content:
-                animal.photos && animal.photos.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {animal.photos.map((photo) => (
-                      <div
-                        key={photo.id}
-                        className="flex items-center gap-3 rounded-[12px] border border-border bg-page p-3"
-                      >
-                        <PlaceholderThumbnail species={animal.species} className="w-20" />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-text">{photo.fileName}</p>
-                          <p className="text-xs text-text-muted">{photo.fileSizeKB} KB</p>
-                          <p className="text-xs text-text-muted">
-                            Uploaded {formatDateTime(photo.uploadedAt)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    <p className="col-span-full text-xs text-text-muted">
-                      Photo metadata only is stored in this prototype; no file content is uploaded to a
-                      server. Full photo management (captions, selecting the public listing photo) is not
-                      built yet.
-                    </p>
+              content: (
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <StatusChip
+                      label={`${photos.length} Photo${photos.length === 1 ? "" : "s"}`}
+                      category={photos.length > 0 ? "success" : "neutral"}
+                    />
+                    <StatusChip
+                      label={primaryPhoto ? "Public Photo Selected" : "No Public Photo Selected"}
+                      category={primaryPhoto ? "success" : "neutral"}
+                    />
                   </div>
-                ) : (
-                  <EmptySubscreen
-                    description="No photos uploaded yet. Photo management will be available once Animal Intake is built."
-                    action={{ label: "Upload Photo", disabledReason: "Photo upload is not built yet" }}
-                  />
-                ),
+                  <div>
+                    <Link
+                      href={`/animals/${animal.animalId}/photos`}
+                      className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                    >
+                      Open Photos
+                    </Link>
+                  </div>
+                </div>
+              ),
             },
             {
               id: "medical",
