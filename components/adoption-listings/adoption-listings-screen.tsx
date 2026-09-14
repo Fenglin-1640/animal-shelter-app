@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { ListingCard } from "@/components/adoption-listings/listing-card";
+import { useAuth } from "@/lib/auth/auth-context";
 import { getPublicListings } from "@/lib/adoption-listings/mock-listings";
 import type { Sex, Species } from "@/lib/animals/types";
 
@@ -141,6 +142,7 @@ function FiltersBody({
 }
 
 export function AdoptionListingsScreen() {
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [speciesSelection, setSpeciesSelection] = useState<Set<Species>>(new Set());
   const [breedSelection, setBreedSelection] = useState<Set<string>>(new Set());
@@ -308,7 +310,13 @@ export function AdoptionListingsScreen() {
         ) : (
           <div className="flex flex-col gap-3">
             {pageItems.map((listing) => (
-              <ListingCard key={listing.animalId} listing={listing} />
+              <ListingCard
+                key={listing.animalId}
+                listing={listing}
+                canApply={user?.role === "Adopter"}
+                adopterEmail={user?.email}
+                adopterName={user?.displayName}
+              />
             ))}
           </div>
         )}

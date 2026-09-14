@@ -32,7 +32,7 @@ function AuditLogContent() {
       if (entityType && entry.entityType !== entityType) return false;
       if (query) {
         const haystack =
-          `${entry.action} ${entry.entityId} ${entry.userName} ${entry.userId}`.toLowerCase();
+          `${entry.action} ${entry.entityId} ${entry.userName} ${entry.userId} ${entry.oldValue} ${entry.newValue}`.toLowerCase();
         if (!haystack.includes(query)) return false;
       }
       return true;

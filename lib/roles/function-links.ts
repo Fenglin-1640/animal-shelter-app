@@ -13,4 +13,5 @@ export const FUNCTION_HREFS: Partial<Record<string, string>> = {
   "My Transfers": "/my-transfers",
   "Animal Intake": "/animal-intake",
   "Audit Log": "/audit-log",
+  "Adoption Applications": "/adoption-applications",
 };

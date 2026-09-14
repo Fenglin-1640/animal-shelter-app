@@ -1,8 +1,36 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { AttributeChip } from "@/components/shared/attribute-chip";
 import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
+import { startOrContinueDraft } from "@/lib/applications/store";
 import type { PublicListing } from "@/lib/adoption-listings/types";
 
-export function ListingCard({ listing }: { listing: PublicListing }) {
+export function ListingCard({
+  listing,
+  canApply,
+  adopterEmail,
+  adopterName,
+}: {
+  listing: PublicListing;
+  canApply?: boolean;
+  adopterEmail?: string;
+  adopterName?: string;
+}) {
+  const router = useRouter();
+
+  const handleApply = () => {
+    if (!adopterEmail || !adopterName) return;
+    const result = startOrContinueDraft(listing.animalId, adopterEmail, adopterName);
+    if (result.ok) router.push(`/my-applications/${result.applicationId}`);
+  };
+
+  const applyDisabledReason = !canApply
+    ? "Only Adopter accounts can submit adoption applications"
+    : !listing.acceptingApplications
+      ? "This animal is not currently accepting new applications"
+      : undefined;
+
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
       <PlaceholderThumbnail species={listing.species} altText={listing.photoAltText} />
@@ -35,9 +63,10 @@ export function ListingCard({ listing }: { listing: PublicListing }) {
       <div className="flex items-start sm:items-center">
         <button
           type="button"
-          disabled
-          title="Adoption Applications are not built yet"
-          className="h-9 whitespace-nowrap rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text-muted disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={handleApply}
+          disabled={Boolean(applyDisabledReason)}
+          title={applyDisabledReason}
+          className="h-9 whitespace-nowrap rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:bg-page disabled:text-text-muted disabled:opacity-60"
         >
           Apply Now
         </button>

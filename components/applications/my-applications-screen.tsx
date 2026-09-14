@@ -7,7 +7,7 @@ import { ApplicationCard } from "@/components/applications/application-card";
 import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { useAuth } from "@/lib/auth/auth-context";
-import { getMyApplications } from "@/lib/applications/mock-applications";
+import { listMyApplications } from "@/lib/applications/store";
 import type { ApplicationStatus } from "@/lib/applications/types";
 import type { Role } from "@/lib/roles/roles";
 
@@ -73,7 +73,7 @@ function MyApplicationsContent({ email }: { email: string }) {
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const allApplications = useMemo(() => getMyApplications(email), [email]);
+  const allApplications = useMemo(() => listMyApplications(email), [email]);
   const availableStatuses = useMemo(
     () => Array.from(new Set(allApplications.map((a) => a.applicationStatus))),
     [allApplications],

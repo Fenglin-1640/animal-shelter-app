@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-15, after adding Photos (FR-AN-02) and Publish Adoption Profile (FR-LIST-01)._
+_Last updated: 2026-09-15, after adding Submit Adoption Application (FR-APP-01) and Application Assessment (FR-CHK-01/02)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 21 |
-| In Progress | 5 |
-| Not Started | 8 |
+| Done | 24 |
+| In Progress | 4 |
+| Not Started | 6 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -92,14 +92,14 @@ _Last updated: 2026-09-15, after adding Photos (FR-AN-02) and Publish Adoption P
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
 | FR-ADP-01 | Adopter Profile | P0 | Done | `/my-adopter-profile` (`components/adopter-profile`) is a fully functional, validated self-service form covering every listed field (household, ownership/landlord permission, pets, environment, hours alone, preferred species, referee + consent), persisted per-account in `localStorage`. Adopter-only, gated like the other My screens. Note: the snapshot-on-submit rule ("后续修改 Profile 不得改变已提交版本") can't be demonstrated yet since Submit Adoption Application (FR-APP-01) doesn't exist to take the snapshot. |
-| FR-APP-01 | Submit Adoption Application | P0 | In Progress | `/my-applications` shows the Adopter's own application records and status (mock data). Submitting a new application or editing a Draft is not implemented; "Apply Now" on Adoption Listings is a disabled placeholder. Audited (step-5 data-source pass): the mock records reference real PRD 12.1 seed animals (Luna, Charlie, Daisy) and the real `adopter@asams.demo` demo account, not stale/invented data - this is simply unbuilt functionality, not a wiring bug. |
+| FR-APP-01 | Submit Adoption Application | P0 | Done | Real `AdoptionApplication` records (`lib/applications/store.ts`), replacing the mock data entirely. "Apply Now" on Adoption Listings (Adopter only, only when `currentStatus = Available For Adoption` / `listingStatus = Current` / `acceptingApplications = true` per BR-008) starts or resumes a Draft and lands on `/my-applications/[applicationId]`, which lets the Adopter write a motivation statement and attach supporting documents (metadata-only, same pattern as Council Transfer/Intake/Photo attachments) while Draft. Submission validates the underlying Adopter Profile is complete via a dedicated, stricter check (`getAdopterProfileSubmissionBlockers()` in `lib/adopter-profile/types.ts`) - deliberately stricter than the Profile screen's own save-time validation, which lets an Adopter save a profile with the referee section entirely blank; an Application can't submit without it, per PRD's explicit "referee contact and consent" requirement. On success, a full snapshot of the Adopter Profile is taken and never touched again even if the Adopter later edits their live Profile (PRD: "后续修改 Profile 不得改变已提交版本"). Draft/Submitted are the only two application-side statuses this FR itself produces; Under Review/On Hold/Approved/Rejected/Finalised are driven by FR-CHK-01/02 and later stages. |
 
 ## 6.11 Application Assessment
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-CHK-01 | 三项 SuitabilityCheck | P0 | Not Started | No SuitabilityCheck creation or Staff-side check-completion UI. |
-| FR-CHK-02 | Approve or Reject | P0 | Not Started | No Staff-side decision workflow. The Adopter-facing status/rejection reason shown in My Applications is static mock data, not a result of a real decision action. |
+| FR-CHK-01 | 三项 SuitabilityCheck | P0 | Done | Submitting an application auto-creates 3 Pending `SuitabilityCheck` records (Reference Check, Home Suitability Check, Pet Compatibility Check - `lib/checks/store.ts`, called right after a successful `submitApplication()`; `lib/applications` and `lib/checks` deliberately don't import each other, so `applicationStatus` moving to "Under Review" happens via the same UI-layer pattern used for `evaluatePreListingEligibility()`). New Staff screen `/adoption-applications` (list, wired to the previously-inert "Adoption Applications" nav item) and `/adoption-applications/[applicationId]` (detail) let Administrator/Shelter Staff Member complete each check (outcome Pass/Concern/Fail, notes, conducted date) - Veterinarian gets read-only view access per PRD 9's "相关记录只读". The Decide Application Outcome gate is enforced by construction: the Decision section only renders once all 3 checks are off Pending. |
+| FR-CHK-02 | Approve or Reject | P0 | Done | Approve is only offered once all 3 checks are Pass; it moves `Animal.currentStatus = Application In Progress` through `changeAnimalStatus()` (validated + audited) and sets every other Submitted/Under-Review application for the same Animal to On Hold. Reject requires a typed reason whenever any check is Concern/Fail (the two states are exhaustive once all checks are complete, so no separate "has a Concern/Fail" gate is needed beyond "not all Pass"); the Animal's `currentStatus` is left untouched since a rejected-before-ever-approved application never moved it away from Available For Adoption. The Adopter's application detail page shows only the outcome and rejection reason, never internal check notes (verified via Playwright). A `resumeApplication()` helper exists for PRD's "若当前申请失败，可恢复处理" (an On-Hold application can resume once its Animal is Available again, e.g. after a Meet and Greet Incompatible outcome) but has no dedicated UI trigger yet - reachable only by direct call; will get a real button once FR-MG-01's Incompatible path is built and can be exercised end-to-end. |
 
 ## 6.12 Meet and Greet
 
