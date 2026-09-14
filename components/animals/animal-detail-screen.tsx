@@ -161,6 +161,18 @@ function AnimalDetailContent({ animal, role }: { animal: Animal; role: Role }) {
             </Link>
           </div>
         )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          (animal.currentStatus === "On Statutory Hold" ||
+            animal.currentStatus === "Reclaimed By Owner") && (
+            <div className="sm:col-span-2">
+              <Link
+                href={`/animals/${animal.animalId}/statutory-hold`}
+                className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Manage Statutory Hold
+              </Link>
+            </div>
+          )}
       </InfoGroup>
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">

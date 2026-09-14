@@ -59,10 +59,14 @@ function ResultMessage({ lookup }: { lookup: MicrochipLookup }) {
       <p className="font-semibold">{lookup.ownerContact?.name}</p>
       <p className="text-text-muted">{lookup.ownerContact?.phone}</p>
       <p className="text-text-muted">{lookup.ownerContact?.address}</p>
-      <p className="mt-1 text-xs text-text-muted">
-        Linking these details to the Intake Record, calculating a Statutory Hold and generating
-        reminders is Owner Match &amp; Statutory Hold (FR-MC-02) - not built yet in this
-        prototype.
+      <p className="mt-1 text-sm text-text">
+        A Statutory Hold has been started automatically.{" "}
+        <Link
+          href={`/animals/${lookup.animalId}/statutory-hold`}
+          className="font-semibold text-secondary underline underline-offset-2 hover:no-underline"
+        >
+          View Statutory Hold
+        </Link>
       </p>
     </div>
   );

@@ -1,5 +1,6 @@
 import { getAnimalById, updateAnimal } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
+import { createHoldForOwnerMatch } from "@/lib/statutory-hold/store";
 import { queryNationalPetRegistry } from "@/lib/microchip/mock-registry";
 import type { MicrochipLookup } from "@/lib/microchip/types";
 
@@ -71,6 +72,12 @@ export async function performScan(
   }
   if (outcome.result !== "Timeout") {
     completeTaskByType(animalId, "Microchip Check", email, name);
+  }
+  // FR-MC-02: Owner Match automatically links the owner and starts a
+  // Statutory Hold - a direct system consequence of the lookup result,
+  // not a separate Staff action.
+  if (outcome.result === "Owner Match" && outcome.ownerContact) {
+    createHoldForOwnerMatch(animalId, outcome.ownerContact);
   }
 
   return { ok: true, lookup };

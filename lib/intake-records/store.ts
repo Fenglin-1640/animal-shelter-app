@@ -2,6 +2,7 @@ import { acceptTransfer, getTransfer } from "@/lib/council-transfers/store";
 import { addAnimal, generateShelterId } from "@/lib/animals/animal-store";
 import { createTasksForAnimal } from "@/lib/adoption-fitness/store";
 import type { Animal } from "@/lib/animals/types";
+import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 import {
   getFinaliseBlockers,
   type IntakeRecord,
@@ -45,6 +46,20 @@ export function listLinkedTransferIds(excludingIntakeId?: string): Set<string> {
       .filter((r) => r.intakeId !== excludingIntakeId && r.councilTransferSubmissionId)
       .map((r) => r.councilTransferSubmissionId as string),
   );
+}
+
+export function getIntakeRecordByAnimalId(animalId: string): IntakeRecord | undefined {
+  return loadAll().find((r) => r.animalId === animalId);
+}
+
+// FR-MC-02 step 1. A no-op if this animal has no formal IntakeRecord
+// (e.g. the static PRD 12.1 seed animals, which predate Finalise Intake).
+export function linkRegisteredOwnerContact(animalId: string, contact: RegisteredOwnerContact) {
+  const all = loadAll();
+  const index = all.findIndex((r) => r.animalId === animalId);
+  if (index === -1) return;
+  all[index] = { ...all[index], registeredOwnerContact: contact, updatedAt: new Date().toISOString() };
+  saveAll(all);
 }
 
 function generateIntakeId(): string {

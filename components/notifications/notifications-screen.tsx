@@ -5,7 +5,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { NotificationCard } from "@/components/notifications/notification-card";
 import { useAuth } from "@/lib/auth/auth-context";
-import { getMockNotifications } from "@/lib/notifications/mock-notifications";
+import { getAllNotifications } from "@/lib/notifications/store";
 import type { NotificationType } from "@/lib/notifications/types";
 import {
   loadReadOverrides,
@@ -125,7 +125,7 @@ export function NotificationsScreen() {
   }, [email]);
 
   const allItems = useMemo(
-    () => getMockNotifications().filter((item) => role && item.roles.includes(role)),
+    () => getAllNotifications().filter((item) => role && item.roles.includes(role)),
     [role],
   );
 

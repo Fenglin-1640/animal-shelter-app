@@ -1,5 +1,6 @@
 import type { AnimalPhoto, Sex, Species } from "@/lib/animals/types";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
+import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 
 // FR-INT-02: the 9 required fields, plus system-generated intakeId and
 // animalId. Only one of surrenderingPartyName / councilTransferSubmissionId
@@ -35,6 +36,11 @@ export interface IntakeRecord {
   createdAt: string;
   updatedAt: string;
   finalisedAt?: string;
+  // FR-MC-02 step 1: "registered owner contact details 链接到 IntakeRecord",
+  // written by lib/statutory-hold/store.ts when a Scan Microchip lookup
+  // (FR-MC-01) returns Owner Match. Not user-editable, so it lives here
+  // rather than in IntakeRecordFormInput.
+  registeredOwnerContact?: RegisteredOwnerContact;
 }
 
 export interface IntakeRecordFormInput {
