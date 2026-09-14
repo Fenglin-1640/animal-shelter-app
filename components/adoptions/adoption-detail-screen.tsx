@@ -7,6 +7,7 @@ import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
+import { finaliseAdoption, getFinaliseBlockers } from "@/lib/adoptions/finalise";
 import { generateAgreement, getActiveAgreementForApplication } from "@/lib/agreements/store";
 import { AGREEMENT_STATUS_CATEGORY, getAgreementStatus } from "@/lib/agreements/status";
 import type { AdoptionAgreement } from "@/lib/agreements/types";
@@ -224,6 +225,77 @@ function PaymentSection({
   );
 }
 
+function FinaliseSection({
+  applicationId,
+  canManage,
+  email,
+  displayName,
+  isFinalised,
+  onFinalised,
+}: {
+  applicationId: string;
+  canManage: boolean;
+  email: string;
+  displayName: string;
+  isFinalised: boolean;
+  onFinalised: () => void;
+}) {
+  const [error, setError] = useState<string | null>(null);
+  // Recomputed on every render (not memoized) so it always reflects the
+  // latest Agreement/Payment state after those sections' own actions.
+  const blockers = isFinalised ? [] : getFinaliseBlockers(applicationId);
+
+  const handleFinalise = () => {
+    const result = finaliseAdoption(applicationId, email, displayName);
+    if (!result.ok) {
+      setError(result.blockers.length > 0 ? result.blockers.join(" ") : "Unable to finalise.");
+      return;
+    }
+    setError(null);
+    onFinalised();
+  };
+
+  if (!canManage && !isFinalised) return null;
+
+  return (
+    <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+      <h2 className="text-lg font-bold text-text">Finalise Adoption Record</h2>
+
+      {isFinalised ? (
+        <p className="mt-2 text-sm text-text">
+          This adoption has been finalised. The Animal is now Awaiting Release, and a
+          Pre-Release Check is required before the Animal can be released to the Adopter.
+        </p>
+      ) : (
+        <>
+          <p className="mt-1 text-xs text-text-muted">
+            Finalising requires a Compatible Meet and Greet, a signed Adoption Agreement and a
+            Cleared Adoption Payment, all verified together.
+          </p>
+          {blockers.length > 0 && (
+            <ul className="mt-3 flex flex-col gap-1">
+              {blockers.map((b) => (
+                <li key={b} className="text-sm text-text-muted">
+                  &bull; {b}
+                </li>
+              ))}
+            </ul>
+          )}
+          {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+          <button
+            type="button"
+            onClick={handleFinalise}
+            disabled={blockers.length > 0}
+            className="mt-3 h-10 rounded-[12px] bg-primary px-5 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Finalise Adoption Record
+          </button>
+        </>
+      )}
+    </section>
+  );
+}
+
 function AdoptionDetailContent({
   applicationId,
   email,
@@ -235,7 +307,9 @@ function AdoptionDetailContent({
   displayName: string;
   role: Role;
 }) {
-  const [application] = useState<AdoptionApplication | undefined>(() => getApplication(applicationId));
+  const [application, setApplication] = useState<AdoptionApplication | undefined>(() =>
+    getApplication(applicationId),
+  );
   const meetAndGreet = getMeetAndGreetForApplication(applicationId);
   const agreement = getActiveAgreementForApplication(applicationId);
 
@@ -244,6 +318,8 @@ function AdoptionDetailContent({
   const canManage = CAN_MANAGE_ROLES.includes(role);
   const canSeePayment = role !== "Veterinarian";
   const isCompatible = meetAndGreet?.status === "Compatible";
+  const isFinalised = application.applicationStatus === "Finalised";
+  const refreshApplication = () => setApplication(getApplication(applicationId));
 
   return (
     <div className="flex flex-col gap-6">
@@ -287,6 +363,17 @@ function AdoptionDetailContent({
           email={email}
           displayName={displayName}
           agreementId={agreement?.agreementId}
+        />
+      )}
+
+      {canSeePayment && (
+        <FinaliseSection
+          applicationId={applicationId}
+          canManage={canManage}
+          email={email}
+          displayName={displayName}
+          isFinalised={isFinalised}
+          onFinalised={refreshApplication}
         />
       )}
     </div>
