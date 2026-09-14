@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { MeetAndGreetCard } from "@/components/meet-and-greets/meet-and-greet-card";
 import { useAuth } from "@/lib/auth/auth-context";
-import { getMyMeetAndGreets } from "@/lib/meet-and-greets/mock-meet-and-greets";
+import { listMyMeetAndGreets } from "@/lib/meet-and-greets/store";
 import type { MeetAndGreetStatus } from "@/lib/meet-and-greets/types";
 import type { Role } from "@/lib/roles/roles";
 
@@ -73,7 +73,7 @@ function MyMeetAndGreetsContent({ email }: { email: string }) {
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const allMeetAndGreets = useMemo(() => getMyMeetAndGreets(email), [email]);
+  const allMeetAndGreets = useMemo(() => listMyMeetAndGreets(email), [email]);
   const availableStatuses = useMemo(
     () => Array.from(new Set(allMeetAndGreets.map((m) => m.status))),
     [allMeetAndGreets],
@@ -102,8 +102,8 @@ function MyMeetAndGreetsContent({ email }: { email: string }) {
       return true;
     })
     .sort((a, b) => {
-      const aTime = new Date(a.scheduledDate).getTime();
-      const bTime = new Date(b.scheduledDate).getTime();
+      const aTime = new Date(a.scheduledDate ?? a.createdAt).getTime();
+      const bTime = new Date(b.scheduledDate ?? b.createdAt).getTime();
       return sortOrder === "earliest" ? aTime - bTime : bTime - aTime;
     });
 

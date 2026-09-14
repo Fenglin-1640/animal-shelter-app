@@ -1,31 +1,14 @@
+import Link from "next/link";
 import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { MEET_AND_GREET_STATUS_CATEGORY } from "@/lib/meet-and-greets/status";
-import type { AdopterMeetAndGreet } from "@/lib/meet-and-greets/types";
+import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function primaryAction(status: AdopterMeetAndGreet["status"]): {
-  label: string;
-  disabledReason: string;
-} {
-  if (status === "Scheduled") {
-    return {
-      label: "Confirm Attendance",
-      disabledReason: "Attendance confirmation is not built yet",
-    };
-  }
-  return {
-    label: "View Details",
-    disabledReason: "Meet and Greet detail pages are not built yet",
-  };
-}
-
-export function MeetAndGreetCard({ meetAndGreet }: { meetAndGreet: AdopterMeetAndGreet }) {
-  const action = primaryAction(meetAndGreet.status);
-
+export function MeetAndGreetCard({ meetAndGreet }: { meetAndGreet: MeetAndGreet }) {
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
       <PlaceholderThumbnail species={meetAndGreet.animalSpecies} className="w-full sm:w-32" />
@@ -41,26 +24,23 @@ export function MeetAndGreetCard({ meetAndGreet }: { meetAndGreet: AdopterMeetAn
             category={MEET_AND_GREET_STATUS_CATEGORY[meetAndGreet.status]}
           />
         </div>
-        <p className="text-sm text-text-muted">{formatDateTime(meetAndGreet.scheduledDate)}</p>
-        <p className="text-sm text-text-muted">{meetAndGreet.location}</p>
-        <p className="text-sm text-text-muted">{meetAndGreet.participants}</p>
-        {meetAndGreet.outcomeNotes && (
-          <p className="text-sm text-text">{meetAndGreet.outcomeNotes}</p>
-        )}
-        {meetAndGreet.nextStep && (
-          <p className="text-sm text-text">{meetAndGreet.nextStep}</p>
-        )}
+        <p className="text-sm text-text-muted">
+          {meetAndGreet.status === "Proposed"
+            ? "Choose from the proposed time slots"
+            : meetAndGreet.scheduledDate
+              ? formatDateTime(meetAndGreet.scheduledDate)
+              : ""}
+        </p>
+        {meetAndGreet.location && <p className="text-sm text-text-muted">{meetAndGreet.location}</p>}
       </div>
 
       <div className="flex items-start sm:items-center">
-        <button
-          type="button"
-          disabled
-          title={action.disabledReason}
-          className="h-9 whitespace-nowrap rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text-muted disabled:cursor-not-allowed disabled:opacity-60"
+        <Link
+          href={`/my-meet-and-greets/${meetAndGreet.meetAndGreetId}`}
+          className="inline-flex h-9 items-center whitespace-nowrap rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
         >
-          {action.label}
-        </button>
+          View Details
+        </Link>
       </div>
     </article>
   );

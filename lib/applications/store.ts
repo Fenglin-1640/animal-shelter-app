@@ -268,6 +268,41 @@ export function rejectApplication(
   return { ok: true };
 }
 
+// FR-MG-01: "Incompatible 关闭申请，写明原因，执行 Return Animal to Available Pool，并
+//将 currentStatus 恢复为 Available For Adoption" - a distinct closure path
+// from FR-CHK-02's Reject (which never moves the Animal, since it only
+// ever runs before any Approve). This one reuses the "Rejected"
+// ApplicationStatus value (no separate "Closed" status is seeded) since
+// the Adopter-facing outcome is the same shape - an ended application
+// with a stated reason - but does move the Animal, because by this point
+// it had already been moved to Application In Progress by Approve.
+export function closeApplicationIncompatible(
+  applicationId: string,
+  reason: string,
+  email: string,
+  name: string,
+): MutationResult {
+  const application = getApplication(applicationId);
+  if (!application) return { ok: false, reason: "not_found" };
+
+  setStatus(applicationId, {
+    applicationStatus: "Rejected",
+    decisionDate: new Date().toISOString(),
+    decisionByEmail: email,
+    decisionByName: name,
+    rejectionReason: reason.trim(),
+  });
+
+  changeAnimalStatus(
+    application.animalId,
+    { currentStatus: "Available For Adoption", statusUpdatedAt: new Date().toISOString() },
+    { email, name },
+    "Meet and Greet Incompatible - Return Animal to Available Pool",
+  );
+
+  return { ok: true };
+}
+
 // PRD: "若当前申请失败，可恢复处理" - once the Animal is Available For Adoption
 // again (e.g. after a Meet and Greet Incompatible outcome returns it),
 // an On-Hold application for it can resume being processed.

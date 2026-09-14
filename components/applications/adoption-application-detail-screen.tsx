@@ -11,6 +11,7 @@ import {
   approveApplication,
   getApplication,
   rejectApplication,
+  resumeApplication,
 } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication } from "@/lib/applications/types";
@@ -21,6 +22,13 @@ import {
   listChecksForApplication,
 } from "@/lib/checks/store";
 import type { CheckOutcome, SuitabilityCheck } from "@/lib/checks/types";
+import {
+  getMeetAndGreetForApplication,
+  proposeSlots,
+  recordOutcome,
+} from "@/lib/meet-and-greets/store";
+import { MEET_AND_GREET_STATUS_CATEGORY } from "@/lib/meet-and-greets/status";
+import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -146,6 +154,200 @@ function CheckRow({
   );
 }
 
+function MeetAndGreetSection({
+  applicationId,
+  canAct,
+  email,
+  displayName,
+}: {
+  applicationId: string;
+  canAct: boolean;
+  email: string;
+  displayName: string;
+}) {
+  const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | undefined>(() =>
+    getMeetAndGreetForApplication(applicationId),
+  );
+  const [slots, setSlots] = useState([{ dateTime: "", location: "" }]);
+  const [participants, setParticipants] = useState("");
+  const [outcome, setOutcome] = useState<"Compatible" | "Incompatible">("Compatible");
+  const [outcomeReason, setOutcomeReason] = useState("");
+  const [staffNotes, setStaffNotes] = useState("");
+  const [showOutcomeForm, setShowOutcomeForm] = useState(false);
+
+  const refresh = () => setMeetAndGreet(getMeetAndGreetForApplication(applicationId));
+
+  const handleProposeSlots = () => {
+    const validSlots = slots.filter((s) => s.dateTime && s.location.trim());
+    if (validSlots.length === 0) return;
+    proposeSlots(
+      applicationId,
+      validSlots.map((s) => ({ dateTime: new Date(s.dateTime).toISOString(), location: s.location })),
+      participants,
+      email,
+      displayName,
+    );
+    refresh();
+  };
+
+  const handleRecordOutcome = () => {
+    if (!meetAndGreet) return;
+    if (outcome === "Incompatible" && !outcomeReason.trim()) return;
+    recordOutcome(meetAndGreet.meetAndGreetId, outcome, outcomeReason, staffNotes, email, displayName);
+    setShowOutcomeForm(false);
+    refresh();
+  };
+
+  if (!meetAndGreet) {
+    if (!canAct) {
+      return (
+        <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+          <h2 className="text-lg font-bold text-text">Meet and Greet</h2>
+          <p className="mt-2 text-sm text-text-muted">Not yet scheduled.</p>
+        </section>
+      );
+    }
+    return (
+      <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+        <h2 className="text-lg font-bold text-text">Schedule Meet and Greet</h2>
+        <p className="mt-1 text-sm text-text-muted">
+          Propose one or more time slot options - the Adopter will pick one.
+        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          {slots.map((slot, index) => (
+            <div key={index} className="flex flex-wrap items-end gap-2">
+              <input
+                type="datetime-local"
+                value={slot.dateTime}
+                onChange={(e) =>
+                  setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, dateTime: e.target.value } : s)))
+                }
+                className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              />
+              <input
+                type="text"
+                placeholder="Location"
+                value={slot.location}
+                onChange={(e) =>
+                  setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, location: e.target.value } : s)))
+                }
+                className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setSlots((prev) => [...prev, { dateTime: "", location: "" }])}
+            className="h-8 w-fit rounded-[12px] border border-border bg-page px-3 text-xs font-semibold text-text hover:bg-surface-active"
+          >
+            Add Another Option
+          </button>
+          <input
+            type="text"
+            placeholder="Participants (e.g. Adopter, Staff name)"
+            value={participants}
+            onChange={(e) => setParticipants(e.target.value)}
+            className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          />
+          <button
+            type="button"
+            onClick={handleProposeSlots}
+            className="h-9 w-fit rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90"
+          >
+            Propose Slots
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="text-lg font-bold text-text">Meet and Greet</h2>
+        <StatusChip
+          label={meetAndGreet.status}
+          category={MEET_AND_GREET_STATUS_CATEGORY[meetAndGreet.status]}
+        />
+      </div>
+      {meetAndGreet.status === "Proposed" && (
+        <p className="mt-2 text-sm text-text-muted">Waiting for the Adopter to select a time.</p>
+      )}
+      {meetAndGreet.status !== "Proposed" && (
+        <>
+          <p className="mt-2 text-sm text-text">
+            {meetAndGreet.scheduledDate ? formatDateTime(meetAndGreet.scheduledDate) : ""} &middot;{" "}
+            {meetAndGreet.location}
+          </p>
+          <p className="text-sm text-text-muted">
+            Attendance: {meetAndGreet.attendanceConfirmed ? "Confirmed" : "Not yet confirmed"}
+          </p>
+        </>
+      )}
+      {meetAndGreet.status === "Scheduled" && canAct && (
+        <div className="mt-4">
+          {showOutcomeForm ? (
+            <div className="flex flex-col gap-2">
+              <select
+                value={outcome}
+                onChange={(e) => setOutcome(e.target.value as "Compatible" | "Incompatible")}
+                className="h-9 w-fit rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                <option value="Compatible">Compatible</option>
+                <option value="Incompatible">Incompatible</option>
+              </select>
+              <textarea
+                rows={2}
+                value={staffNotes}
+                onChange={(e) => setStaffNotes(e.target.value)}
+                placeholder="Staff notes"
+                className="rounded-[12px] border border-border bg-page px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              />
+              {outcome === "Incompatible" && (
+                <textarea
+                  rows={2}
+                  value={outcomeReason}
+                  onChange={(e) => setOutcomeReason(e.target.value)}
+                  placeholder="Reason (required, shown to the Adopter)"
+                  className="rounded-[12px] border border-border bg-page px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                />
+              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={outcome === "Incompatible" && !outcomeReason.trim()}
+                  onClick={handleRecordOutcome}
+                  className="h-9 w-fit rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Save Outcome
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowOutcomeForm(false)}
+                  className="h-9 w-fit rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowOutcomeForm(true)}
+              className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Record Outcome
+            </button>
+          )}
+        </div>
+      )}
+      {meetAndGreet.status === "Incompatible" && (
+        <p className="mt-2 text-sm text-danger">Reason: {meetAndGreet.outcomeReason}</p>
+      )}
+    </section>
+  );
+}
+
 function AdoptionApplicationDetailContent({
   applicationId,
   email,
@@ -195,6 +397,11 @@ function AdoptionApplicationDetailContent({
     rejectApplication(applicationId, rejectionReason, email, displayName);
     setShowRejectForm(false);
     refresh();
+  };
+
+  const handleResume = () => {
+    const result = resumeApplication(applicationId);
+    if (result.ok) refresh();
   };
 
   const checksComplete = allChecksComplete(applicationId);
@@ -366,12 +573,20 @@ function AdoptionApplicationDetailContent({
       )}
 
       {application.applicationStatus === "Approved" && (
-        <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
-          <p className="text-sm text-text">
-            Approved by {application.decisionByName} on{" "}
-            {application.decisionDate ? formatDateTime(application.decisionDate) : ""}.
-          </p>
-        </section>
+        <>
+          <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+            <p className="text-sm text-text">
+              Approved by {application.decisionByName} on{" "}
+              {application.decisionDate ? formatDateTime(application.decisionDate) : ""}.
+            </p>
+          </section>
+          <MeetAndGreetSection
+            applicationId={application.applicationId}
+            canAct={canAct}
+            email={email}
+            displayName={displayName}
+          />
+        </>
       )}
       {application.applicationStatus === "Rejected" && (
         <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
@@ -379,6 +594,24 @@ function AdoptionApplicationDetailContent({
             Rejected by {application.decisionByName} on{" "}
             {application.decisionDate ? formatDateTime(application.decisionDate) : ""}: {application.rejectionReason}
           </p>
+        </section>
+      )}
+      {application.applicationStatus === "On Hold" && (
+        <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+          <p className="text-sm text-text">
+            This application is on hold while another applicant&apos;s process for{" "}
+            {application.animalName} is decided.
+          </p>
+          {canAct && (
+            <button
+              type="button"
+              onClick={handleResume}
+              title="Only available once the Animal is Available For Adoption again"
+              className="mt-3 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Resume Processing
+            </button>
+          )}
         </section>
       )}
     </div>

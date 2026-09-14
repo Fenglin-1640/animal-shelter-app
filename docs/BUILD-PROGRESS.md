@@ -10,14 +10,14 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-15, after adding Submit Adoption Application (FR-APP-01) and Application Assessment (FR-CHK-01/02)._
+_Last updated: 2026-09-15, after adding Schedule and Conduct Meet and Greet (FR-MG-01)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 24 |
-| In Progress | 4 |
+| Done | 25 |
+| In Progress | 3 |
 | Not Started | 6 |
 | **Total** | **34** |
 
@@ -105,7 +105,7 @@ _Last updated: 2026-09-15, after adding Submit Adoption Application (FR-APP-01) 
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-MG-01 | Schedule and Conduct Meet and Greet | P0 | In Progress | `/my-meet-and-greets` shows the Adopter's own visits and compatibility outcome (mock data). Staff scheduling and the Adopter's attendance confirmation are disabled placeholders. Audited (step-5 data-source pass): references real seed animals (Charlie, Daisy) and the real demo Adopter/Staff accounts - unbuilt functionality, not a wiring bug. |
+| FR-MG-01 | Schedule and Conduct Meet and Greet | P0 | Done | Real store (`lib/meet-and-greets/`), replacing the prior mock data. Staff (Administrator/Shelter Staff Member only, on the Adoption Application detail screen once Approved) proposes one or more time-slot options; the Adopter picks one on `/my-meet-and-greets/[id]` and separately confirms attendance; Staff then records a Compatible or Incompatible outcome (reason required for Incompatible, shown to the Adopter). Judgment calls, disclosed here: (1) the PRD describes a two-phase flow (Staff proposes options, Adopter selects one) that a single "Scheduled" status can't represent, so `MeetAndGreetStatus` gained a `"Proposed"` value ahead of the PRD-named states. (2) Incompatible closes the Application by reusing the existing `"Rejected"` `ApplicationStatus` (no separate "Closed" status is seeded) via a new `closeApplicationIncompatible()`, which - unlike a plain Reject - also runs `changeAnimalStatus()` to return the Animal from `Application In Progress` back to `Available For Adoption` (a valid edge in `ALLOWED_STATUS_TRANSITIONS`), since Approve had already moved it there. (3) Compatible makes no Animal/Application status change of its own - the Adopter is pointed to My Agreements to continue. This also closes the `resumeApplication()` UI gap disclosed in FR-CHK-02's notes: an On-Hold application now shows a working "Resume Processing" button once its Animal is Available again. Verified end-to-end via Playwright: propose→select→confirm→Compatible path; propose→select→Incompatible path (Application closes Rejected with reason visible to the Adopter, Animal reverts to Available For Adoption and accepts new applications again); Veterinarian confirmed read-only (no Propose/Record Outcome/Resume controls, and denied direct URL access to `/my-meet-and-greets*`, which is Adopter-only per PRD 9); one Adopter denied access to another Adopter's `meetAndGreetId` via direct URL. `tsc`/`lint`/`build` all clean; zero console/page errors. |
 
 ## 6.13 Agreement、Payment 与 Finalisation
 
