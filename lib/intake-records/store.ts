@@ -1,5 +1,6 @@
 import { acceptTransfer, getTransfer } from "@/lib/council-transfers/store";
 import { addAnimal, generateShelterId } from "@/lib/animals/animal-store";
+import { createTasksForAnimal } from "@/lib/adoption-fitness/store";
 import type { Animal } from "@/lib/animals/types";
 import {
   getFinaliseBlockers,
@@ -103,9 +104,11 @@ export type FinaliseResult =
   | { ok: false; reason: "not_found" | "already_finalised" | "blocked"; blockers?: string[] };
 
 // FR-INT-03: Finalise Intake creates the Animal record (+ initial status
-// fields) from a completed Intake Record. A separate MedicalRecord is not
-// persisted here - nothing in this prototype reads/displays one yet, so an
-// empty shell object would have no observable effect.
+// fields) from a completed Intake Record, and (FR-INT-04) the 3 parallel
+// assessment tasks Review Adoption Fitness gates on. A separate
+// MedicalRecord is not persisted here - nothing in this prototype
+// reads/displays one yet, so an empty shell object would have no
+// observable effect.
 export function finaliseIntake(intakeId: string): FinaliseResult {
   const all = loadAll();
   const index = all.findIndex((r) => r.intakeId === intakeId);
@@ -144,6 +147,7 @@ export function finaliseIntake(intakeId: string): FinaliseResult {
     photos: record.photos,
   };
   addAnimal(animal);
+  createTasksForAnimal(animal.animalId);
 
   all[index] = { ...record, finalisedAt: now, updatedAt: now };
   saveAll(all);

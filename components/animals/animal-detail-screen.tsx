@@ -141,6 +141,16 @@ function AnimalDetailContent({ animal }: { animal: Animal }) {
         <InfoField label="Entered Shelter" value={formatDateTime(animal.enteredAt)} />
         <InfoField label="Last Modified" value={formatDateTime(animal.lastModifiedAt)} />
         <InfoField label="Intake Source" value={animal.intakeSource} />
+        {animal.currentStatus === "Under Assessment" && (
+          <div className="sm:col-span-2">
+            <Link
+              href={`/animals/${animal.animalId}/adoption-fitness`}
+              className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Review Adoption Fitness
+            </Link>
+          </div>
+        )}
       </InfoGroup>
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
