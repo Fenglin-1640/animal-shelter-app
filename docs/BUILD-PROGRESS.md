@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-14, after commit `f23a652` (Breed dropdown library + Animals species/breed filter facets)._
+_Last updated: 2026-09-14, after adding My Adopter Profile (FR-ADP-01)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 3 |
+| Done | 4 |
 | In Progress | 5 |
-| Not Started | 26 |
+| Not Started | 25 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -91,7 +91,7 @@ _Last updated: 2026-09-14, after commit `f23a652` (Breed dropdown library + Anim
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-ADP-01 | Adopter Profile | P0 | Not Started | "My Adopter Profile" (household, pets, referee, consent fields) is not built. (Note: the generic account page at `/profile` covers Person-level contact/password only, per SC-04, not this Adopter-specific extended profile.) |
+| FR-ADP-01 | Adopter Profile | P0 | Done | `/my-adopter-profile` (`components/adopter-profile`) is a fully functional, validated self-service form covering every listed field (household, ownership/landlord permission, pets, environment, hours alone, preferred species, referee + consent), persisted per-account in `localStorage`. Adopter-only, gated like the other My screens. Note: the snapshot-on-submit rule ("后续修改 Profile 不得改变已提交版本") can't be demonstrated yet since Submit Adoption Application (FR-APP-01) doesn't exist to take the snapshot. |
 | FR-APP-01 | Submit Adoption Application | P0 | In Progress | `/my-applications` shows the Adopter's own application records and status (mock data). Submitting a new application or editing a Draft is not implemented; "Apply Now" on Adoption Listings is a disabled placeholder. |
 
 ## 6.11 Application Assessment
