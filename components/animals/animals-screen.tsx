@@ -8,7 +8,7 @@ import { AnimalCard } from "@/components/animals/animal-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { MOCK_ANIMALS } from "@/lib/animals/mock-animals";
 import type { CurrentStatus, Species } from "@/lib/animals/types";
-import { BREED_SPECIES_LIST, getBreedsForSpecies } from "@/lib/options/breeds";
+import { getBreedSpeciesList, getBreedsForSpecies } from "@/lib/options/breeds";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -159,7 +159,7 @@ function FiltersBody({
     <FilterPanel activeChips={chips} onClearAll={onClearAll}>
       <FilterGroup heading="Species">
         <div className="flex flex-col gap-2">
-          {BREED_SPECIES_LIST.map((species) => (
+          {getBreedSpeciesList().map((species) => (
             <SpeciesBreedFilter
               key={species}
               species={species}

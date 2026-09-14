@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-14, after adding User Administration (FR-UA-01, FR-UA-02)._
+_Last updated: 2026-09-14, after adding System Administration (FR-SA-01)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 6 |
+| Done | 7 |
 | In Progress | 5 |
-| Not Started | 23 |
+| Not Started | 22 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -39,7 +39,7 @@ _Last updated: 2026-09-14, after adding User Administration (FR-UA-01, FR-UA-02)
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-SA-01 | 下拉选项维护 | P0 | Not Started | No System Administration CRUD screen. Only 2 of the 13 option categories exist as static prototype data (`lib/options/titles.ts`, `lib/options/breeds.ts`) with no admin-facing management UI. |
+| FR-SA-01 | 下拉选项维护 | P0 | Done | `/system-administration` (`components/system-administration`) is a full Read/Create/Update/Soft-Delete UI over all 13 PRD 6.3 categories (116 seeded options total: `lib/system-administration/seed-options.ts`), each with category/value/description/speciesId(Breed)/isRetired/createdAt/updatedAt (`lib/system-administration/store.ts`, localStorage). Retired options are excluded from new-record pickers but stay listed (with a Retired chip) so historical records keep their original value. `systemLocked` blocks retiring the Administrator role and every value the app's own TypeScript types already hardcode (Species, Sex, Application Status, Check Type/Outcome, Follow Up Type) — the Retire action is disabled with an explanatory tooltip. `lib/options/titles.ts` and `lib/options/breeds.ts` (previously static) now read from this store, so retiring a Title or Breed is reflected live in Sign Up, My Profile, User Administration's Add User form, and the Animals filter panel; retiring a non-Administrator role also removes it from Add User's role picker. |
 | FR-SA-02 | 规则配置 | P1 | Not Started | No configuration screen for holding period, reminder days, attachment rules, or agreement template version. |
 
 ## 6.4 Council Transfer 与正式入库

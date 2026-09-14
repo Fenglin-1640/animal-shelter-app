@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
-import { TITLE_OPTIONS } from "@/lib/options/titles";
+import { getActiveTitleOptions } from "@/lib/options/titles";
 
 const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/;
 
@@ -165,7 +165,7 @@ function ContactDetailsForm() {
               }`}
             >
               <option value="">Select</option>
-              {TITLE_OPTIONS.map((option) => (
+              {getActiveTitleOptions().map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>

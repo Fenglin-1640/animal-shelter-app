@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { SimpleHeader } from "@/components/layout/simple-header";
 import { useAuth } from "@/lib/auth/auth-context";
-import { TITLE_OPTIONS } from "@/lib/options/titles";
+import { getActiveTitleOptions, getInitialTitleOptions } from "@/lib/options/titles";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/;
@@ -70,6 +70,17 @@ export function SignUpScreen() {
   const consentRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
+  const [titleOptions, setTitleOptions] = useState<string[]>(getInitialTitleOptions);
+
+  useEffect(() => {
+    // Sign Up isn't gated behind an auth-loading state (unlike My Profile
+    // etc.), so it can be server-rendered with real content. Start from
+    // the deterministic seed list (matches server output) and correct to
+    // the live, possibly-retired-aware list once mounted client-side.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only correction to avoid an SSR/localStorage hydration mismatch.
+    setTitleOptions(getActiveTitleOptions());
+  }, []);
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -268,7 +279,7 @@ export function SignUpScreen() {
                     }`}
                   >
                     <option value="">Select</option>
-                    {TITLE_OPTIONS.map((option) => (
+                    {titleOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>

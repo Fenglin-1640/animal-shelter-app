@@ -1,13 +1,24 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { TITLE_OPTIONS } from "@/lib/options/titles";
+import { getActiveTitleOptions } from "@/lib/options/titles";
 import { ROLES, type Role } from "@/lib/roles/roles";
+import { getActiveValues } from "@/lib/system-administration/store";
 import { createDirectoryUser } from "@/lib/user-administration/directory-store";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/;
-const CREATABLE_ROLES = ROLES.filter((role): role is Exclude<Role, "Administrator"> => role !== "Administrator");
+
+// Administrator is never creatable here (PRD 4.1: only reachable via
+// transferring from an existing Active user); other roles are excluded
+// if retired in System Administration's "User Role" category.
+function getCreatableRoles(): Exclude<Role, "Administrator">[] {
+  const active = new Set(getActiveValues("User Role"));
+  return ROLES.filter(
+    (role): role is Exclude<Role, "Administrator"> =>
+      role !== "Administrator" && active.has(role),
+  );
+}
 
 interface FieldErrors {
   title?: string;
@@ -120,7 +131,7 @@ export function CreateUserDialog({
                 className={`h-10 rounded-[12px] border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${errors.title ? "border-danger" : "border-border"}`}
               >
                 <option value="">Select</option>
-                {TITLE_OPTIONS.map((option) => (
+                {getActiveTitleOptions().map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
@@ -194,7 +205,7 @@ export function CreateUserDialog({
                 onChange={(e) => setRole(e.target.value as Exclude<Role, "Administrator">)}
                 className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
-                {CREATABLE_ROLES.map((r) => (
+                {getCreatableRoles().map((r) => (
                   <option key={r} value={r}>{r}</option>
                 ))}
               </select>
