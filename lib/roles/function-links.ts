@@ -2,4 +2,5 @@
 // route, once that screen is built. Labels missing here stay inert.
 export const FUNCTION_HREFS: Partial<Record<string, string>> = {
   Animals: "/animals",
+  "Adoption Listings": "/adoption-listings",
 };

@@ -7,6 +7,7 @@ import { AccessDenied } from "@/components/access/access-denied";
 import { EmptySubscreen } from "@/components/animals/empty-subscreen";
 import { AppShell } from "@/components/layout/app-shell";
 import { AttributeChip } from "@/components/shared/attribute-chip";
+import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { Tabs } from "@/components/shared/tabs";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -74,16 +75,7 @@ function AnimalDetailContent({ animal }: { animal: Animal }) {
       </Link>
 
       <div className="flex flex-col gap-4 rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-        <div
-          className="flex aspect-[4/3] w-full shrink-0 items-center justify-center rounded-[12px] border border-border bg-page text-text-muted sm:w-48"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="9" cy="9" r="2" />
-            <path d="m21 15-5-5L5 21" />
-          </svg>
-        </div>
+        <PlaceholderThumbnail species={animal.species} className="sm:w-48" />
 
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-text">{animal.name}</h1>
