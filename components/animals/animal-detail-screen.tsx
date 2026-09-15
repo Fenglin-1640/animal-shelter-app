@@ -21,7 +21,9 @@ import { archiveUnsuitableAnimal, getActiveBehaviourProgram, listTemperamentAsse
 import { OUTCOME_CATEGORY, PROGRAM_STATUS_CATEGORY } from "@/lib/behaviour/status";
 import {
   getDesexingSchedule,
+  getLatestPreReleaseCheck,
   getMedicalClearance,
+  isFitForRelease,
   listHealthAssessments,
   listVaccinations,
 } from "@/lib/medical/store";
@@ -140,6 +142,8 @@ function AnimalDetailContent({
   const latestBehaviour = temperamentAssessments[0];
   const activeProgram = getActiveBehaviourProgram(animal.animalId);
   const photos = listPhotosForAnimal(animal.animalId);
+  const latestPreReleaseCheck = getLatestPreReleaseCheck(animal.animalId);
+  const fitForRelease = isFitForRelease(animal.animalId);
   const primaryPhoto = getPrimaryPhoto(animal.animalId);
   const publishBlockers = getPublishBlockers(animal.animalId);
 
@@ -501,6 +505,48 @@ function AnimalDetailContent({
                 </div>
               ),
             },
+            ...(animal.currentStatus === "Awaiting Release" ||
+            animal.currentStatus === "Under Treatment" ||
+            animal.currentStatus === "inFollowUpPeriod" ||
+            animal.currentStatus === "Rehomed" ||
+            latestPreReleaseCheck
+              ? [
+                  {
+                    id: "pre-release",
+                    label: "Pre-Release Check",
+                    content: (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          <StatusChip
+                            label={
+                              fitForRelease
+                                ? "Fit for Release"
+                                : latestPreReleaseCheck
+                                  ? latestPreReleaseCheck.fitnessResult
+                                  : "Not yet checked"
+                            }
+                            category={
+                              fitForRelease
+                                ? "success"
+                                : latestPreReleaseCheck?.fitnessResult === "Health Concern"
+                                  ? "attention"
+                                  : "neutral"
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Link
+                            href={`/animals/${animal.animalId}/pre-release-check`}
+                            className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                          >
+                            Open Pre-Release Check
+                          </Link>
+                        </div>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
             {
               id: "suitability",
               label: "Proposed Adopter Suitability",

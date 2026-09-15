@@ -85,3 +85,33 @@ export interface MedicalClearance {
   issuedByName: string;
   issuedAt: string;
 }
+
+// FR-REL-01 / PRD 8.3: Pre-Release Check is named as one of MedicalEvent's
+// "多次事件" (repeatable event) kinds alongside Health Assessment/Treatment/
+// Vaccination/Desexing, so it follows the same one-type-per-event-kind
+// pattern as the rest of this file rather than a separate module.
+//
+// PRD lists 3 possible "fitness result" outcomes in prose (Health
+// Concern / Treatment Completed / Fit for Release), but only 2 are ever
+// selectable here: "Treatment Completed" describes the effect of the
+// EXISTING FR-MED-02 Under Treatment loop resolving (addTreatmentEvent
+// with furtherTreatmentRequired=false already returns currentStatus to
+// Awaiting Release for the "pre-release" pathway) - PRD's "要求再次检查"
+// (a fresh check is required) is naturally satisfied because Fit for
+// Release must still be recorded here afterward before Staff can
+// release. Modelling it as a third, never-set enum value here would be
+// dead code.
+export type PreReleaseFitnessResult = "Health Concern" | "Fit for Release";
+
+export interface PreReleaseCheck {
+  id: string;
+  animalId: string;
+  checkDate: string;
+  fitnessResult: PreReleaseFitnessResult;
+  healthFindings: string;
+  medicationGuidance: string;
+  careInstructions: string;
+  veterinarianEmail: string;
+  veterinarianName: string;
+  createdAt: string;
+}

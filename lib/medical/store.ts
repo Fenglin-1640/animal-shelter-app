@@ -5,16 +5,19 @@ import type {
   DesexingSchedule,
   HealthAssessment,
   MedicalClearance,
+  PreReleaseCheck,
+  PreReleaseFitnessResult,
   TreatmentEvent,
   VaccinationRecord,
 } from "@/lib/medical/types";
 
-// FR-MED-01/02/03: persisted to localStorage since there is no backend.
+// FR-MED-01/02/03/FR-REL-01: persisted to localStorage since there is no backend.
 const HEALTH_KEY = "asams-health-assessments";
 const TREATMENT_KEY = "asams-treatment-events";
 const VACCINATION_KEY = "asams-vaccination-records";
 const DESEXING_KEY = "asams-desexing-schedules";
 const CLEARANCE_KEY = "asams-medical-clearances";
+const PRE_RELEASE_KEY = "asams-pre-release-checks";
 
 function loadList<T>(key: string): T[] {
   if (typeof window === "undefined") return [];
@@ -293,6 +296,96 @@ export function issueMedicalClearance(
     entityId: animalId,
     oldValue: "Not issued",
     newValue: `Issued by ${name}`,
+    result: "Success",
+  });
+
+  return { ok: true };
+}
+
+// --- Pre-Release Check (FR-REL-01) ---
+
+export function listPreReleaseChecks(animalId: string): PreReleaseCheck[] {
+  return loadList<PreReleaseCheck>(PRE_RELEASE_KEY)
+    .filter((c) => c.animalId === animalId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export function getLatestPreReleaseCheck(animalId: string): PreReleaseCheck | undefined {
+  return listPreReleaseChecks(animalId)[0];
+}
+
+// "Fit for Release 允许 Staff Release Animal to Adopter" - the most recent
+// check on file must be the Fit for Release outcome. If a later Health
+// Concern sent the Animal back into the Under Treatment loop, the most
+// recent check stays "Health Concern" until a fresh one is recorded once
+// the Animal is Awaiting Release again, correctly blocking release in
+// the meantime ("要求再次检查").
+export function isFitForRelease(animalId: string): boolean {
+  const animal = getAnimalById(animalId);
+  if (!animal || animal.currentStatus !== "Awaiting Release") return false;
+  return getLatestPreReleaseCheck(animalId)?.fitnessResult === "Fit for Release";
+}
+
+export interface PreReleaseCheckInput {
+  checkDate: string;
+  fitnessResult: PreReleaseFitnessResult;
+  healthFindings: string;
+  medicationGuidance: string;
+  careInstructions: string;
+}
+
+// PRD 6.14: "只有 Veterinarian 可完成放行前检查... Health Concern 将 currentStatus
+// 更新为 Under Treatment，并进入治疗循环." Reuses recordHealthAssessment()
+// directly rather than duplicating the Under Treatment loop: the Animal
+// is already Awaiting Release at this point, so that function's existing
+// pathway classification resolves this to "pre-release" automatically,
+// giving Fit-for-Release-blocking-until-recheck for free.
+export function recordPreReleaseCheck(
+  animalId: string,
+  input: PreReleaseCheckInput,
+  email: string,
+  name: string,
+): MutationResult {
+  const animal = getAnimalById(animalId);
+  if (!animal) return { ok: false, reason: "not_found" };
+  if (animal.currentStatus !== "Awaiting Release") return { ok: false, reason: "not_awaiting_release" };
+
+  const now = new Date().toISOString();
+  const check: PreReleaseCheck = {
+    id: generateId("PRC"),
+    animalId,
+    ...input,
+    veterinarianEmail: email,
+    veterinarianName: name,
+    createdAt: now,
+  };
+  saveList(PRE_RELEASE_KEY, [...loadList<PreReleaseCheck>(PRE_RELEASE_KEY), check]);
+
+  if (input.fitnessResult === "Health Concern") {
+    recordHealthAssessment(
+      animalId,
+      {
+        examinationObservations: input.healthFindings,
+        sampleTestResults: "",
+        diagnosedConditions: "",
+        bodyCondition: "",
+        urgentTreatmentRequired: true,
+        urgentTreatmentNotes: input.medicationGuidance,
+        assessmentDate: input.checkDate,
+      },
+      email,
+      name,
+    );
+  }
+
+  writeAuditLog({
+    userId: email,
+    userName: name,
+    action: "Conduct Pre-Release Check",
+    entityType: "MedicalRecord",
+    entityId: animalId,
+    oldValue: "",
+    newValue: `fitnessResult=${input.fitnessResult}`,
     result: "Success",
   });
 

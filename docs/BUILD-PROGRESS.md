@@ -10,15 +10,15 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 **How to keep this current**: after finishing a module, update its row's Status and Notes here, and include this file's diff in that module's commit.
 
-_Last updated: 2026-09-15, after adding Finalise Adoption Record (FR-FIN-01)._
+_Last updated: 2026-09-15, after adding Conduct Pre-Release Check (FR-REL-01)._
 
 ## Summary
 
 | Status | Count |
 |---|---|
-| Done | 28 |
+| Done | 29 |
 | In Progress | 2 |
-| Not Started | 4 |
+| Not Started | 3 |
 | **Total** | **34** |
 
 ## 6.1 Authentication and Landing Screen
@@ -119,7 +119,7 @@ _Last updated: 2026-09-15, after adding Finalise Adoption Record (FR-FIN-01)._
 
 | FR | Requirement | Priority | Status | Notes |
 |---|---|---|---|---|
-| FR-REL-01 | Conduct Pre-Release Check | P0 | Not Started | No Pre-Release Check screen (Veterinarian's "Pre-Release Checks" nav entry is still inert). |
+| FR-REL-01 | Conduct Pre-Release Check | P0 | Done | New `PreReleaseCheck` type/store (`lib/medical/types.ts`, `lib/medical/store.ts`), extending the existing Medical module rather than a separate one, since PRD 8.3 names Pre-Release Check as another `MedicalEvent` kind alongside Health Assessment/Treatment/Vaccination/Desexing. `/pre-release-checks` (`components/medical/pre-release-checks-queue-screen.tsx`, reached via the previously-inert "Pre-Release Checks" nav entry, now live for Administrator/Shelter Staff Member/Veterinarian) lists every Awaiting-Release or Under-Treatment-from-this-screen animal; `/animals/[animalId]/pre-release-check` (`components/medical/pre-release-check-screen.tsx`, also linked from a new Pre-Release Check tab on the Animal Profile once reachable) lets Veterinarian record a check (Fit for Release or Health Concern, with health findings/medication guidance/care instructions). A Health Concern outcome reuses `recordHealthAssessment()` directly (urgent, pre-release pathway) rather than duplicating the FR-MED-02 Under Treatment loop, so it sets `currentStatus = Under Treatment` and the existing recovery flow returns the animal to Awaiting Release for a required fresh check - `isFitForRelease()` only reads true off the *latest* check, so a stale Fit-for-Release from before a relapse correctly stops counting. Every check writes an AuditLog entry. Scope boundary (disclosed in the UI): the actual Release action (setting `currentStatus` on to the next PRD 7.1 state and creating the FollowUpVisit) is FR-REL-02, not built yet - Shelter Staff Member's role here is explicitly read-only-plus-future-Release, only Veterinarian can create/finalise a check, matching PRD 9. Verified end-to-end in the running app (not just Playwright) as Veterinarian against the PRD 12.1 seed animal Daisy (`A-0008`, seeded `Awaiting Release`): recorded a Health Concern check -> `currentStatus` flipped to Under Treatment and the urgent Health Assessment appeared on the Medical Record; completed the treatment event with `furtherTreatmentRequired` unchecked -> returned to Awaiting Release; recorded a follow-up Fit for Release check -> "Fit for Release" banner appeared and Check History correctly showed both entries newest-first. Also verified role gating live: Shelter Staff Member sees the same screen read-only with no create form; Adopter gets Access Denied on both `/pre-release-checks` and the per-animal screen. `tsc` and `eslint` both clean; zero console/page errors observed. |
 | FR-REL-02 | Release and Follow Up | P0 | Not Started | No Release action or FollowUpVisit creation/completion flow. |
 
 ## 6.15 Notifications、Audit 与 Records
