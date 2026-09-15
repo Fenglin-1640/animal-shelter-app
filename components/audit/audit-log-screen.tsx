@@ -15,6 +15,7 @@ const ENTITY_TYPES: AuditEntityType[] = [
   "StatutoryHold",
   "IntakeRecord",
   "UserAccount",
+  "FollowUpVisit",
 ];
 
 function formatDateTime(iso: string): string {

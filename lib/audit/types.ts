@@ -6,7 +6,8 @@ export type AuditEntityType =
   | "MedicalRecord"
   | "StatutoryHold"
   | "IntakeRecord"
-  | "UserAccount";
+  | "UserAccount"
+  | "FollowUpVisit";
 
 export interface AuditLogEntry {
   auditId: string;

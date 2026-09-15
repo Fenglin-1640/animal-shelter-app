@@ -19,6 +19,8 @@ import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 import { archiveUnsuitableAnimal, getActiveBehaviourProgram, listTemperamentAssessments } from "@/lib/behaviour/store";
 import { OUTCOME_CATEGORY, PROGRAM_STATUS_CATEGORY } from "@/lib/behaviour/status";
+import { getLatestFollowUpVisitForAnimal } from "@/lib/follow-up-visits/store";
+import { FOLLOW_UP_VISIT_STATUS_CATEGORY } from "@/lib/follow-up-visits/status";
 import {
   getDesexingSchedule,
   getLatestPreReleaseCheck,
@@ -144,6 +146,7 @@ function AnimalDetailContent({
   const photos = listPhotosForAnimal(animal.animalId);
   const latestPreReleaseCheck = getLatestPreReleaseCheck(animal.animalId);
   const fitForRelease = isFitForRelease(animal.animalId);
+  const followUpVisit = getLatestFollowUpVisitForAnimal(animal.animalId);
   const primaryPhoto = getPrimaryPhoto(animal.animalId);
   const publishBlockers = getPublishBlockers(animal.animalId);
 
@@ -540,6 +543,32 @@ function AnimalDetailContent({
                             className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
                           >
                             Open Pre-Release Check
+                          </Link>
+                        </div>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
+            ...(followUpVisit
+              ? [
+                  {
+                    id: "follow-up-visit",
+                    label: "Follow-Up Visit",
+                    content: (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          <StatusChip
+                            label={followUpVisit.status}
+                            category={FOLLOW_UP_VISIT_STATUS_CATEGORY[followUpVisit.status]}
+                          />
+                        </div>
+                        <div>
+                          <Link
+                            href={`/animals/${animal.animalId}/follow-up-visit`}
+                            className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                          >
+                            Open Follow-Up Visit
                           </Link>
                         </div>
                       </div>

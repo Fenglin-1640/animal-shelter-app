@@ -125,6 +125,10 @@ export const ROLE_FUNCTIONS: Record<Role, RoleFunctions> = {
         label: "My Agreements",
         description: "Review and sign adoption agreements.",
       },
+      {
+        label: "My Follow Up Visits",
+        description: "View welfare check-ins scheduled after your animal is released.",
+      },
     ],
   },
 };
