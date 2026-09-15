@@ -263,6 +263,11 @@ export function getMedicalClearance(animalId: string): MedicalClearance | undefi
   return loadList<MedicalClearance>(CLEARANCE_KEY).find((c) => c.animalId === animalId);
 }
 
+// FR-REC-01 "导出...medical clearance": every issued clearance across all animals.
+export function listAllMedicalClearances(): MedicalClearance[] {
+  return loadList<MedicalClearance>(CLEARANCE_KEY);
+}
+
 // PRD: "系统只有在必需疫苗完成且绝育已经完成或排期后，才允许 issueMedicalClearance()". There
 // is no System Administration category defining "required" vaccine
 // types (only 13 categories exist and none is vaccine-specific), so

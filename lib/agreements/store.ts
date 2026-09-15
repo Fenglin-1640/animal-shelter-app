@@ -55,6 +55,11 @@ export function getAgreement(agreementId: string): AdoptionAgreement | undefined
   return loadAll().find((a) => a.agreementId === agreementId);
 }
 
+// FR-REC-01 "导出...adoption agreement": every version of every agreement.
+export function listAllAgreements(): AdoptionAgreement[] {
+  return loadAll();
+}
+
 export function listMyAgreements(email: string): AdoptionAgreement[] {
   const normalized = email.trim().toLowerCase();
   const versions = loadAll().filter((a) => a.adopterEmail.toLowerCase() === normalized);

@@ -18,4 +18,6 @@ export const FUNCTION_HREFS: Partial<Record<string, string>> = {
   "Pre-Release Checks": "/pre-release-checks",
   "Follow Up Visits": "/follow-up-visits",
   "My Follow Up Visits": "/my-follow-up-visits",
+  "Archive Search": "/archive",
+  "Retention and Backup Status": "/retention-and-backup-status",
 };

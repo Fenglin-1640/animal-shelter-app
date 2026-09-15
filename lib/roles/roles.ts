@@ -44,6 +44,10 @@ const staffUserFunctions: FunctionEntry[] = [
     label: "Follow Up Visits",
     description: "Track post-release welfare checks.",
   },
+  {
+    label: "Archive Search",
+    description: "Search Archived animal records (read-only).",
+  },
 ];
 
 export const ROLE_FUNCTIONS: Record<Role, RoleFunctions> = {
