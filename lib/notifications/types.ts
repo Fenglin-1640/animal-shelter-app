@@ -32,5 +32,10 @@ export interface NotificationItem {
   createdAt: string;
   dueDate?: string;
   roles: Role[];
+  // When set, this notification is personal to one account (e.g. an
+  // Adopter's own application decision) rather than visible to every
+  // signed-in user whose role matches `roles` - the Notifications screen
+  // additionally filters on this against the signed-in user's email.
+  recipientEmail?: string;
   defaultRead: boolean;
 }

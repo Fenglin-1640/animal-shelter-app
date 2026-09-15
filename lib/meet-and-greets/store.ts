@@ -41,6 +41,12 @@ export function getMeetAndGreet(meetAndGreetId: string): MeetAndGreet | undefine
   return loadAll().find((m) => m.meetAndGreetId === meetAndGreetId);
 }
 
+// FR-NOT-01 "Meet and Greet scheduled": every Meet and Greet with a
+// confirmed date (Adopter has picked a slot), across all applicants.
+export function listScheduledMeetAndGreets(): MeetAndGreet[] {
+  return loadAll().filter((m) => m.status === "Scheduled");
+}
+
 export type MutationResult = { ok: true } | { ok: false; reason: string };
 
 // PRD: "只有 Approved Application 可安排 Meet and Greet。Staff 创建可选时段".

@@ -177,6 +177,13 @@ export function listVaccinations(animalId: string): VaccinationRecord[] {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
+// FR-NOT-01 "Vaccine booster due": every recorded vaccination across all
+// animals, so notifications can find the ones whose nextBoosterDueDate
+// is approaching.
+export function listAllVaccinations(): VaccinationRecord[] {
+  return loadList<VaccinationRecord>(VACCINATION_KEY);
+}
+
 export interface VaccinationInput {
   vaccineType: string;
   administrationDate: string;
@@ -205,6 +212,12 @@ export function recordVaccination(
 
 export function getDesexingSchedule(animalId: string): DesexingSchedule | undefined {
   return loadList<DesexingSchedule>(DESEXING_KEY).find((d) => d.animalId === animalId);
+}
+
+// FR-NOT-01 "Desexing appointment due": every Scheduled (not yet
+// Completed) desexing appointment across all animals.
+export function listScheduledDesexing(): DesexingSchedule[] {
+  return loadList<DesexingSchedule>(DESEXING_KEY).filter((d) => d.status === "Scheduled");
 }
 
 export function scheduleDesexing(

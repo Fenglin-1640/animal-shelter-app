@@ -1,4 +1,4 @@
-import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
+import { changeAnimalStatus, getAllAnimals, getAnimalById } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import type {
   BehaviourProgram,
@@ -48,6 +48,16 @@ export function listBehaviourPrograms(animalId: string): BehaviourProgram[] {
 
 export function getActiveBehaviourProgram(animalId: string): BehaviourProgram | undefined {
   return listBehaviourPrograms(animalId).find((p) => p.status === "Active");
+}
+
+// FR-NOT-01 "Behaviour reassessment due": the latest assessment per
+// animal, wherever it called for a follow-up reassessment (set on the
+// form whenever a Behaviour Program continues - see
+// recordTemperamentAssessment below).
+export function listAssessmentsNeedingReassessment(): TemperamentAssessment[] {
+  return getAllAnimals()
+    .map((animal) => getLatestTemperamentAssessment(animal.animalId))
+    .filter((a): a is TemperamentAssessment => !!a?.followUpRequired && !!a.reassessmentDate);
 }
 
 export interface TemperamentAssessmentInput {

@@ -125,8 +125,14 @@ export function NotificationsScreen() {
   }, [email]);
 
   const allItems = useMemo(
-    () => getAllNotifications().filter((item) => role && item.roles.includes(role)),
-    [role],
+    () =>
+      getAllNotifications().filter(
+        (item) =>
+          role &&
+          item.roles.includes(role) &&
+          (!item.recipientEmail || item.recipientEmail.toLowerCase() === email),
+      ),
+    [role, email],
   );
 
   const availableTypes = useMemo(
@@ -235,9 +241,9 @@ export function NotificationsScreen() {
         <div>
           <h1 className="text-2xl font-bold text-text">Notifications</h1>
           <p className="mt-1 text-sm text-text-muted">
-            Showing sample notifications for the {user.role} role. Real
-            notifications will appear here once intake, medical, behaviour
-            and adoption features are built.
+            Live notifications computed from real records for your role.
+            Only Backup Job failures remain simulated, since this
+            prototype has no real backup subsystem to fail.
           </p>
         </div>
 
