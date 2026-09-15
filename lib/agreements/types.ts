@@ -14,6 +14,11 @@ export interface AdoptionAgreement {
   adopterEmail: string;
   adopterName: string;
   agreementVersion: string;
+  // FR-SA-02's Administrator-configured "默认 Adoption Agreement 条款版本" at
+  // the moment this agreement was generated - distinct from
+  // agreementVersion above, which counts THIS application's own
+  // regenerations (v1.0, v2.0...), not the shelter-wide terms template.
+  templateVersion: string;
   adoptionConditions: string;
   returnPolicyPeriod: string;
   generatedAt: string;

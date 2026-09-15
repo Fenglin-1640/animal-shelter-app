@@ -1,6 +1,7 @@
 import { writeAuditLog } from "@/lib/audit/store";
 import { getApplication } from "@/lib/applications/store";
 import { getMeetAndGreetForApplication } from "@/lib/meet-and-greets/store";
+import { getSystemSettings } from "@/lib/system-administration/settings-store";
 import type { AdoptionAgreement } from "@/lib/agreements/types";
 
 // FR-AGR-01: AdoptionAgreement records, persisted to localStorage since
@@ -105,6 +106,7 @@ export function generateAgreement(applicationId: string, email: string, name: st
     adopterEmail: application.adopterEmail,
     adopterName: application.adopterName,
     agreementVersion: nextVersionLabel(existing),
+    templateVersion: getSystemSettings().agreementTemplateVersion,
     adoptionConditions: STANDARD_CONDITIONS,
     returnPolicyPeriod: STANDARD_RETURN_POLICY,
     generatedAt: now,

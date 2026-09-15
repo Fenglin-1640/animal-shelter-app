@@ -2,11 +2,8 @@ import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { SYSTEM_ACTOR } from "@/lib/audit/types";
 import { linkRegisteredOwnerContact } from "@/lib/intake-records/store";
 import type { RegisteredOwnerContact } from "@/lib/microchip/types";
-import {
-  DEFAULT_HOLDING_PERIOD_DAYS,
-  DEFAULT_REMINDER_LEAD_DAYS,
-  type StatutoryHold,
-} from "@/lib/statutory-hold/types";
+import { getSystemSettings } from "@/lib/system-administration/settings-store";
+import type { StatutoryHold } from "@/lib/statutory-hold/types";
 
 // FR-MC-02: StatutoryHold records, persisted to localStorage since there
 // is no backend. One hold per animal in this prototype (Owner Match is
@@ -100,9 +97,10 @@ export function createHoldForOwnerMatch(
   const existing = loadAll().find((h) => h.animalId === animalId);
   if (existing) return { ok: true, hold: existing };
 
+  const holdingPeriodDays = getSystemSettings().holdingPeriodDays;
   const holdStart = new Date(animal.enteredAt);
   const holdEnd = new Date(holdStart);
-  holdEnd.setDate(holdEnd.getDate() + DEFAULT_HOLDING_PERIOD_DAYS);
+  holdEnd.setDate(holdEnd.getDate() + holdingPeriodDays);
   const now = new Date().toISOString();
 
   const hold: StatutoryHold = {
@@ -111,7 +109,7 @@ export function createHoldForOwnerMatch(
     ownerContact,
     holdStartAt: holdStart.toISOString(),
     holdEndAt: holdEnd.toISOString(),
-    holdingPeriodDays: DEFAULT_HOLDING_PERIOD_DAYS,
+    holdingPeriodDays,
     status: "Active",
     createdAt: now,
   };
@@ -204,10 +202,11 @@ export function confirmCustodyTransfer(
 export function listHoldsNeedingReminder(): StatutoryHold[] {
   resolveExpiredHolds();
   const now = new Date();
+  const reminderLeadDays = getSystemSettings().reminderLeadDays;
   return loadAll().filter((h) => {
     if (h.status !== "Active") return false;
     const reminderFrom = new Date(h.holdEndAt);
-    reminderFrom.setDate(reminderFrom.getDate() - DEFAULT_REMINDER_LEAD_DAYS);
+    reminderFrom.setDate(reminderFrom.getDate() - reminderLeadDays);
     return now >= reminderFrom && now < new Date(h.holdEndAt);
   });
 }

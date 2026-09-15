@@ -1,11 +1,8 @@
 import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 
 // FR-MC-02: Statutory Holding Period days and reminder lead days are
-// meant to be Administrator-configurable (FR-SA-02 - System
-// Administration rule configuration - not built yet). Hardcoded here as
-// a placeholder default, disclosed in the UI wherever a hold is shown.
-export const DEFAULT_HOLDING_PERIOD_DAYS = 7;
-export const DEFAULT_REMINDER_LEAD_DAYS = 2;
+// Administrator-configurable via FR-SA-02 (lib/system-administration/
+// settings-store.ts's getSystemSettings()) - see lib/statutory-hold/store.ts.
 
 export type StatutoryHoldStatus = "Active" | "Reclaimed By Owner" | "Expired";
 

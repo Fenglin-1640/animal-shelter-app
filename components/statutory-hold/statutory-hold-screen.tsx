@@ -15,7 +15,8 @@ import {
   recordOwnerReclamation,
 } from "@/lib/statutory-hold/store";
 import { HOLD_STATUS_CATEGORY } from "@/lib/statutory-hold/status";
-import { DEFAULT_REMINDER_LEAD_DAYS, type StatutoryHold } from "@/lib/statutory-hold/types";
+import type { StatutoryHold } from "@/lib/statutory-hold/types";
+import { getSystemSettings } from "@/lib/system-administration/settings-store";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
@@ -141,8 +142,8 @@ function StatutoryHoldContent({
                 Holding Period
               </dt>
               <dd className="text-sm text-text">
-                {hold.holdingPeriodDays} days (default - not yet configurable; System
-                Administration rule configuration is FR-SA-02, not built)
+                {hold.holdingPeriodDays} days (Administrator-configurable in System
+                Administration)
               </dd>
             </div>
             {hold.status === "Active" && (
@@ -168,7 +169,7 @@ function StatutoryHoldContent({
 
           {hold.status === "Active" && (
             <>
-              {daysUntil(hold.holdEndAt) <= DEFAULT_REMINDER_LEAD_DAYS && (
+              {daysUntil(hold.holdEndAt) <= getSystemSettings().reminderLeadDays && (
                 <p className="rounded-[12px] border border-gold bg-gold/10 px-3 py-2 text-sm text-text">
                   This hold is within the reminder window - it also appears on Notifications for
                   Shelter Staff Member and Administrator.

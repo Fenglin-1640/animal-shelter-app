@@ -7,7 +7,8 @@ export type AuditEntityType =
   | "StatutoryHold"
   | "IntakeRecord"
   | "UserAccount"
-  | "FollowUpVisit";
+  | "FollowUpVisit"
+  | "SystemSetting";
 
 export interface AuditLogEntry {
   auditId: string;

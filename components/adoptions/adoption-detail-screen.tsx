@@ -94,6 +94,7 @@ function AgreementSection({
           </div>
           <p className="mt-2 text-sm text-text">{agreement.adoptionConditions}</p>
           <p className="mt-1 text-sm text-text-muted">Return policy: {agreement.returnPolicyPeriod}</p>
+          <p className="mt-1 text-xs text-text-muted">Terms template {agreement.templateVersion}</p>
           <p className="mt-1 text-xs text-text-muted">
             Generated {formatDateTime(agreement.generatedAt)}
             {agreement.signedDate ? ` · Signed ${formatDateTime(agreement.signedDate)}` : " · Awaiting Adopter signature"}

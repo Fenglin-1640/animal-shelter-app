@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { CreateOptionDialog } from "@/components/system-administration/create-option-dialog";
 import { OptionDetailDrawer } from "@/components/system-administration/option-detail-drawer";
+import { RuleConfigurationPanel } from "@/components/system-administration/rule-configuration-panel";
 import { useAuth } from "@/lib/auth/auth-context";
 import type { Role } from "@/lib/roles/roles";
 import { listOptions } from "@/lib/system-administration/store";
@@ -74,6 +75,12 @@ function SystemAdministrationContent() {
           >
             Add Option
           </button>
+        </div>
+
+        <RuleConfigurationPanel />
+
+        <div>
+          <h2 className="text-lg font-bold text-text">Dropdown Options</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
