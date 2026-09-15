@@ -17,8 +17,12 @@ import { CURRENT_STATUS_CATEGORY, LISTING_STATUS_CATEGORY } from "@/lib/animals/
 import { getActiveValues } from "@/lib/system-administration/store";
 import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
+import { listApplicationsForAnimal } from "@/lib/applications/store";
+import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import { archiveUnsuitableAnimal, getActiveBehaviourProgram, listTemperamentAssessments } from "@/lib/behaviour/store";
 import { OUTCOME_CATEGORY, PROGRAM_STATUS_CATEGORY } from "@/lib/behaviour/status";
+import { listChecksForApplication } from "@/lib/checks/store";
+import type { CheckOutcome } from "@/lib/checks/types";
 import { getLatestFollowUpVisitForAnimal } from "@/lib/follow-up-visits/store";
 import { FOLLOW_UP_VISIT_STATUS_CATEGORY } from "@/lib/follow-up-visits/status";
 import {
@@ -42,6 +46,12 @@ function formatDate(iso: string): string {
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function checkOutcomeCategory(outcome: CheckOutcome) {
+  if (outcome === "Pass") return "success" as const;
+  if (outcome === "Pending") return "neutral" as const;
+  return "attention" as const;
 }
 
 function InfoField({ label, value }: { label: string; value: string }) {
@@ -147,6 +157,9 @@ function AnimalDetailContent({
   const latestPreReleaseCheck = getLatestPreReleaseCheck(animal.animalId);
   const fitForRelease = isFitForRelease(animal.animalId);
   const followUpVisit = getLatestFollowUpVisitForAnimal(animal.animalId);
+  const proposedApplications = listApplicationsForAnimal(animal.animalId).filter(
+    (a) => a.applicationStatus !== "Draft",
+  );
   const primaryPhoto = getPrimaryPhoto(animal.animalId);
   const publishBlockers = getPublishBlockers(animal.animalId);
 
@@ -579,9 +592,52 @@ function AnimalDetailContent({
             {
               id: "suitability",
               label: "Proposed Adopter Suitability",
-              content: (
-                <EmptySubscreen description="No adoption applications have been submitted for this animal yet. Suitability check summaries will appear here once Adoption Applications are built." />
-              ),
+              content:
+                proposedApplications.length === 0 ? (
+                  <EmptySubscreen description="No adoption applications have been submitted for this animal yet." />
+                ) : (
+                  <ul className="flex flex-col gap-3">
+                    {proposedApplications.map((application) => {
+                      const checks = listChecksForApplication(application.applicationId);
+                      return (
+                        <li
+                          key={application.applicationId}
+                          className="rounded-[12px] border border-border bg-page p-3 text-sm"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-semibold text-text">{application.adopterName}</span>
+                            <StatusChip
+                              label={application.applicationStatus}
+                              category={APPLICATION_STATUS_CATEGORY[application.applicationStatus]}
+                            />
+                          </div>
+                          {application.submissionDate && (
+                            <p className="mt-1 text-xs text-text-muted">
+                              Submitted {formatDate(application.submissionDate)}
+                            </p>
+                          )}
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {checks.map((check) => (
+                              <StatusChip
+                                key={check.checkId}
+                                label={`${check.checkType}: ${check.outcome}`}
+                                category={checkOutcomeCategory(check.outcome)}
+                              />
+                            ))}
+                          </div>
+                          <div className="mt-2">
+                            <Link
+                              href={`/adoption-applications/${application.applicationId}`}
+                              className="text-xs font-semibold text-secondary underline underline-offset-2 hover:no-underline"
+                            >
+                              Open Application
+                            </Link>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ),
             },
           ]}
         />
