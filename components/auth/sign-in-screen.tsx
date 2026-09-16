@@ -85,10 +85,7 @@ export function SignInScreen({
     setIsSubmitting(true);
     setErrors({});
 
-    // Brief delay so the loading state is visible, matching PRD 5.8.4 async feedback.
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const result = signIn(trimmedEmail, trimmedPassword);
+    const result = await signIn(trimmedEmail, trimmedPassword);
     setIsSubmitting(false);
 
     if (result.ok) {

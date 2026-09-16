@@ -1,0 +1,28 @@
+// Prisma 8 "contract" (this toolchain's replacement for the classic
+// schema.prisma + PrismaClient generator - see prisma/README.md).
+//
+// Mirrors the User shape already used across lib/auth/ and
+// lib/user-administration/ (RegisteredAccount + DemoAccount + the
+// ProfileOverride/DirectoryOverride/LockoutState overlays they were
+// layered on top of), consolidated into one real table now that there is
+// a database to hold it in.
+
+model User {
+  id                  String    @id
+  email               String    @unique
+  password            String
+  role                String
+  status              String
+  title               String
+  firstName           String
+  lastName            String
+  phone               String
+  signUpAt            DateTime
+  lastLoginAt         DateTime?
+  roleUpdatedBy       String?
+  roleUpdatedAt       DateTime?
+  statusUpdatedBy     String?
+  statusUpdatedAt     DateTime?
+  failedLoginAttempts Int       @default(0)
+  lockedAt            DateTime?
+}

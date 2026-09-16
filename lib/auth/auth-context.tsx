@@ -8,30 +8,18 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
-import {
-  generateAccountId,
-  loadRegisteredAccounts,
-  saveRegisteredAccounts,
-  type RegisteredAccount,
-} from "@/lib/auth/accounts-store";
 import { formatDisplayName } from "@/lib/auth/format-name";
-import { getProfileOverride, mergeProfileOverride } from "@/lib/auth/profile-store";
-import {
-  getLockoutState,
-  recordFailedAttempt,
-  resetLockout,
-  LOCKOUT_THRESHOLD,
-} from "@/lib/auth/lockout-store";
-import { getDirectoryOverride } from "@/lib/user-administration/directory-store";
 import type { Role } from "@/lib/roles/roles";
 
-// Prototype auth per PRD FR-AUTH-01 / section 4.1: lock after 6 failed
-// attempts (tracked globally in lib/auth/lockout-store.ts, not per
-// session, so an Administrator can see and unlock it from any session).
+// Prototype auth per PRD FR-AUTH-01 / section 4.1: 6 failed attempts locks
+// an account. Users (including credentials, role, status and lockout
+// state) now live in the database behind /api/auth and /api/users - see
+// prisma/contract.prisma - instead of the localStorage overlays this
+// module used to read/write directly.
 const STORAGE_KEY = "asams-session";
 
 export interface SessionUser {
+  id: string;
   email: string;
   role: Role;
   status: "Active" | "Inactive";
@@ -87,22 +75,22 @@ interface SessionState extends StoredSession {
 interface AuthContextValue {
   status: AuthStatus;
   user: SessionUser | null;
-  signIn: (email: string, password: string) => SignInResult;
+  signIn: (email: string, password: string) => Promise<SignInResult>;
   signOut: () => void;
-  signUp: (input: SignUpInput) => SignUpResult;
-  updateProfile: (input: UpdateProfileInput) => void;
+  signUp: (input: SignUpInput) => Promise<SignUpResult>;
+  updateProfile: (input: UpdateProfileInput) => Promise<void>;
   changePassword: (
     currentPassword: string,
     newPassword: string,
-  ) => ChangePasswordResult;
-  refreshCurrentUser: () => void;
+  ) => Promise<ChangePasswordResult>;
+  refreshCurrentUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-interface LookupAccount {
+interface RawSessionUser {
+  id: string;
   email: string;
-  password: string;
   role: Role;
   status: "Active" | "Inactive";
   title: string;
@@ -110,64 +98,13 @@ interface LookupAccount {
   lastName: string;
   phone: string;
   signUpAt: string;
+  lastLoginAt: string;
 }
 
-function applyOverride(
-  account: LookupAccount,
-  normalizedEmail: string,
-): LookupAccount {
-  const profileOverride = getProfileOverride(normalizedEmail);
-  const directoryOverride = getDirectoryOverride(normalizedEmail);
+function toSessionUser(raw: RawSessionUser): SessionUser {
   return {
-    ...account,
-    title: profileOverride?.title ?? account.title,
-    firstName: profileOverride?.firstName ?? account.firstName,
-    lastName: profileOverride?.lastName ?? account.lastName,
-    phone: profileOverride?.phone ?? account.phone,
-    password: profileOverride?.password ?? account.password,
-    role: directoryOverride?.role ?? account.role,
-    status: directoryOverride?.status ?? account.status,
-  };
-}
-
-function findAccount(normalizedEmail: string): LookupAccount | undefined {
-  const demo = DEMO_ACCOUNTS.find(
-    (a) => a.email.toLowerCase() === normalizedEmail,
-  );
-  if (demo) return applyOverride(demo, normalizedEmail);
-
-  const registered = loadRegisteredAccounts().find(
-    (a) => a.email.toLowerCase() === normalizedEmail,
-  );
-  if (!registered) return undefined;
-  return applyOverride(registered, normalizedEmail);
-}
-
-function isEmailRegistered(normalizedEmail: string): boolean {
-  return (
-    DEMO_ACCOUNTS.some((a) => a.email.toLowerCase() === normalizedEmail) ||
-    loadRegisteredAccounts().some(
-      (a) => a.email.toLowerCase() === normalizedEmail,
-    )
-  );
-}
-
-function toSessionUser(account: LookupAccount, lastLoginAt: string): SessionUser {
-  return {
-    email: account.email,
-    role: account.role,
-    status: account.status,
-    title: account.title,
-    firstName: account.firstName,
-    lastName: account.lastName,
-    phone: account.phone,
-    signUpAt: account.signUpAt,
-    lastLoginAt,
-    displayName: formatDisplayName(
-      account.title,
-      account.firstName,
-      account.lastName,
-    ),
+    ...raw,
+    displayName: formatDisplayName(raw.title, raw.firstName, raw.lastName),
   };
 }
 
@@ -205,35 +142,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const signIn = useCallback((rawEmail: string, password: string): SignInResult => {
+  const signIn = useCallback(async (rawEmail: string, password: string): Promise<SignInResult> => {
     const email = rawEmail.trim().toLowerCase();
+    const response = await fetch("/api/auth/sign-in", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const result = await response.json();
 
-    if (getLockoutState(email).lockedAt) {
-      return { ok: false, reason: "locked" };
+    if (!result.ok) {
+      return result;
     }
 
-    const account = findAccount(email);
-
-    const recordFailure = (): SignInResult => {
-      const next = recordFailedAttempt(email);
-      if (next.lockedAt) {
-        return { ok: false, reason: "locked" };
-      }
-      return {
-        ok: false,
-        reason: "invalid",
-        attemptsRemaining: LOCKOUT_THRESHOLD - next.failedAttempts,
-      };
-    };
-
-    if (!account) return recordFailure();
-    if (account.status === "Inactive") return { ok: false, reason: "inactive" };
-    if (account.password !== password) return recordFailure();
-
-    resetLockout(email);
-    const lastLoginAt = new Date().toISOString();
-    mergeProfileOverride(email, { lastLoginAt });
-    const sessionUser = toSessionUser(account, lastLoginAt);
+    const sessionUser = toSessionUser(result.user);
     setSession({ status: "authenticated", user: sessionUser });
     saveSession({ user: sessionUser });
     return { ok: true };
@@ -244,37 +166,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveSession({ user: null });
   }, []);
 
-  const signUp = useCallback((input: SignUpInput): SignUpResult => {
-    const email = input.email.trim().toLowerCase();
-    if (isEmailRegistered(email)) {
-      return { ok: false, reason: "duplicate" };
-    }
-
-    const account: RegisteredAccount = {
-      id: generateAccountId(),
-      email: input.email.trim(),
-      password: input.password,
-      role: "Adopter",
-      status: "Active",
-      title: input.title,
-      firstName: input.firstName.trim(),
-      lastName: input.lastName.trim(),
-      phone: input.phone.trim(),
-      signUpAt: new Date().toISOString(),
-    };
-    saveRegisteredAccounts([...loadRegisteredAccounts(), account]);
-    return { ok: true, accountId: account.id };
+  const signUp = useCallback(async (input: SignUpInput): Promise<SignUpResult> => {
+    const response = await fetch("/api/auth/sign-up", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    return response.json();
   }, []);
 
   const updateProfile = useCallback(
-    (input: UpdateProfileInput) => {
+    async (input: UpdateProfileInput) => {
       if (!session.user) return;
-      const email = session.user.email.toLowerCase();
-      mergeProfileOverride(email, {
-        title: input.title,
-        firstName: input.firstName.trim(),
-        lastName: input.lastName.trim(),
-        phone: input.phone.trim(),
+      await fetch(`/api/users/${session.user.id}/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
       });
       const updatedUser: SessionUser = {
         ...session.user,
@@ -295,31 +202,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const changePassword = useCallback(
-    (currentPassword: string, newPassword: string): ChangePasswordResult => {
+    async (currentPassword: string, newPassword: string): Promise<ChangePasswordResult> => {
       if (!session.user) {
         return { ok: false, reason: "incorrect_current_password" };
       }
-      const email = session.user.email.toLowerCase();
-      const account = findAccount(email);
-      if (!account || account.password !== currentPassword) {
-        return { ok: false, reason: "incorrect_current_password" };
-      }
-      mergeProfileOverride(email, { password: newPassword });
-      return { ok: true };
+      const response = await fetch(`/api/users/${session.user.id}/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      return response.json();
     },
     [session.user],
   );
 
-  // Re-derives the session user from the account store, applying the
-  // latest overrides. Call after an action that may have changed the
+  // Re-derives the session user from the database, applying the latest
+  // role/status. Call after an action that may have changed the
   // signed-in user's own role/status (e.g. an Administrator transfer
   // that demotes themselves) so the shell reflects it immediately.
-  const refreshCurrentUser = useCallback(() => {
+  const refreshCurrentUser = useCallback(async () => {
     if (!session.user) return;
-    const email = session.user.email.toLowerCase();
-    const account = findAccount(email);
-    if (!account) return;
-    const updatedUser = toSessionUser(account, session.user.lastLoginAt);
+    const response = await fetch(`/api/users/${session.user.id}`);
+    if (!response.ok) return;
+    const result = await response.json();
+    if (!result.ok) return;
+    const updatedUser = toSessionUser(result.user);
     setSession((prev) => ({ ...prev, user: updatedUser }));
     saveSession({ user: updatedUser });
   }, [session.user]);

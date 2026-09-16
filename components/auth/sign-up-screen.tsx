@@ -158,9 +158,8 @@ export function SignUpScreen() {
 
     setIsSubmitting(true);
     setErrors({});
-    await new Promise((resolve) => setTimeout(resolve, 300));
 
-    const result = signUp({
+    const result = await signUp({
       title,
       firstName,
       lastName,

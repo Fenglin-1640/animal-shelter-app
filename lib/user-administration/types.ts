@@ -1,8 +1,8 @@
 import type { Role } from "@/lib/roles/roles";
 
-// FR-UA-01 / PRD 8.2 UserAccount, merged from DEMO_ACCOUNTS and
-// Sign-Up-created RegisteredAccounts plus their profile/directory
-// overrides, for display in User Administration.
+// FR-UA-01 / PRD 8.2 UserAccount, as served by GET /api/users (see
+// prisma/contract.prisma and lib/user-administration/serialize.ts), for
+// display in User Administration.
 export interface DirectoryUser {
   userId: string;
   email: string;

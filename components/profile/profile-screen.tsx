@@ -116,8 +116,7 @@ function ContactDetailsForm() {
 
     setIsSubmitting(true);
     setErrors({});
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    updateProfile({ title, firstName, lastName, phone: trimmedPhone });
+    await updateProfile({ title, firstName, lastName, phone: trimmedPhone });
     setIsSubmitting(false);
     setSavedAt(Date.now());
   };
@@ -316,8 +315,7 @@ function ChangePasswordForm() {
 
     setIsSubmitting(true);
     setErrors({});
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    const result = changePassword(currentPassword, newPassword);
+    const result = await changePassword(currentPassword, newPassword);
     setIsSubmitting(false);
 
     if (!result.ok) {

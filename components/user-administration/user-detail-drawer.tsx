@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { StatusChip } from "@/components/shared/status-chip";
-import { resetLockout } from "@/lib/auth/lockout-store";
+import { unlockAccount } from "@/lib/auth/lockout-store";
 import { ROLES, type Role } from "@/lib/roles/roles";
 import { updateUserRoleStatus } from "@/lib/user-administration/directory-store";
 import { USER_STATUS_CATEGORY } from "@/lib/user-administration/status";
@@ -45,11 +45,11 @@ export function UserDetailDrawer({
   const [isSaving, setIsSaving] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
 
-  const performSave = () => {
+  const performSave = async () => {
     setIsSaving(true);
     setError(null);
-    const result = updateUserRoleStatus({
-      targetEmail: user.email,
+    const result = await updateUserRoleStatus({
+      targetUserId: user.userId,
       newRole: selectedRole,
       newStatus: selectedStatus,
       actingAdminEmail,
@@ -83,9 +83,9 @@ export function UserDetailDrawer({
     performSave();
   };
 
-  const handleUnlock = () => {
+  const handleUnlock = async () => {
     setIsUnlocking(true);
-    resetLockout(user.email);
+    await unlockAccount(user.userId);
     setIsUnlocking(false);
     setMessage("Account unlocked.");
     onSaved();

@@ -76,9 +76,8 @@ export function CreateUserDialog({
 
     setIsSubmitting(true);
     setErrors({});
-    await new Promise((resolve) => setTimeout(resolve, 250));
 
-    const result = createDirectoryUser({
+    const result = await createDirectoryUser({
       title,
       firstName,
       lastName,

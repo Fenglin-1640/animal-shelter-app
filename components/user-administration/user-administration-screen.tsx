@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -30,10 +30,30 @@ function UserAdministrationContent({
   const [selectedUser, setSelectedUser] = useState<DirectoryUser | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
-  // refreshKey is a deliberate cache-buster: listDirectoryUsers() reads
-  // localStorage (mutable external state), not refreshKey itself.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const users = useMemo(() => listDirectoryUsers(), [refreshKey]);
+  const [users, setUsers] = useState<DirectoryUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    listDirectoryUsers()
+      .then((result) => {
+        if (cancelled) return;
+        setUsers(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load users. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   useEffect(() => {
     if (!selectedUser) return;
@@ -41,7 +61,7 @@ function UserAdministrationContent({
     setSelectedUser(users.find((u) => u.email === selectedUser.email) ?? null);
     // Only when the underlying list actually changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey]);
+  }, [users]);
 
   const handleChanged = () => {
     // Deliberately does not call refreshCurrentUser() here: if this save
@@ -50,6 +70,7 @@ function UserAdministrationContent({
     // would swap this whole screen to Access Denied in the same commit,
     // before "Changes saved." ever has a chance to render. Session sync
     // is deferred to handleCloseDrawer, once they've seen the result.
+    setIsLoading(true);
     setRefreshKey((k) => k + 1);
   };
 
@@ -128,7 +149,25 @@ function UserAdministrationContent({
           </select>
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+            Loading users...
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+            <p className="text-sm font-semibold text-text">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setIsLoading(true);
+                setRefreshKey((k) => k + 1);
+              }}
+              className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+            >
+              Retry
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
             <p className="text-sm font-semibold text-text">No users match your filters.</p>
             <p className="mt-1 text-sm text-text-muted">
