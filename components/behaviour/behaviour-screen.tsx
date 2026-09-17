@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -267,25 +267,43 @@ function BehaviourContent({
   displayName: string;
   role: Role;
 }) {
-  const [animal] = useState<Animal | undefined>(() => getAnimalById(animalId));
-  const [assessments, setAssessments] = useState<TemperamentAssessment[]>(() =>
-    animal ? listTemperamentAssessments(animalId) : [],
-  );
-  const [programs, setPrograms] = useState<BehaviourProgram[]>(() =>
-    animal ? listBehaviourPrograms(animalId) : [],
-  );
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+  const [assessments, setAssessments] = useState<TemperamentAssessment[]>([]);
+  const [programs, setPrograms] = useState<BehaviourProgram[]>([]);
   const [showForm, setShowForm] = useState(false);
 
   const canAct = CAN_ACT_ROLES.includes(role);
 
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (cancelled) return;
+      setAnimal(result ?? null);
+      if (result) {
+        setAssessments(listTemperamentAssessments(animalId));
+        setPrograms(listBehaviourPrograms(animalId));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal) return <NotFound />;
 
   const activeProgram = programs.find((p) => p.status === "Active");
 
-  const refresh = () => {
+  const refresh = async () => {
     setAssessments(listTemperamentAssessments(animalId));
     setPrograms(listBehaviourPrograms(animalId));
-    evaluatePreListingEligibility(animalId);
+    await evaluatePreListingEligibility(animalId);
   };
 
   return (
@@ -380,8 +398,8 @@ function BehaviourContent({
           <TemperamentAssessmentForm
             isReassessment={Boolean(activeProgram)}
             onCancel={() => setShowForm(false)}
-            onSubmit={(input) => {
-              recordTemperamentAssessment(animalId, input, email, displayName);
+            onSubmit={async (input) => {
+              await recordTemperamentAssessment(animalId, input, email, displayName);
               setShowForm(false);
               refresh();
             }}

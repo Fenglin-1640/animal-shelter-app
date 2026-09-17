@@ -126,13 +126,13 @@ function upsertReview(review: FitnessReview) {
   }
 }
 
-function confirm(
+async function confirm(
   animalId: string,
   email: string,
   name: string,
   side: "staff" | "vet",
-): MutationResult {
-  const animal = getAnimalById(animalId);
+): Promise<MutationResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
   const tasks = listTasksForAnimal(animalId);
@@ -161,11 +161,11 @@ function confirm(
   return { ok: true };
 }
 
-export function confirmAsStaff(animalId: string, email: string, name: string): MutationResult {
+export function confirmAsStaff(animalId: string, email: string, name: string): Promise<MutationResult> {
   return confirm(animalId, email, name, "staff");
 }
 
-export function confirmAsVet(animalId: string, email: string, name: string): MutationResult {
+export function confirmAsVet(animalId: string, email: string, name: string): Promise<MutationResult> {
   return confirm(animalId, email, name, "vet");
 }
 

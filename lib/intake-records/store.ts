@@ -125,7 +125,7 @@ export type FinaliseResult =
 // MedicalRecord is not persisted here - nothing in this prototype
 // reads/displays one yet, so an empty shell object would have no
 // observable effect.
-export function finaliseIntake(intakeId: string, email: string, name: string): FinaliseResult {
+export async function finaliseIntake(intakeId: string, email: string, name: string): Promise<FinaliseResult> {
   const all = loadAll();
   const index = all.findIndex((r) => r.intakeId === intakeId);
   if (index === -1) return { ok: false, reason: "not_found" };
@@ -161,7 +161,7 @@ export function finaliseIntake(intakeId: string, email: string, name: string): F
     lastModifiedAt: now,
     intakeSource: record.intakeSource,
   };
-  addAnimal(animal, { email, name });
+  await addAnimal(animal, { email, name });
   createTasksForAnimal(animal.animalId);
   seedPhotosFromIntake(animal.animalId, record.photos, record.createdByEmail, record.createdByName);
 

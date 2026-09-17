@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { ListingCard } from "@/components/adoption-listings/listing-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getPublicListings } from "@/lib/adoption-listings/mock-listings";
+import type { PublicListing } from "@/lib/adoption-listings/types";
 import type { Sex, Species } from "@/lib/animals/types";
 
 const PAGE_SIZE = 5;
@@ -152,7 +153,31 @@ export function AdoptionListingsScreen() {
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const allListings = useMemo(() => getPublicListings(), []);
+  const [allListings, setAllListings] = useState<PublicListing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPublicListings()
+      .then((result) => {
+        if (cancelled) return;
+        setAllListings(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load adoption listings. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   const availableSpecies = useMemo(
     () => Array.from(new Set(allListings.map((l) => l.species))),
@@ -287,7 +312,25 @@ export function AdoptionListingsScreen() {
           </button>
         </div>
 
-        {pageItems.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+            Loading adoption listings...
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+            <p className="text-sm font-semibold text-text">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setIsLoading(true);
+                setRefreshKey((k) => k + 1);
+              }}
+              className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+            >
+              Retry
+            </button>
+          </div>
+        ) : pageItems.length === 0 ? (
           <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
             <p className="text-sm font-semibold text-text">
               No animals match your filters.

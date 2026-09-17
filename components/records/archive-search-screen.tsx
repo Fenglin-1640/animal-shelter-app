@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAllAnimals } from "@/lib/animals/animal-store";
 import { CURRENT_STATUS_CATEGORY } from "@/lib/animals/status";
+import type { Animal } from "@/lib/animals/types";
 import type { Role } from "@/lib/roles/roles";
 
 // PRD 6.15: "授权 Staff 可搜索 Archived 记录，但不可修改" - Administrator and
@@ -21,10 +22,24 @@ function formatDate(iso: string): string {
 
 function ArchiveSearchContent() {
   const [search, setSearch] = useState("");
+  const [allAnimals, setAllAnimals] = useState<Animal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAllAnimals().then((result) => {
+      if (cancelled) return;
+      setAllAnimals(result);
+      setIsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const archived = useMemo(
-    () => getAllAnimals().filter((a) => a.currentStatus === "Archived"),
-    [],
+    () => allAnimals.filter((a) => a.currentStatus === "Archived"),
+    [allAnimals],
   );
 
   const filtered = archived.filter((animal) => {
@@ -56,7 +71,11 @@ function ArchiveSearchContent() {
         className="h-10 min-w-[220px] rounded-[12px] border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       />
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+          Loading...
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
           <p className="text-sm font-semibold text-text">
             {archived.length === 0 ? "No animal records are archived." : "No archived records match your search."}

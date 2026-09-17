@@ -19,9 +19,9 @@ export function ListingCard({
 }) {
   const router = useRouter();
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!adopterEmail || !adopterName) return;
-    const result = startOrContinueDraft(listing.animalId, adopterEmail, adopterName);
+    const result = await startOrContinueDraft(listing.animalId, adopterEmail, adopterName);
     if (result.ok) router.push(`/my-applications/${result.applicationId}`);
   };
 

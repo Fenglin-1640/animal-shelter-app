@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -102,16 +102,33 @@ function CompleteVisitForm({
 }
 
 function FollowUpVisitContent({ animalId, email, displayName, role }: { animalId: string; email: string; displayName: string; role: Role }) {
-  const [animal, setAnimal] = useState<Animal | undefined>(() => getAnimalById(animalId));
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
   const [visit, setVisit] = useState<FollowUpVisit | undefined>(() => getLatestFollowUpVisitForAnimal(animalId));
   const [showForm, setShowForm] = useState(false);
 
   const canAct = CAN_ACT_ROLES.includes(role);
 
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (!cancelled) setAnimal(result ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal || !visit) return <NotFound />;
 
-  const refresh = () => {
-    setAnimal(getAnimalById(animalId));
+  const refresh = async () => {
+    setAnimal((await getAnimalById(animalId)) ?? null);
     setVisit(getLatestFollowUpVisitForAnimal(animalId));
   };
 
@@ -204,8 +221,8 @@ function FollowUpVisitContent({ animalId, email, displayName, role }: { animalId
         {canAct && visit.status === "Scheduled" && showForm && (
           <CompleteVisitForm
             onCancel={() => setShowForm(false)}
-            onSubmit={(outcome, notes) => {
-              completeFollowUpVisit(visit.followUpVisitId, outcome, notes, email, displayName);
+            onSubmit={async (outcome, notes) => {
+              await completeFollowUpVisit(visit.followUpVisitId, outcome, notes, email, displayName);
               setShowForm(false);
               refresh();
             }}

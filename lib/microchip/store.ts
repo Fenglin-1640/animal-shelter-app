@@ -50,7 +50,7 @@ export async function performScan(
   email: string,
   name: string,
 ): Promise<ScanResult> {
-  const animal = getAnimalById(animalId);
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
   const outcome = await queryNationalPetRegistry(microchipNumber);
@@ -68,7 +68,7 @@ export async function performScan(
   saveAll([...loadAll(), lookup]);
 
   if (outcome.result === "Owner Match" || outcome.result === "No Match") {
-    updateAnimal(animalId, { microchipNumber: lookup.microchipNumber });
+    await updateAnimal(animalId, { microchipNumber: lookup.microchipNumber });
   }
   if (outcome.result !== "Timeout") {
     completeTaskByType(animalId, "Microchip Check", email, name);
@@ -77,7 +77,7 @@ export async function performScan(
   // Statutory Hold - a direct system consequence of the lookup result,
   // not a separate Staff action.
   if (outcome.result === "Owner Match" && outcome.ownerContact) {
-    createHoldForOwnerMatch(animalId, outcome.ownerContact, email, name);
+    await createHoldForOwnerMatch(animalId, outcome.ownerContact, email, name);
   }
 
   return { ok: true, lookup };

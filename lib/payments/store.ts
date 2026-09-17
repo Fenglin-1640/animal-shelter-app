@@ -57,12 +57,12 @@ export type MutationResult = { ok: true; paymentId?: string } | { ok: false; rea
 // PRD 6.13: "Adopter 可发起模拟付款." amount defaults to the Animal's
 // adoptionFee (read-only in the UI) since PRD names no other source of
 // truth for the amount owed.
-export function initiatePayment(
+export async function initiatePayment(
   agreementId: string,
   paymentMethod: string,
   email: string,
   name: string,
-): MutationResult {
+): Promise<MutationResult> {
   const agreement = getAgreement(agreementId);
   if (!agreement) return { ok: false, reason: "not_found" };
 
@@ -74,7 +74,7 @@ export function initiatePayment(
     return { ok: false, reason: "already_in_progress" };
   }
 
-  const animal = getAnimalById(agreement.animalId);
+  const animal = await getAnimalById(agreement.animalId);
   const amount = animal?.adoptionFee ?? 0;
 
   const now = new Date().toISOString();

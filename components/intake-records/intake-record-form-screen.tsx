@@ -227,7 +227,7 @@ function IntakeRecordFormContent({
 
     // Persist the latest edits first so Finalise checks against current data.
     updateIntakeRecord(existing.intakeId, buildInput());
-    const result = finaliseIntake(existing.intakeId, email, displayName);
+    const result = await finaliseIntake(existing.intakeId, email, displayName);
     setIsFinalising(false);
 
     if (!result.ok) {

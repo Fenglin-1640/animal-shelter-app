@@ -107,16 +107,16 @@ export interface ReleaseInput {
 // Check row: Administrator 只读, only Staff "执行 release") - this function
 // itself only enforces the state-machine and data preconditions, matching
 // changeAnimalStatus()'s "role checks live at the call site" convention.
-export function releaseAnimal(
+export async function releaseAnimal(
   animalId: string,
   input: ReleaseInput,
   actorEmail: string,
   actorName: string,
-): MutationResult {
-  const animal = getAnimalById(animalId);
+): Promise<MutationResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
   if (animal.currentStatus !== "Awaiting Release") return { ok: false, reason: "not_awaiting_release" };
-  if (!isFitForRelease(animalId)) return { ok: false, reason: "not_fit_for_release" };
+  if (!(await isFitForRelease(animalId))) return { ok: false, reason: "not_fit_for_release" };
   if (!input.careInstructionsProvided) return { ok: false, reason: "care_instructions_required" };
   if (!input.receivingAdopter.trim()) return { ok: false, reason: "receiving_adopter_required" };
 
@@ -146,7 +146,7 @@ export function releaseAnimal(
   };
   saveAll([...loadAll(), visit]);
 
-  const result = changeAnimalStatus(
+  const result = await changeAnimalStatus(
     animalId,
     { currentStatus: "inFollowUpPeriod", statusUpdatedAt: now },
     { email: actorEmail, name: actorName },
@@ -172,13 +172,13 @@ export function releaseAnimal(
 // Available to both Administrator and Shelter Staff Member per PRD 9's
 // FollowUpVisit row ("安排、完成" for both), unlike the Release action
 // itself which the Pre-Release Check row restricts to Staff only.
-export function completeFollowUpVisit(
+export async function completeFollowUpVisit(
   followUpVisitId: string,
   outcome: WelfareOutcome,
   outcomeNotes: string,
   actorEmail: string,
   actorName: string,
-): MutationResult {
+): Promise<MutationResult> {
   const all = loadAll();
   const index = all.findIndex((v) => v.followUpVisitId === followUpVisitId);
   if (index === -1) return { ok: false, reason: "not_found" };
@@ -197,7 +197,7 @@ export function completeFollowUpVisit(
   };
   saveAll(all);
 
-  const result = changeAnimalStatus(
+  const result = await changeAnimalStatus(
     visit.animalId,
     { currentStatus: "Rehomed", statusUpdatedAt: now },
     { email: actorEmail, name: actorName },

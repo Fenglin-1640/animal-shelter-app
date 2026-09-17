@@ -1,61 +1,27 @@
-import { MOCK_ANIMALS } from "@/lib/animals/mock-animals";
-import { isValidStatusTransition } from "@/lib/animals/status-rules";
 import type { Animal } from "@/lib/animals/types";
 import { writeAuditLog } from "@/lib/audit/store";
 
-// Animals created via Finalise Intake (FR-INT-03), kept separate from the
-// static PRD 12.1 seed animals. Persisted to localStorage since there is
-// no backend.
-const STORAGE_KEY = "asams-created-animals";
-
-// Field-level edits (e.g. microchipNumber written back by Scan Microchip,
-// FR-MC-01) layered on top of a base record - same overlay pattern as
-// lib/user-administration/directory-store.ts, needed because the 10 PRD
-// 12.1 seed animals are static imports, not localStorage-backed records
-// that could otherwise be mutated in place.
-const OVERRIDES_KEY = "asams-animal-overrides";
-
-function loadCreatedAnimals(): Animal[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as Animal[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCreatedAnimals(animals: Animal[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(animals));
-}
-
-function loadOverrides(): Record<string, Partial<Animal>> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(OVERRIDES_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveOverrides(overrides: Record<string, Partial<Animal>>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
-}
+// Animals now live in the database (see prisma/contract.prisma) behind
+// /api/animals - see prisma/README.md for what's different about this
+// Prisma toolchain. This module used to read/write localStorage (the 10
+// PRD 12.1 seed animals as a static import, plus a "created animals" and
+// a field-level "overrides" array); the seed animals now come from
+// prisma/seed.ts and everything is one real Animal row, so every export
+// here is async now. AuditLog stays a client-side/localStorage prototype
+// feature for this pilot slice, so it's still written here, after a
+// successful API call, the same as before.
 
 export interface StatusActor {
   email: string;
   name: string;
 }
 
-export function addAnimal(animal: Animal, actor?: StatusActor) {
-  saveCreatedAnimals([...loadCreatedAnimals(), animal]);
+export async function addAnimal(animal: Animal, actor?: StatusActor): Promise<void> {
+  await fetch("/api/animals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(animal),
+  });
   // BR-014: every status change is written to StatusHistory and
   // AuditLog. Creation is the first entry for this Animal - oldValue is
   // empty since nothing existed before it.
@@ -73,10 +39,12 @@ export function addAnimal(animal: Animal, actor?: StatusActor) {
   }
 }
 
-export function updateAnimal(animalId: string, patch: Partial<Animal>) {
-  const overrides = loadOverrides();
-  overrides[animalId] = { ...overrides[animalId], ...patch };
-  saveOverrides(overrides);
+export async function updateAnimal(animalId: string, patch: Partial<Animal>): Promise<void> {
+  await fetch(`/api/animals/${animalId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
 }
 
 export type ChangeStatusResult =
@@ -91,51 +59,50 @@ export type ChangeStatusResult =
 // at the point of action (each screen/store function already gates this
 // per its FR's named actor, e.g. Veterinarian-only for Medical actions);
 // this function validates the state machine shape and writes the audit
-// trail, not a second parallel role check, since a prototype without a
-// server-side API boundary has nowhere else for that check to live than
+// trail, not a second parallel role check, since a prototype without
+// real server-side sessions has nowhere else for that check to live than
 // the call site that already has the signed-in user's role in scope.
-export function changeAnimalStatus(
+export async function changeAnimalStatus(
   animalId: string,
   patch: Partial<Pick<Animal, "currentStatus" | "listingStatus" | "statusUpdatedAt" | "linkedPerson">>,
   actor: StatusActor,
   action: string,
-): ChangeStatusResult {
-  const animal = getAnimalById(animalId);
-  if (!animal) return { ok: false, reason: "not_found" };
-
-  if (patch.currentStatus && !isValidStatusTransition(animal.currentStatus, patch.currentStatus)) {
-    return { ok: false, reason: "invalid_transition" };
+): Promise<ChangeStatusResult> {
+  const response = await fetch(`/api/animals/${animalId}/status`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  const result = await response.json();
+  if (!result.ok) {
+    return result;
   }
 
-  const oldValue = `currentStatus=${animal.currentStatus}, listingStatus=${animal.listingStatus}`;
-  updateAnimal(animalId, patch);
-
-  if (patch.currentStatus || patch.listingStatus) {
-    const newValue = `currentStatus=${patch.currentStatus ?? animal.currentStatus}, listingStatus=${patch.listingStatus ?? animal.listingStatus}`;
-    writeAuditLog({
-      userId: actor.email,
-      userName: actor.name,
-      action,
-      entityType: "Animal",
-      entityId: animalId,
-      oldValue,
-      newValue,
-      result: "Success",
-    });
-  }
+  writeAuditLog({
+    userId: actor.email,
+    userName: actor.name,
+    action,
+    entityType: "Animal",
+    entityId: animalId,
+    oldValue: result.oldValue,
+    newValue: result.newValue,
+    result: "Success",
+  });
 
   return { ok: true };
 }
 
-export function getAllAnimals(): Animal[] {
-  const overrides = loadOverrides();
-  return [...MOCK_ANIMALS, ...loadCreatedAnimals()].map((animal) =>
-    overrides[animal.animalId] ? { ...animal, ...overrides[animal.animalId] } : animal,
-  );
+export async function getAllAnimals(): Promise<Animal[]> {
+  const response = await fetch("/api/animals");
+  const result = await response.json();
+  return result.animals as Animal[];
 }
 
-export function getAnimalById(animalId: string): Animal | undefined {
-  return getAllAnimals().find((a) => a.animalId === animalId);
+export async function getAnimalById(animalId: string): Promise<Animal | undefined> {
+  const response = await fetch(`/api/animals/${animalId}`);
+  if (!response.ok) return undefined;
+  const result = await response.json();
+  return result.ok ? (result.animal as Animal) : undefined;
 }
 
 export function generateShelterId(): string {

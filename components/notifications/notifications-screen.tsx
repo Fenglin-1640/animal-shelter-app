@@ -6,7 +6,7 @@ import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/la
 import { NotificationCard } from "@/components/notifications/notification-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAllNotifications } from "@/lib/notifications/store";
-import type { NotificationType } from "@/lib/notifications/types";
+import type { NotificationItem, NotificationType } from "@/lib/notifications/types";
 import {
   loadReadOverrides,
   setReadOverride,
@@ -124,15 +124,30 @@ export function NotificationsScreen() {
     setReadOverrides(loadReadOverrides(email));
   }, [email]);
 
+  const [rawItems, setRawItems] = useState<NotificationItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAllNotifications().then((result) => {
+      if (cancelled) return;
+      setRawItems(result);
+      setIsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const allItems = useMemo(
     () =>
-      getAllNotifications().filter(
+      rawItems.filter(
         (item) =>
           role &&
           item.roles.includes(role) &&
           (!item.recipientEmail || item.recipientEmail.toLowerCase() === email),
       ),
-    [role, email],
+    [rawItems, role, email],
   );
 
   const availableTypes = useMemo(
@@ -271,7 +286,11 @@ export function NotificationsScreen() {
           </button>
         </div>
 
-        {pageItems.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+            Loading notifications...
+          </div>
+        ) : pageItems.length === 0 ? (
           <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
             <p className="text-sm font-semibold text-text">
               No notifications match your filters.

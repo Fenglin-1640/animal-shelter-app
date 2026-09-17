@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { EmptySubscreen } from "@/components/animals/empty-subscreen";
 import { AppShell } from "@/components/layout/app-shell";
@@ -111,6 +111,22 @@ function AnimalDetailContent({
   const [temperamentSelection, setTemperamentSelection] = useState<Set<string>>(new Set());
   const temperamentOptions = getActiveValues("Temperament");
 
+  const [fitForRelease, setFitForRelease] = useState(false);
+  const [publishBlockers, setPublishBlockers] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    isFitForRelease(animal.animalId).then((result) => {
+      if (!cancelled) setFitForRelease(result);
+    });
+    getPublishBlockers(animal.animalId).then((result) => {
+      if (!cancelled) setPublishBlockers(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animal]);
+
   const handleOpenEditAdoption = () => {
     setFeeInput(animal.adoptionFee?.toString() ?? "");
     setBreedInput(animal.breed === "Unknown" ? "" : animal.breed);
@@ -119,31 +135,31 @@ function AnimalDetailContent({
     setShowEditAdoption(true);
   };
 
-  const handleSaveAdoptionDetails = () => {
+  const handleSaveAdoptionDetails = async () => {
     const fee = feeInput.trim() ? Number(feeInput) : undefined;
-    updateAnimal(animal.animalId, {
+    await updateAnimal(animal.animalId, {
       adoptionFee: fee != null && !Number.isNaN(fee) ? fee : undefined,
       breed: breedInput.trim() || "Unknown",
       generalDescription: descriptionInput,
       temperaments: Array.from(temperamentSelection),
     });
-    setAnimal(getAnimalById(animal.animalId) ?? animal);
+    setAnimal((await getAnimalById(animal.animalId)) ?? animal);
     setShowEditAdoption(false);
   };
 
-  const handleArchive = () => {
-    const result = archiveUnsuitableAnimal(animal.animalId, email, displayName);
-    if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
+  const handleArchive = async () => {
+    const result = await archiveUnsuitableAnimal(animal.animalId, email, displayName);
+    if (result.ok) setAnimal((await getAnimalById(animal.animalId)) ?? animal);
   };
 
-  const handlePublish = () => {
-    const result = publishAdoptionProfile(animal.animalId, email, displayName);
-    if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
+  const handlePublish = async () => {
+    const result = await publishAdoptionProfile(animal.animalId, email, displayName);
+    if (result.ok) setAnimal((await getAnimalById(animal.animalId)) ?? animal);
   };
 
-  const handleUnpublish = () => {
-    const result = unpublishAdoptionProfile(animal.animalId, email, displayName);
-    if (result.ok) setAnimal(getAnimalById(animal.animalId) ?? animal);
+  const handleUnpublish = async () => {
+    const result = await unpublishAdoptionProfile(animal.animalId, email, displayName);
+    if (result.ok) setAnimal((await getAnimalById(animal.animalId)) ?? animal);
   };
 
   const healthAssessments = listHealthAssessments(animal.animalId);
@@ -155,13 +171,11 @@ function AnimalDetailContent({
   const activeProgram = getActiveBehaviourProgram(animal.animalId);
   const photos = listPhotosForAnimal(animal.animalId);
   const latestPreReleaseCheck = getLatestPreReleaseCheck(animal.animalId);
-  const fitForRelease = isFitForRelease(animal.animalId);
   const followUpVisit = getLatestFollowUpVisitForAnimal(animal.animalId);
   const proposedApplications = listApplicationsForAnimal(animal.animalId).filter(
     (a) => a.applicationStatus !== "Draft",
   );
   const primaryPhoto = getPrimaryPhoto(animal.animalId);
-  const publishBlockers = getPublishBlockers(animal.animalId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -646,6 +660,53 @@ function AnimalDetailContent({
   );
 }
 
+function AnimalDetailLoader({
+  animalId,
+  role,
+  email,
+  displayName,
+}: {
+  animalId: string;
+  role: Role;
+  email: string;
+  displayName: string;
+}) {
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    evaluatePreListingEligibility(animalId)
+      .then(() => getAnimalById(animalId))
+      .then((result) => {
+        if (!cancelled) setAnimal(result ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading animal...
+      </div>
+    );
+  }
+
+  if (!animal) {
+    return <AnimalNotFound />;
+  }
+
+  return (
+    <AnimalDetailContent
+      animal={animal}
+      role={role}
+      email={email}
+      displayName={displayName}
+    />
+  );
+}
+
 export function AnimalDetailScreen() {
   const { user } = useAuth();
   const params = useParams<{ animalId: string }>();
@@ -659,21 +720,14 @@ export function AnimalDetailScreen() {
     );
   }
 
-  evaluatePreListingEligibility(params.animalId);
-  const animal = getAnimalById(params.animalId);
-
   return (
     <AppShell>
-      {animal ? (
-        <AnimalDetailContent
-          animal={animal}
-          role={user.role}
-          email={user.email}
-          displayName={user.displayName}
-        />
-      ) : (
-        <AnimalNotFound />
-      )}
+      <AnimalDetailLoader
+        animalId={params.animalId}
+        role={user.role}
+        email={user.email}
+        displayName={user.displayName}
+      />
     </AppShell>
   );
 }

@@ -19,13 +19,13 @@ import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 // lib/medical, lib/behaviour or lib/statutory-hold themselves (which
 // would create an import cycle back into this module). Safe to call
 // repeatedly - a no-op once listingStatus is no longer Not Fit.
-export function evaluatePreListingEligibility(animalId: string) {
-  const animal = getAnimalById(animalId);
+export async function evaluatePreListingEligibility(animalId: string) {
+  const animal = await getAnimalById(animalId);
   if (!animal || animal.listingStatus !== "Not Fit") return;
 
   if (!getMedicalClearance(animalId)) return;
-  if (hasUnresolvedHold(animalId)) return;
+  if (await hasUnresolvedHold(animalId)) return;
   if (getLatestTemperamentAssessment(animalId)?.outcome !== "Suitable for Adoption") return;
 
-  updateAnimal(animalId, { listingStatus: "Pre-Listing" });
+  await updateAnimal(animalId, { listingStatus: "Pre-Listing" });
 }

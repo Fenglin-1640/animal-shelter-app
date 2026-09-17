@@ -8,8 +8,8 @@ export interface AdoptionStatistic {
   value: number;
 }
 
-export function getAdoptionStatistics(): AdoptionStatistic[] {
-  const animals = getAllAnimals();
+export async function getAdoptionStatistics(): Promise<AdoptionStatistic[]> {
+  const animals = await getAllAnimals();
   const applications = listAllApplications();
 
   return [

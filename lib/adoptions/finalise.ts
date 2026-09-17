@@ -47,14 +47,14 @@ export function getFinaliseBlockers(applicationId: string): string[] {
 // Animal with currentStatus = Awaiting Release and no completed
 // Pre-Release Check on file IS the task - FR-REL-01's Veterinarian
 // queue reads exactly that state.
-export function finaliseAdoption(applicationId: string, email: string, name: string): FinaliseResult {
+export async function finaliseAdoption(applicationId: string, email: string, name: string): Promise<FinaliseResult> {
   const application = getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found", blockers: [] };
 
   const blockers = getFinaliseBlockers(applicationId);
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
 
-  const result = changeAnimalStatus(
+  const result = await changeAnimalStatus(
     application.animalId,
     {
       currentStatus: "Awaiting Release",

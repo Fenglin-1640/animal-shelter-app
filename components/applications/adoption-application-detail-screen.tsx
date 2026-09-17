@@ -387,8 +387,8 @@ function AdoptionApplicationDetailContent({
     refresh();
   };
 
-  const handleApprove = () => {
-    approveApplication(applicationId, email, displayName);
+  const handleApprove = async () => {
+    await approveApplication(applicationId, email, displayName);
     refresh();
   };
 
@@ -399,8 +399,8 @@ function AdoptionApplicationDetailContent({
     refresh();
   };
 
-  const handleResume = () => {
-    const result = resumeApplication(applicationId);
+  const handleResume = async () => {
+    const result = await resumeApplication(applicationId);
     if (result.ok) refresh();
   };
 

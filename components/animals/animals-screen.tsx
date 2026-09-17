@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { AnimalCard } from "@/components/animals/animal-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAllAnimals } from "@/lib/animals/animal-store";
-import type { CurrentStatus, Species } from "@/lib/animals/types";
+import type { Animal, CurrentStatus, Species } from "@/lib/animals/types";
 import { getBreedSpeciesList, getBreedsForSpecies } from "@/lib/options/breeds";
 import type { Role } from "@/lib/roles/roles";
 
@@ -214,7 +214,31 @@ function AnimalsContent() {
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const allAnimals = useMemo(() => getAllAnimals(), []);
+  const [allAnimals, setAllAnimals] = useState<Animal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAllAnimals()
+      .then((result) => {
+        if (cancelled) return;
+        setAllAnimals(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load animals. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   const availableStatuses = useMemo(
     () => Array.from(new Set(allAnimals.map((a) => a.currentStatus))),
@@ -387,7 +411,25 @@ function AnimalsContent() {
           </button>
         </div>
 
-        {pageItems.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+            Loading animals...
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+            <p className="text-sm font-semibold text-text">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setIsLoading(true);
+                setRefreshKey((k) => k + 1);
+              }}
+              className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+            >
+              Retry
+            </button>
+          </div>
+        ) : pageItems.length === 0 ? (
           <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
             <p className="text-sm font-semibold text-text">
               No animals match your filters.

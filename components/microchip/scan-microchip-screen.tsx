@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -81,13 +81,30 @@ function ScanMicrochipContent({
   email: string;
   displayName: string;
 }) {
-  const [animal, setAnimal] = useState<Animal | undefined>(() => getAnimalById(animalId));
-  const [lookups, setLookups] = useState<MicrochipLookup[]>(() =>
-    animal ? listLookupsForAnimal(animalId) : [],
-  );
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+  const [lookups, setLookups] = useState<MicrochipLookup[]>([]);
   const [microchipNumber, setMicrochipNumber] = useState("");
   const [isScanning, setIsScanning] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (cancelled) return;
+      setAnimal(result ?? null);
+      if (result) setLookups(listLookupsForAnimal(animalId));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal) return <NotFound />;
 
   const lastLookup = lookups[0];
@@ -98,7 +115,7 @@ function ScanMicrochipContent({
     setIsScanning(false);
     if (result.ok) {
       setLookups(listLookupsForAnimal(animalId));
-      setAnimal(getAnimalById(animalId));
+      setAnimal((await getAnimalById(animalId)) ?? null);
     }
   };
 

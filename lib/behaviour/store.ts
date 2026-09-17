@@ -54,8 +54,9 @@ export function getActiveBehaviourProgram(animalId: string): BehaviourProgram | 
 // animal, wherever it called for a follow-up reassessment (set on the
 // form whenever a Behaviour Program continues - see
 // recordTemperamentAssessment below).
-export function listAssessmentsNeedingReassessment(): TemperamentAssessment[] {
-  return getAllAnimals()
+export async function listAssessmentsNeedingReassessment(): Promise<TemperamentAssessment[]> {
+  const animals = await getAllAnimals();
+  return animals
     .map((animal) => getLatestTemperamentAssessment(animal.animalId))
     .filter((a): a is TemperamentAssessment => !!a?.followUpRequired && !!a.reassessmentDate);
 }
@@ -81,13 +82,13 @@ export type MutationResult = { ok: true } | { ok: false; reason: string };
 // first-time assessment or a post-program reassessment (PRD's "Suitable
 // after Program" / "Permanently Unsuitable" read as this enum's values
 // chosen in a reassessment context, not a separate 4th/5th outcome).
-export function recordTemperamentAssessment(
+export async function recordTemperamentAssessment(
   animalId: string,
   input: TemperamentAssessmentInput,
   email: string,
   name: string,
-): MutationResult {
-  const animal = getAnimalById(animalId);
+): Promise<MutationResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
   const activeProgram = getActiveBehaviourProgram(animalId);
@@ -115,7 +116,7 @@ export function recordTemperamentAssessment(
   if (input.outcome === "Suitable for Adoption") {
     if (activeProgram) {
       resolveProgram(activeProgram.id, "Completed - Suitable", now);
-      changeAnimalStatus(
+      await changeAnimalStatus(
         animalId,
         { currentStatus: "Under Assessment", statusUpdatedAt: now },
         { email, name },
@@ -125,7 +126,7 @@ export function recordTemperamentAssessment(
     completeTaskByType(animalId, "Temperament Assessment", email, name);
   } else if (activeProgram && input.outcome === "Unsuitable for Public Adoption") {
     resolveProgram(activeProgram.id, "Completed - Permanently Unsuitable", now);
-    changeAnimalStatus(
+    await changeAnimalStatus(
       animalId,
       {
         currentStatus: "Unsuitable For Adoption",
@@ -146,7 +147,7 @@ export function recordTemperamentAssessment(
       };
       saveList(PROGRAM_KEY, [...loadList<BehaviourProgram>(PROGRAM_KEY), program]);
     }
-    changeAnimalStatus(
+    await changeAnimalStatus(
       animalId,
       { currentStatus: "In Behaviour Program", statusUpdatedAt: now },
       { email, name },
@@ -173,17 +174,17 @@ function resolveProgram(
 // Archived" - a separate Staff-confirmed step, not automatic, so the
 // animal remains inspectable in the Unsuitable For Adoption state first
 // (matches the PRD 12.1 Rocky seed scenario, "Archive 路径").
-export function archiveUnsuitableAnimal(
+export async function archiveUnsuitableAnimal(
   animalId: string,
   email: string,
   name: string,
-): MutationResult {
-  const animal = getAnimalById(animalId);
+): Promise<MutationResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
   if (animal.currentStatus !== "Unsuitable For Adoption") {
     return { ok: false, reason: "invalid_state" };
   }
-  changeAnimalStatus(
+  await changeAnimalStatus(
     animalId,
     { currentStatus: "Archived", statusUpdatedAt: new Date().toISOString() },
     { email, name },

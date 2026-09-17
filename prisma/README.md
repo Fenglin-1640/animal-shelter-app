@@ -38,13 +38,31 @@ no `prisma generate` / `prisma migrate dev` commands at all - see
   project's ids were already string-based (`U-XXXXXX`, matching the
   pre-database `generateAccountId()` helper), so it wasn't a real
   constraint here.
+- **Adding a model requires a full dev server restart, not just a file
+  edit.** `lib/db/client.ts` reads `contract.json` once at module load and
+  caches the client on `globalThis` so it survives Fast Refresh (the
+  classic `globalThis.prisma` trick) - but that means a `next dev`
+  process that was already running when you add a model to
+  `contract.prisma` keeps querying the *old* contract it loaded at
+  startup, even after `npm run db:update` and even after Turbopack
+  recompiles the edited route files. Symptom: `TypeError: Cannot read
+  properties of undefined (reading 'where')` on `db.orm.<NewModel>`.
+  Fix: stop and restart `next dev` after every `contract.prisma` change.
 
 ## Commands
 
 ```bash
 npm run db:emit     # contract.prisma -> contract.json/contract.d.ts
 npm run db:update    # db:emit, then apply the contract to prisma/dev.db
-npm run db:seed      # recreate the PRD 4.2 demo accounts
+npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animals
 ```
 
 `prisma/dev.db` is gitignored (local dev only, per-checkout).
+
+## Models
+
+- `User` - see lib/auth/, lib/user-administration/.
+- `Animal` - see lib/animals/. Mirrored 1:1 from lib/animals/types.ts's
+  `Animal` interface; `temperaments` is JSON-encoded, `linkedPerson` is
+  flattened into `linkedPersonRole`/`linkedPersonName` columns (see
+  lib/animals/serialize.ts).

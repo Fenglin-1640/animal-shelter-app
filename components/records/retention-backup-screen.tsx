@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -61,8 +62,8 @@ function exportAdoptionAgreements() {
   );
 }
 
-function exportAdoptionStatistics() {
-  const stats = getAdoptionStatistics();
+async function exportAdoptionStatistics() {
+  const stats = await getAdoptionStatistics();
   downloadCsv(
     `adoption-statistics-${timestampForFilename()}.csv`,
     ["metric", "value"],
@@ -72,9 +73,20 @@ function exportAdoptionStatistics() {
 
 function RetentionBackupContent() {
   const applications = listAllApplications();
-  const stats = getAdoptionStatistics();
   const backupRuns = getBackupRuns();
   const recoveryTests = getRecoveryTests();
+
+  const [stats, setStats] = useState<Awaited<ReturnType<typeof getAdoptionStatistics>>>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAdoptionStatistics().then((result) => {
+      if (!cancelled) setStats(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">

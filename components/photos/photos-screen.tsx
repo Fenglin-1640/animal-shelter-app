@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
@@ -63,8 +63,20 @@ function PhotosContent({
   displayName: string;
   role: Role;
 }) {
-  const [animal] = useState<Animal | undefined>(() => getAnimalById(animalId));
-  const [photos, setPhotos] = useState<Photo[]>(() => (animal ? listPhotosForAnimal(animalId) : []));
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (cancelled) return;
+      setAnimal(result ?? null);
+      if (result) setPhotos(listPhotosForAnimal(animalId));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
 
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [dateTaken, setDateTaken] = useState(todayDate());
@@ -76,6 +88,13 @@ function PhotosContent({
 
   const canAct = CAN_ACT_ROLES.includes(role);
 
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal) return <NotFound />;
 
   const refresh = () => setPhotos(listPhotosForAnimal(animalId));

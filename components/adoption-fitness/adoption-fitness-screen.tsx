@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
+import type { Animal } from "@/lib/animals/types";
 import {
   confirmAsStaff,
   confirmAsVet,
@@ -72,26 +73,44 @@ function AdoptionFitnessContent({
   displayName: string;
   role: Role;
 }) {
-  const [animal] = useState(() => getAnimalById(animalId));
-  const [tasks] = useState<AssessmentTask[]>(() =>
-    animal ? listTasksForAnimal(animalId) : [],
-  );
-  const [review, setReview] = useState<FitnessReview | undefined>(() =>
-    getFitnessReview(animalId),
-  );
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+  const [tasks, setTasks] = useState<AssessmentTask[]>([]);
+  const [review, setReview] = useState<FitnessReview | undefined>(undefined);
 
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (cancelled) return;
+      setAnimal(result ?? null);
+      if (result) {
+        setTasks(listTasksForAnimal(animalId));
+        setReview(getFitnessReview(animalId));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal) return <NotFound />;
 
   const complete = isFitnessReviewComplete(review);
   const blockers = getFitnessBlockers(animal, tasks);
 
-  const handleConfirmStaff = () => {
-    const result = confirmAsStaff(animalId, email, displayName);
+  const handleConfirmStaff = async () => {
+    const result = await confirmAsStaff(animalId, email, displayName);
     if (result.ok) setReview(getFitnessReview(animalId));
   };
 
-  const handleConfirmVet = () => {
-    const result = confirmAsVet(animalId, email, displayName);
+  const handleConfirmVet = async () => {
+    const result = await confirmAsVet(animalId, email, displayName);
     if (result.ok) setReview(getFitnessReview(animalId));
   };
 

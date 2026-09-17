@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -66,29 +66,50 @@ function StatutoryHoldContent({
   email: string;
   displayName: string;
 }) {
-  const [animal, setAnimal] = useState<Animal | undefined>(() => getAnimalById(animalId));
-  const [hold, setHold] = useState<StatutoryHold | undefined>(() =>
-    animal ? getLatestHold(animalId) : undefined,
-  );
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+  const [hold, setHold] = useState<StatutoryHold | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (cancelled) return;
+      setAnimal(result ?? null);
+      if (result) {
+        getLatestHold(animalId).then((h) => {
+          if (!cancelled) setHold(h);
+        });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal) return <NotFound />;
 
-  const refresh = () => {
-    setHold(getLatestHold(animalId));
-    setAnimal(getAnimalById(animalId));
+  const refresh = async () => {
+    setHold(await getLatestHold(animalId));
+    setAnimal((await getAnimalById(animalId)) ?? null);
   };
 
   const handleReclamation = async () => {
     setIsSubmitting(true);
-    const result = recordOwnerReclamation(animalId, email, displayName);
+    const result = await recordOwnerReclamation(animalId, email, displayName);
     setIsSubmitting(false);
     if (result.ok) refresh();
   };
 
   const handleCustodyTransfer = async () => {
     setIsSubmitting(true);
-    const result = confirmCustodyTransfer(animalId, email, displayName);
+    const result = await confirmCustodyTransfer(animalId, email, displayName);
     setIsSubmitting(false);
     if (result.ok) refresh();
   };

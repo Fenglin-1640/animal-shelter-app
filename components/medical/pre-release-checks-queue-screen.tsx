@@ -1,14 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAllAnimals } from "@/lib/animals/animal-store";
+import type { Animal } from "@/lib/animals/types";
 import { getLatestPreReleaseCheck, isFitForRelease } from "@/lib/medical/store";
+import type { PreReleaseCheck } from "@/lib/medical/types";
 import type { Role } from "@/lib/roles/roles";
+
+interface QueueRow {
+  animal: Animal;
+  latest: PreReleaseCheck | undefined;
+  fitForRelease: boolean;
+}
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 
@@ -22,16 +30,31 @@ function isInQueue(currentStatus: string): boolean {
 
 function PreReleaseChecksContent() {
   const [search, setSearch] = useState("");
+  const [rows, setRows] = useState<QueueRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const rows = useMemo(() => {
-    return getAllAnimals()
-      .filter((a) => isInQueue(a.currentStatus))
-      .map((animal) => ({
-        animal,
-        latest: getLatestPreReleaseCheck(animal.animalId),
-        fitForRelease: isFitForRelease(animal.animalId),
-      }))
-      .sort((a, b) => new Date(b.animal.statusUpdatedAt).getTime() - new Date(a.animal.statusUpdatedAt).getTime());
+  useEffect(() => {
+    let cancelled = false;
+    getAllAnimals().then(async (animals) => {
+      const queued = animals.filter((a) => isInQueue(a.currentStatus));
+      const withFitness = await Promise.all(
+        queued.map(async (animal) => ({
+          animal,
+          latest: getLatestPreReleaseCheck(animal.animalId),
+          fitForRelease: await isFitForRelease(animal.animalId),
+        })),
+      );
+      if (cancelled) return;
+      setRows(
+        withFitness.sort(
+          (a, b) => new Date(b.animal.statusUpdatedAt).getTime() - new Date(a.animal.statusUpdatedAt).getTime(),
+        ),
+      );
+      setIsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filtered = rows.filter((row) => {
@@ -63,7 +86,11 @@ function PreReleaseChecksContent() {
         />
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+          Loading...
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
           <p className="text-sm font-semibold text-text">No animals need a Pre-Release Check right now.</p>
           <p className="mt-1 text-sm text-text-muted">

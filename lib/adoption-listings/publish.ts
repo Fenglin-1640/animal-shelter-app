@@ -10,8 +10,8 @@ import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 // than duplicated, since by the time listingStatus reaches Pre-Listing
 // they already held; re-checking them here is a defensive safety net
 // (in case they still held) rather than fabricated new logic.
-export function getPublishBlockers(animalId: string): string[] {
-  const animal = getAnimalById(animalId);
+export async function getPublishBlockers(animalId: string): Promise<string[]> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return ["Animal not found."];
 
   const blockers: string[] = [];
@@ -19,7 +19,7 @@ export function getPublishBlockers(animalId: string): string[] {
   if (getLatestTemperamentAssessment(animalId)?.outcome !== "Suitable for Adoption") {
     blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
   }
-  if (hasUnresolvedHold(animalId)) blockers.push("There is an unresolved Statutory Hold on this animal.");
+  if (await hasUnresolvedHold(animalId)) blockers.push("There is an unresolved Statutory Hold on this animal.");
   if (animal.adoptionFee == null) blockers.push("Adoption Fee must be filled in.");
   if (!animal.generalDescription.trim()) blockers.push("General Description must be filled in.");
   if (!animal.breed.trim() || animal.breed === "Unknown") {
@@ -39,14 +39,14 @@ export type PublishResult =
   | { ok: true }
   | { ok: false; reason: "not_found" | "blocked"; blockers?: string[] };
 
-export function publishAdoptionProfile(animalId: string, email: string, name: string): PublishResult {
-  const animal = getAnimalById(animalId);
+export async function publishAdoptionProfile(animalId: string, email: string, name: string): Promise<PublishResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
-  const blockers = getPublishBlockers(animalId);
+  const blockers = await getPublishBlockers(animalId);
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
 
-  changeAnimalStatus(
+  await changeAnimalStatus(
     animalId,
     { currentStatus: "Available For Adoption", listingStatus: "Current", statusUpdatedAt: new Date().toISOString() },
     { email, name },
@@ -61,12 +61,12 @@ export type UnpublishResult = { ok: true } | { ok: false; reason: "not_found" | 
 // definition ("...或 Staff 合规移除") - withdrawing a listing is a
 // display-level compliance action, not a lifecycle event, so only
 // listingStatus changes; currentStatus is left as-is.
-export function unpublishAdoptionProfile(animalId: string, email: string, name: string): UnpublishResult {
-  const animal = getAnimalById(animalId);
+export async function unpublishAdoptionProfile(animalId: string, email: string, name: string): Promise<UnpublishResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
   if (animal.listingStatus !== "Current") return { ok: false, reason: "invalid_state" };
 
-  changeAnimalStatus(
+  await changeAnimalStatus(
     animalId,
     { listingStatus: "Removed", statusUpdatedAt: new Date().toISOString() },
     { email, name },

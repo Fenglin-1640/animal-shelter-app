@@ -58,12 +58,12 @@ export type StartApplicationResult =
   | { ok: true; applicationId: string }
   | { ok: false; reason: "animal_not_found" | "not_eligible" };
 
-export function startOrContinueDraft(
+export async function startOrContinueDraft(
   animalId: string,
   email: string,
   name: string,
-): StartApplicationResult {
-  const animal = getAnimalById(animalId);
+): Promise<StartApplicationResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "animal_not_found" };
   if (animal.currentStatus !== "Available For Adoption" || animal.listingStatus !== "Current") {
     return { ok: false, reason: "not_eligible" };
@@ -182,11 +182,11 @@ function setStatus(applicationId: string, patch: Partial<AdoptionApplication>) {
 
 // FR-CHK-02: Approve moves the Animal to Application In Progress and
 // puts every other undecided application for the same Animal On Hold.
-export function approveApplication(
+export async function approveApplication(
   applicationId: string,
   email: string,
   name: string,
-): MutationResult {
+): Promise<MutationResult> {
   const application = getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
 
@@ -198,7 +198,7 @@ export function approveApplication(
     decisionByName: name,
   });
 
-  changeAnimalStatus(
+  await changeAnimalStatus(
     application.animalId,
     { currentStatus: "Application In Progress", statusUpdatedAt: now },
     { email, name },
@@ -276,12 +276,12 @@ export function rejectApplication(
 // the Adopter-facing outcome is the same shape - an ended application
 // with a stated reason - but does move the Animal, because by this point
 // it had already been moved to Application In Progress by Approve.
-export function closeApplicationIncompatible(
+export async function closeApplicationIncompatible(
   applicationId: string,
   reason: string,
   email: string,
   name: string,
-): MutationResult {
+): Promise<MutationResult> {
   const application = getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
 
@@ -293,7 +293,7 @@ export function closeApplicationIncompatible(
     rejectionReason: reason.trim(),
   });
 
-  changeAnimalStatus(
+  await changeAnimalStatus(
     application.animalId,
     { currentStatus: "Available For Adoption", statusUpdatedAt: new Date().toISOString() },
     { email, name },
@@ -306,12 +306,12 @@ export function closeApplicationIncompatible(
 // PRD: "若当前申请失败，可恢复处理" - once the Animal is Available For Adoption
 // again (e.g. after a Meet and Greet Incompatible outcome returns it),
 // an On-Hold application for it can resume being processed.
-export function resumeApplication(applicationId: string): MutationResult {
+export async function resumeApplication(applicationId: string): Promise<MutationResult> {
   const application = getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
   if (application.applicationStatus !== "On Hold") return { ok: false, reason: "not_on_hold" };
 
-  const animal = getAnimalById(application.animalId);
+  const animal = await getAnimalById(application.animalId);
   if (!animal || animal.currentStatus !== "Available For Adoption") {
     return { ok: false, reason: "animal_not_available" };
   }

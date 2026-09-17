@@ -78,13 +78,13 @@ export type MutationResult = { ok: true } | { ok: false; reason: string };
 
 // Veterinarian "创建和最终确认" in one action - each Health Assessment is a
 // single immutable event, not a draft that gets separately finalised.
-export function recordHealthAssessment(
+export async function recordHealthAssessment(
   animalId: string,
   input: HealthAssessmentInput,
   email: string,
   name: string,
-): MutationResult {
-  const animal = getAnimalById(animalId);
+): Promise<MutationResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
   const now = new Date().toISOString();
@@ -104,7 +104,7 @@ export function recordHealthAssessment(
   saveList(HEALTH_KEY, [...loadList<HealthAssessment>(HEALTH_KEY), assessment]);
 
   if (input.urgentTreatmentRequired) {
-    changeAnimalStatus(
+    await changeAnimalStatus(
       animalId,
       { currentStatus: "Under Treatment", statusUpdatedAt: now },
       { email, name },
@@ -133,12 +133,12 @@ export interface TreatmentEventInput {
   furtherTreatmentRequired: boolean;
 }
 
-export function addTreatmentEvent(
+export async function addTreatmentEvent(
   animalId: string,
   input: TreatmentEventInput,
   email: string,
   name: string,
-): MutationResult {
+): Promise<MutationResult> {
   const trigger = getActiveTreatmentTrigger(animalId);
   if (!trigger) return { ok: false, reason: "not_under_treatment" };
 
@@ -157,7 +157,7 @@ export function addTreatmentEvent(
   if (!input.furtherTreatmentRequired) {
     const pathway = trigger.treatmentPathway ?? "intake";
     const nextStatus = pathway === "pre-release" ? "Awaiting Release" : "Under Assessment";
-    changeAnimalStatus(
+    await changeAnimalStatus(
       animalId,
       { currentStatus: nextStatus, statusUpdatedAt: now },
       { email, name },
@@ -191,13 +191,13 @@ export interface VaccinationInput {
   nextBoosterDueDate: string;
 }
 
-export function recordVaccination(
+export async function recordVaccination(
   animalId: string,
   input: VaccinationInput,
   email: string,
   name: string,
-): MutationResult {
-  if (!getAnimalById(animalId)) return { ok: false, reason: "not_found" };
+): Promise<MutationResult> {
+  if (!(await getAnimalById(animalId))) return { ok: false, reason: "not_found" };
   const record: VaccinationRecord = {
     id: generateId("VAC"),
     animalId,
@@ -220,13 +220,13 @@ export function listScheduledDesexing(): DesexingSchedule[] {
   return loadList<DesexingSchedule>(DESEXING_KEY).filter((d) => d.status === "Scheduled");
 }
 
-export function scheduleDesexing(
+export async function scheduleDesexing(
   animalId: string,
   scheduledDate: string,
   email: string,
   name: string,
-): MutationResult {
-  if (!getAnimalById(animalId)) return { ok: false, reason: "not_found" };
+): Promise<MutationResult> {
+  if (!(await getAnimalById(animalId))) return { ok: false, reason: "not_found" };
   if (getDesexingSchedule(animalId)) return { ok: false, reason: "already_scheduled" };
 
   const schedule: DesexingSchedule = {
@@ -338,8 +338,8 @@ export function getLatestPreReleaseCheck(animalId: string): PreReleaseCheck | un
 // recent check stays "Health Concern" until a fresh one is recorded once
 // the Animal is Awaiting Release again, correctly blocking release in
 // the meantime ("要求再次检查").
-export function isFitForRelease(animalId: string): boolean {
-  const animal = getAnimalById(animalId);
+export async function isFitForRelease(animalId: string): Promise<boolean> {
+  const animal = await getAnimalById(animalId);
   if (!animal || animal.currentStatus !== "Awaiting Release") return false;
   return getLatestPreReleaseCheck(animalId)?.fitnessResult === "Fit for Release";
 }
@@ -358,13 +358,13 @@ export interface PreReleaseCheckInput {
 // is already Awaiting Release at this point, so that function's existing
 // pathway classification resolves this to "pre-release" automatically,
 // giving Fit-for-Release-blocking-until-recheck for free.
-export function recordPreReleaseCheck(
+export async function recordPreReleaseCheck(
   animalId: string,
   input: PreReleaseCheckInput,
   email: string,
   name: string,
-): MutationResult {
-  const animal = getAnimalById(animalId);
+): Promise<MutationResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
   if (animal.currentStatus !== "Awaiting Release") return { ok: false, reason: "not_awaiting_release" };
 
@@ -380,7 +380,7 @@ export function recordPreReleaseCheck(
   saveList(PRE_RELEASE_KEY, [...loadList<PreReleaseCheck>(PRE_RELEASE_KEY), check]);
 
   if (input.fitnessResult === "Health Concern") {
-    recordHealthAssessment(
+    await recordHealthAssessment(
       animalId,
       {
         examinationObservations: input.healthFindings,

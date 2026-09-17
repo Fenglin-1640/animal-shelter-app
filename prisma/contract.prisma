@@ -26,3 +26,40 @@ model User {
   failedLoginAttempts Int       @default(0)
   lockedAt            DateTime?
 }
+
+// Mirrors lib/animals/types.ts's Animal interface - the core entity
+// almost every other module (Medical, Behaviour, Statutory Hold,
+// Applications, ...) references by animalId, which is why this is the
+// second (and, for this pilot round, last) slice moved off localStorage.
+// dateOfBirth/estimatedAge stay plain strings (not DateTime) - they're
+// date-only/free-text values from a date picker or free text field, not
+// timestamps, and a DateTime column would risk a timezone-shift bug on
+// round-trip. temperaments is JSON-encoded (string[]) - see
+// lib/animals/serialize.ts. linkedPerson is flattened into two nullable
+// columns instead of a JSON object, for the same "keep it simple, one
+// small object" reasoning as User's overlay fields.
+model Animal {
+  animalId           String   @id
+  shelterId           String   @unique
+  name                String
+  species             String
+  breed               String
+  breedDescription    String
+  sex                 String
+  dateOfBirth         String?
+  estimatedAge        String?
+  coatColour          String
+  coatMarkings        String
+  microchipNumber     String?
+  generalDescription  String
+  temperaments        String
+  adoptionFee         Float?
+  currentStatus       String
+  listingStatus       String
+  statusUpdatedAt     DateTime
+  enteredAt           DateTime
+  lastModifiedAt      DateTime
+  intakeSource        String
+  linkedPersonRole    String?
+  linkedPersonName    String?
+}

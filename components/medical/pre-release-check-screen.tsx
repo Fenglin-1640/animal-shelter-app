@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -277,8 +277,9 @@ function PreReleaseCheckContent({
   displayName: string;
   role: Role;
 }) {
-  const [animal, setAnimal] = useState<Animal | undefined>(() => getAnimalById(animalId));
-  const [checks, setChecks] = useState<PreReleaseCheck[]>(() => (animal ? listPreReleaseChecks(animalId) : []));
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+  const [checks, setChecks] = useState<PreReleaseCheck[]>([]);
+  const [fitForRelease, setFitForRelease] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showReleaseForm, setShowReleaseForm] = useState(false);
   const [releaseError, setReleaseError] = useState("");
@@ -286,15 +287,39 @@ function PreReleaseCheckContent({
   const canAct = CAN_ACT_ROLES.includes(role);
   const canRelease = CAN_RELEASE_ROLES.includes(role);
 
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (cancelled) return;
+      setAnimal(result ?? null);
+      if (result) {
+        setChecks(listPreReleaseChecks(animalId));
+        isFitForRelease(animalId).then((fit) => {
+          if (!cancelled) setFitForRelease(fit);
+        });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal) return <NotFound />;
 
-  const refresh = () => {
-    setAnimal(getAnimalById(animalId));
+  const refresh = async () => {
+    setAnimal((await getAnimalById(animalId)) ?? null);
     setChecks(listPreReleaseChecks(animalId));
+    setFitForRelease(await isFitForRelease(animalId));
   };
 
   const latest = getLatestPreReleaseCheck(animalId);
-  const fitForRelease = isFitForRelease(animalId);
   const canConduct = animal.currentStatus === "Awaiting Release";
   const underTreatment = animal.currentStatus === "Under Treatment";
   const released = animal.currentStatus === "inFollowUpPeriod" || animal.currentStatus === "Rehomed";
@@ -354,8 +379,8 @@ function PreReleaseCheckContent({
                   setShowReleaseForm(false);
                   setReleaseError("");
                 }}
-                onSubmit={(input) => {
-                  const result = releaseAnimal(animalId, input, email, displayName);
+                onSubmit={async (input) => {
+                  const result = await releaseAnimal(animalId, input, email, displayName);
                   if (!result.ok) {
                     setReleaseError(
                       result.reason === "no_finalised_application"
@@ -424,8 +449,8 @@ function PreReleaseCheckContent({
         {canAct && canConduct && showForm && (
           <PreReleaseCheckForm
             onCancel={() => setShowForm(false)}
-            onSubmit={(input) => {
-              recordPreReleaseCheck(animalId, input, email, displayName);
+            onSubmit={async (input) => {
+              await recordPreReleaseCheck(animalId, input, email, displayName);
               setShowForm(false);
               refresh();
             }}

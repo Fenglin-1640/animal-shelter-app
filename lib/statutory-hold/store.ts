@@ -37,7 +37,7 @@ function generateHoldId(): string {
 // Active hold whose holdEndAt has passed is flipped to Expired and, if
 // the Animal is still On Statutory Hold (nothing else has moved it on),
 // reverted to Under Assessment.
-function resolveExpiredHolds() {
+async function resolveExpiredHolds() {
   const all = loadAll();
   const now = new Date();
   let changed = false;
@@ -50,9 +50,9 @@ function resolveExpiredHolds() {
     all[i] = { ...hold, status: "Expired", expiredAt };
     changed = true;
 
-    const animal = getAnimalById(hold.animalId);
+    const animal = await getAnimalById(hold.animalId);
     if (animal?.currentStatus === "On Statutory Hold") {
-      changeAnimalStatus(
+      await changeAnimalStatus(
         hold.animalId,
         { currentStatus: "Under Assessment", statusUpdatedAt: expiredAt },
         SYSTEM_ACTOR,
@@ -64,34 +64,34 @@ function resolveExpiredHolds() {
   if (changed) saveAll(all);
 }
 
-export function listHoldsForAnimal(animalId: string): StatutoryHold[] {
-  resolveExpiredHolds();
+export async function listHoldsForAnimal(animalId: string): Promise<StatutoryHold[]> {
+  await resolveExpiredHolds();
   return loadAll()
     .filter((h) => h.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-export function getLatestHold(animalId: string): StatutoryHold | undefined {
-  return listHoldsForAnimal(animalId)[0];
+export async function getLatestHold(animalId: string): Promise<StatutoryHold | undefined> {
+  return (await listHoldsForAnimal(animalId))[0];
 }
 
 // FR-LIST-01 precondition 3 / FR-MED-03's Pre-Listing gate: "不存在未结束的
 // Statutory Hold".
-export function hasUnresolvedHold(animalId: string): boolean {
-  return listHoldsForAnimal(animalId).some((h) => h.status === "Active");
+export async function hasUnresolvedHold(animalId: string): Promise<boolean> {
+  return (await listHoldsForAnimal(animalId)).some((h) => h.status === "Active");
 }
 
 export type HoldResult = { ok: true; hold: StatutoryHold } | { ok: false; reason: "not_found" };
 
 // FR-MC-02 steps 1-3, run automatically as a consequence of Scan
 // Microchip (FR-MC-01) returning Owner Match.
-export function createHoldForOwnerMatch(
+export async function createHoldForOwnerMatch(
   animalId: string,
   ownerContact: RegisteredOwnerContact,
   email: string,
   name: string,
-): HoldResult {
-  const animal = getAnimalById(animalId);
+): Promise<HoldResult> {
+  const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
   const existing = loadAll().find((h) => h.animalId === animalId);
@@ -115,7 +115,7 @@ export function createHoldForOwnerMatch(
   };
   saveAll([...loadAll(), hold]);
 
-  changeAnimalStatus(
+  await changeAnimalStatus(
     animalId,
     {
       currentStatus: "On Statutory Hold",
@@ -133,12 +133,12 @@ export function createHoldForOwnerMatch(
 export type MutationResult = { ok: true } | { ok: false; reason: "not_found" | "invalid_state" };
 
 // PRD: ownerReclaimed -> Record Owner Reclamation.
-export function recordOwnerReclamation(
+export async function recordOwnerReclamation(
   animalId: string,
   email: string,
   name: string,
-): MutationResult {
-  const hold = getLatestHold(animalId);
+): Promise<MutationResult> {
+  const hold = await getLatestHold(animalId);
   if (!hold) return { ok: false, reason: "not_found" };
   if (hold.status !== "Active") return { ok: false, reason: "invalid_state" };
 
@@ -154,7 +154,7 @@ export function recordOwnerReclamation(
   };
   saveAll(all);
 
-  changeAnimalStatus(
+  await changeAnimalStatus(
     animalId,
     { currentStatus: "Reclaimed By Owner", statusUpdatedAt: now, listingStatus: "Removed" },
     { email, name },
@@ -165,12 +165,12 @@ export function recordOwnerReclamation(
 }
 
 // PRD: 完成 custody transfer 后归档为 ReturnedToOwner (a named final state).
-export function confirmCustodyTransfer(
+export async function confirmCustodyTransfer(
   animalId: string,
   email: string,
   name: string,
-): MutationResult {
-  const hold = getLatestHold(animalId);
+): Promise<MutationResult> {
+  const hold = await getLatestHold(animalId);
   if (!hold) return { ok: false, reason: "not_found" };
   if (hold.status !== "Reclaimed By Owner" || hold.custodyTransferCompletedAt) {
     return { ok: false, reason: "invalid_state" };
@@ -187,7 +187,7 @@ export function confirmCustodyTransfer(
   };
   saveAll(all);
 
-  changeAnimalStatus(
+  await changeAnimalStatus(
     animalId,
     { currentStatus: "ReturnedToOwner", statusUpdatedAt: now },
     { email, name },
@@ -199,8 +199,8 @@ export function confirmCustodyTransfer(
 
 // FR-MC-02 step 4 / FR-NOT-01 "Statutory Hold approaching end date" -
 // holds within the reminder window that haven't ended yet.
-export function listHoldsNeedingReminder(): StatutoryHold[] {
-  resolveExpiredHolds();
+export async function listHoldsNeedingReminder(): Promise<StatutoryHold[]> {
+  await resolveExpiredHolds();
   const now = new Date();
   const reminderLeadDays = getSystemSettings().reminderLeadDays;
   return loadAll().filter((h) => {

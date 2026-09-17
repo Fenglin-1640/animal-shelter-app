@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'81f0bbc8c1247517228ef9b66f8e728527ed068f295823cf71dc1201ac28e8ef'>;
+  StorageHashBase<'760a883a1ff5bf19938530c7dd7bf52d6d375d649ff1bd91efb508b9c4db1d02'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -128,6 +128,31 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly __unbound__: {
+    readonly Animal: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly shelterId: CodecTypes['sqlite/text@1']['output'];
+      readonly name: CodecTypes['sqlite/text@1']['output'];
+      readonly species: CodecTypes['sqlite/text@1']['output'];
+      readonly breed: CodecTypes['sqlite/text@1']['output'];
+      readonly breedDescription: CodecTypes['sqlite/text@1']['output'];
+      readonly sex: CodecTypes['sqlite/text@1']['output'];
+      readonly dateOfBirth: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly estimatedAge: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly coatColour: CodecTypes['sqlite/text@1']['output'];
+      readonly coatMarkings: CodecTypes['sqlite/text@1']['output'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly generalDescription: CodecTypes['sqlite/text@1']['output'];
+      readonly temperaments: CodecTypes['sqlite/text@1']['output'];
+      readonly adoptionFee: CodecTypes['sqlite/real@1']['output'] | null;
+      readonly currentStatus: CodecTypes['sqlite/text@1']['output'];
+      readonly listingStatus: CodecTypes['sqlite/text@1']['output'];
+      readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly enteredAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly lastModifiedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly intakeSource: CodecTypes['sqlite/text@1']['output'];
+      readonly linkedPersonRole: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
+    };
     readonly User: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly email: CodecTypes['sqlite/text@1']['output'];
@@ -151,6 +176,31 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly __unbound__: {
+    readonly Animal: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly shelterId: CodecTypes['sqlite/text@1']['input'];
+      readonly name: CodecTypes['sqlite/text@1']['input'];
+      readonly species: CodecTypes['sqlite/text@1']['input'];
+      readonly breed: CodecTypes['sqlite/text@1']['input'];
+      readonly breedDescription: CodecTypes['sqlite/text@1']['input'];
+      readonly sex: CodecTypes['sqlite/text@1']['input'];
+      readonly dateOfBirth: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly estimatedAge: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly coatColour: CodecTypes['sqlite/text@1']['input'];
+      readonly coatMarkings: CodecTypes['sqlite/text@1']['input'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly generalDescription: CodecTypes['sqlite/text@1']['input'];
+      readonly temperaments: CodecTypes['sqlite/text@1']['input'];
+      readonly adoptionFee: CodecTypes['sqlite/real@1']['input'] | null;
+      readonly currentStatus: CodecTypes['sqlite/text@1']['input'];
+      readonly listingStatus: CodecTypes['sqlite/text@1']['input'];
+      readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly enteredAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly lastModifiedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly intakeSource: CodecTypes['sqlite/text@1']['input'];
+      readonly linkedPersonRole: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly linkedPersonName: CodecTypes['sqlite/text@1']['input'] | null;
+    };
     readonly User: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly email: CodecTypes['sqlite/text@1']['input'];
@@ -174,6 +224,31 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly __unbound__: {
+    readonly animal: {
+      readonly adoptionFee: CodecTypes['sqlite/real@1']['output'] | null;
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly breed: CodecTypes['sqlite/text@1']['output'];
+      readonly breedDescription: CodecTypes['sqlite/text@1']['output'];
+      readonly coatColour: CodecTypes['sqlite/text@1']['output'];
+      readonly coatMarkings: CodecTypes['sqlite/text@1']['output'];
+      readonly currentStatus: CodecTypes['sqlite/text@1']['output'];
+      readonly dateOfBirth: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly enteredAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly estimatedAge: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly generalDescription: CodecTypes['sqlite/text@1']['output'];
+      readonly intakeSource: CodecTypes['sqlite/text@1']['output'];
+      readonly lastModifiedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly linkedPersonRole: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly listingStatus: CodecTypes['sqlite/text@1']['output'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly name: CodecTypes['sqlite/text@1']['output'];
+      readonly sex: CodecTypes['sqlite/text@1']['output'];
+      readonly shelterId: CodecTypes['sqlite/text@1']['output'];
+      readonly species: CodecTypes['sqlite/text@1']['output'];
+      readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly temperaments: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly user: {
       readonly email: CodecTypes['sqlite/text@1']['output'];
       readonly failedLoginAttempts: CodecTypes['sqlite/integer@1']['output'];
@@ -197,6 +272,31 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly __unbound__: {
+    readonly animal: {
+      readonly adoptionFee: CodecTypes['sqlite/real@1']['input'] | null;
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly breed: CodecTypes['sqlite/text@1']['input'];
+      readonly breedDescription: CodecTypes['sqlite/text@1']['input'];
+      readonly coatColour: CodecTypes['sqlite/text@1']['input'];
+      readonly coatMarkings: CodecTypes['sqlite/text@1']['input'];
+      readonly currentStatus: CodecTypes['sqlite/text@1']['input'];
+      readonly dateOfBirth: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly enteredAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly estimatedAge: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly generalDescription: CodecTypes['sqlite/text@1']['input'];
+      readonly intakeSource: CodecTypes['sqlite/text@1']['input'];
+      readonly lastModifiedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly linkedPersonName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly linkedPersonRole: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly listingStatus: CodecTypes['sqlite/text@1']['input'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly name: CodecTypes['sqlite/text@1']['input'];
+      readonly sex: CodecTypes['sqlite/text@1']['input'];
+      readonly shelterId: CodecTypes['sqlite/text@1']['input'];
+      readonly species: CodecTypes['sqlite/text@1']['input'];
+      readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly temperaments: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly user: {
       readonly email: CodecTypes['sqlite/text@1']['input'];
       readonly failedLoginAttempts: CodecTypes['sqlite/integer@1']['input'];
@@ -240,10 +340,37 @@ export namespace Models {
     lockedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type Animal = {
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    shelterId: CodecTypes['sqlite/text@1']['output'];
+    name: CodecTypes['sqlite/text@1']['output'];
+    species: CodecTypes['sqlite/text@1']['output'];
+    breed: CodecTypes['sqlite/text@1']['output'];
+    breedDescription: CodecTypes['sqlite/text@1']['output'];
+    sex: CodecTypes['sqlite/text@1']['output'];
+    dateOfBirth: CodecTypes['sqlite/text@1']['output'] | null;
+    estimatedAge: CodecTypes['sqlite/text@1']['output'] | null;
+    coatColour: CodecTypes['sqlite/text@1']['output'];
+    coatMarkings: CodecTypes['sqlite/text@1']['output'];
+    microchipNumber: CodecTypes['sqlite/text@1']['output'] | null;
+    generalDescription: CodecTypes['sqlite/text@1']['output'];
+    temperaments: CodecTypes['sqlite/text@1']['output'];
+    adoptionFee: CodecTypes['sqlite/real@1']['output'] | null;
+    currentStatus: CodecTypes['sqlite/text@1']['output'];
+    listingStatus: CodecTypes['sqlite/text@1']['output'];
+    statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    enteredAt: CodecTypes['sqlite/datetime@1']['output'];
+    lastModifiedAt: CodecTypes['sqlite/datetime@1']['output'];
+    intakeSource: CodecTypes['sqlite/text@1']['output'];
+    linkedPersonRole: CodecTypes['sqlite/text@1']['output'] | null;
+    linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
   User: Models.User;
+  Animal: Models.Animal;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -264,6 +391,129 @@ type ContractBase = Omit<
         readonly kind: 'sqlite-namespace';
         readonly entries: {
           readonly table: {
+            readonly animal: {
+              columns: {
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly shelterId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly species: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly breed: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly breedDescription: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly sex: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly dateOfBirth: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly estimatedAge: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly coatColour: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly coatMarkings: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly microchipNumber: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly generalDescription: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly temperaments: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adoptionFee: {
+                  readonly nativeType: 'real';
+                  readonly codecId: 'sqlite/real@1';
+                  readonly nullable: true;
+                };
+                readonly currentStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly listingStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly statusUpdatedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly enteredAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly lastModifiedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly intakeSource: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly linkedPersonRole: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly linkedPersonName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['animalId'] };
+              uniques: readonly [{ readonly columns: readonly ['shelterId'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly user: {
               columns: {
                 readonly id: {
@@ -373,11 +623,138 @@ type ContractBase = Omit<
   readonly targetFamily: 'sql';
   readonly roots: {
     readonly user: { readonly namespace: '__unbound__' & NamespaceId; readonly model: 'User' };
+    readonly animal: { readonly namespace: '__unbound__' & NamespaceId; readonly model: 'Animal' };
   };
   readonly domain: {
     readonly namespaces: {
       readonly __unbound__: {
         readonly models: {
+          readonly Animal: {
+            readonly fields: {
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly shelterId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly species: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly breed: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly breedDescription: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly sex: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly dateOfBirth: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly estimatedAge: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly coatColour: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly coatMarkings: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly microchipNumber: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly generalDescription: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly temperaments: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adoptionFee: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/real@1' };
+              };
+              readonly currentStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly listingStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly statusUpdatedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly enteredAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly lastModifiedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly intakeSource: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly linkedPersonRole: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly linkedPersonName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'animal';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly animalId: { readonly column: 'animalId' };
+                readonly shelterId: { readonly column: 'shelterId' };
+                readonly name: { readonly column: 'name' };
+                readonly species: { readonly column: 'species' };
+                readonly breed: { readonly column: 'breed' };
+                readonly breedDescription: { readonly column: 'breedDescription' };
+                readonly sex: { readonly column: 'sex' };
+                readonly dateOfBirth: { readonly column: 'dateOfBirth' };
+                readonly estimatedAge: { readonly column: 'estimatedAge' };
+                readonly coatColour: { readonly column: 'coatColour' };
+                readonly coatMarkings: { readonly column: 'coatMarkings' };
+                readonly microchipNumber: { readonly column: 'microchipNumber' };
+                readonly generalDescription: { readonly column: 'generalDescription' };
+                readonly temperaments: { readonly column: 'temperaments' };
+                readonly adoptionFee: { readonly column: 'adoptionFee' };
+                readonly currentStatus: { readonly column: 'currentStatus' };
+                readonly listingStatus: { readonly column: 'listingStatus' };
+                readonly statusUpdatedAt: { readonly column: 'statusUpdatedAt' };
+                readonly enteredAt: { readonly column: 'enteredAt' };
+                readonly lastModifiedAt: { readonly column: 'lastModifiedAt' };
+                readonly intakeSource: { readonly column: 'intakeSource' };
+                readonly linkedPersonRole: { readonly column: 'linkedPersonRole' };
+                readonly linkedPersonName: { readonly column: 'linkedPersonName' };
+              };
+            };
+          };
           readonly User: {
             readonly fields: {
               readonly id: {

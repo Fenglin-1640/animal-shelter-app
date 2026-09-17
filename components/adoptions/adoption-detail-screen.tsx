@@ -246,8 +246,8 @@ function FinaliseSection({
   // latest Agreement/Payment state after those sections' own actions.
   const blockers = isFinalised ? [] : getFinaliseBlockers(applicationId);
 
-  const handleFinalise = () => {
-    const result = finaliseAdoption(applicationId, email, displayName);
+  const handleFinalise = async () => {
+    const result = await finaliseAdoption(applicationId, email, displayName);
     if (!result.ok) {
       setError(result.blockers.length > 0 ? result.blockers.join(" ") : "Unable to finalise.");
       return;

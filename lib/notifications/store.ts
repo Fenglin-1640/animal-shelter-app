@@ -35,12 +35,14 @@ function daysSince(iso: string): number {
 // FR-MC-02 step 4 / FR-NOT-01 "Statutory Hold approaching end date".
 // Computed live from StatutoryHold records rather than persisted as its
 // own record, since it's fully derived from data that already exists.
-function getStatutoryHoldNotifications(): NotificationItem[] {
-  return listHoldsNeedingReminder().flatMap((hold) => {
-    const animal = getAnimalById(hold.animalId);
-    if (!animal) return [];
+async function getStatutoryHoldNotifications(): Promise<NotificationItem[]> {
+  const holds = await listHoldsNeedingReminder();
+  const items: NotificationItem[] = [];
+  for (const hold of holds) {
+    const animal = await getAnimalById(hold.animalId);
+    if (!animal) continue;
     const remaining = daysUntil(hold.holdEndAt);
-    const item: NotificationItem = {
+    items.push({
       id: `hold-reminder-${hold.id}`,
       type: "Statutory Hold",
       title: "Statutory hold ending soon",
@@ -49,18 +51,20 @@ function getStatutoryHoldNotifications(): NotificationItem[] {
       dueDate: hold.holdEndAt,
       roles: ["Shelter Staff Member", "Administrator"],
       defaultRead: false,
-    };
-    return [item];
-  });
+    });
+  }
+  return items;
 }
 
 // FR-NOT-01 "Behaviour reassessment due".
-function getBehaviourReassessmentNotifications(): NotificationItem[] {
-  return listAssessmentsNeedingReassessment().flatMap((assessment) => {
-    if (!assessment.reassessmentDate || daysUntil(assessment.reassessmentDate) > REMINDER_LEAD_DAYS) return [];
-    const animal = getAnimalById(assessment.animalId);
-    if (!animal) return [];
-    const item: NotificationItem = {
+async function getBehaviourReassessmentNotifications(): Promise<NotificationItem[]> {
+  const assessments = await listAssessmentsNeedingReassessment();
+  const items: NotificationItem[] = [];
+  for (const assessment of assessments) {
+    if (!assessment.reassessmentDate || daysUntil(assessment.reassessmentDate) > REMINDER_LEAD_DAYS) continue;
+    const animal = await getAnimalById(assessment.animalId);
+    if (!animal) continue;
+    items.push({
       id: `behaviour-reassessment-${assessment.id}`,
       type: "Behaviour Reassessment",
       title: "Behaviour reassessment due",
@@ -69,15 +73,15 @@ function getBehaviourReassessmentNotifications(): NotificationItem[] {
       dueDate: assessment.reassessmentDate,
       roles: ["Shelter Staff Member", "Administrator"],
       defaultRead: false,
-    };
-    return [item];
-  });
+    });
+  }
+  return items;
 }
 
 // FR-NOT-01 "Vaccine booster due" - only the latest vaccination per
 // (animal, vaccine type) is checked, so a booster already given doesn't
 // leave a stale reminder pointing at the superseded record.
-function getVaccineBoosterNotifications(): NotificationItem[] {
+async function getVaccineBoosterNotifications(): Promise<NotificationItem[]> {
   const latestByAnimalAndType = new Map<string, VaccinationRecord>();
   for (const v of listAllVaccinations()) {
     const key = `${v.animalId}::${v.vaccineType}`;
@@ -87,11 +91,12 @@ function getVaccineBoosterNotifications(): NotificationItem[] {
     }
   }
 
-  return Array.from(latestByAnimalAndType.values()).flatMap((v) => {
-    if (daysUntil(v.nextBoosterDueDate) > REMINDER_LEAD_DAYS) return [];
-    const animal = getAnimalById(v.animalId);
-    if (!animal) return [];
-    const item: NotificationItem = {
+  const items: NotificationItem[] = [];
+  for (const v of latestByAnimalAndType.values()) {
+    if (daysUntil(v.nextBoosterDueDate) > REMINDER_LEAD_DAYS) continue;
+    const animal = await getAnimalById(v.animalId);
+    if (!animal) continue;
+    items.push({
       id: `vaccine-booster-${v.id}`,
       type: "Vaccine Booster",
       title: "Vaccine booster due",
@@ -100,18 +105,19 @@ function getVaccineBoosterNotifications(): NotificationItem[] {
       dueDate: v.nextBoosterDueDate,
       roles: ["Veterinarian", "Administrator"],
       defaultRead: false,
-    };
-    return [item];
-  });
+    });
+  }
+  return items;
 }
 
 // FR-NOT-01 "Desexing appointment due".
-function getDesexingAppointmentNotifications(): NotificationItem[] {
-  return listScheduledDesexing().flatMap((d) => {
-    if (daysUntil(d.scheduledDate) > REMINDER_LEAD_DAYS) return [];
-    const animal = getAnimalById(d.animalId);
-    if (!animal) return [];
-    const item: NotificationItem = {
+async function getDesexingAppointmentNotifications(): Promise<NotificationItem[]> {
+  const items: NotificationItem[] = [];
+  for (const d of listScheduledDesexing()) {
+    if (daysUntil(d.scheduledDate) > REMINDER_LEAD_DAYS) continue;
+    const animal = await getAnimalById(d.animalId);
+    if (!animal) continue;
+    items.push({
       id: `desexing-${d.id}`,
       type: "Desexing Appointment",
       title: "Desexing appointment due",
@@ -120,9 +126,9 @@ function getDesexingAppointmentNotifications(): NotificationItem[] {
       dueDate: d.scheduledDate,
       roles: ["Veterinarian", "Administrator"],
       defaultRead: false,
-    };
-    return [item];
-  });
+    });
+  }
+  return items;
 }
 
 // FR-NOT-01 "Application decision" - personal to the Adopter who applied
@@ -187,11 +193,13 @@ function getMeetAndGreetNotifications(): NotificationItem[] {
 // FR-NOT-01 "Pre-Release Check required" - an Animal Awaiting Release
 // with no Fit for Release check on file yet (the same condition the
 // Pre-Release Checks queue, FR-REL-01, uses to show "Check Needed").
-function getPreReleaseCheckNotifications(): NotificationItem[] {
-  return getAllAnimals().flatMap((animal) => {
-    if (animal.currentStatus !== "Awaiting Release" || isFitForRelease(animal.animalId)) return [];
+async function getPreReleaseCheckNotifications(): Promise<NotificationItem[]> {
+  const animals = await getAllAnimals();
+  const items: NotificationItem[] = [];
+  for (const animal of animals) {
+    if (animal.currentStatus !== "Awaiting Release" || (await isFitForRelease(animal.animalId))) continue;
     const latest = getLatestPreReleaseCheck(animal.animalId);
-    const item: NotificationItem = {
+    items.push({
       id: `pre-release-${animal.animalId}`,
       type: "Pre-Release Check",
       title: "Pre-Release Check required",
@@ -199,9 +207,9 @@ function getPreReleaseCheckNotifications(): NotificationItem[] {
       createdAt: latest?.createdAt ?? animal.statusUpdatedAt,
       roles: ["Veterinarian", "Administrator"],
       defaultRead: false,
-    };
-    return [item];
-  });
+    });
+  }
+  return items;
 }
 
 // FR-NOT-01 "Follow Up Visit due".
@@ -222,15 +230,23 @@ function getFollowUpVisitNotifications(): NotificationItem[] {
   });
 }
 
-export function getAllNotifications(): NotificationItem[] {
+export async function getAllNotifications(): Promise<NotificationItem[]> {
+  const [statutoryHold, behaviourReassessment, vaccineBooster, desexingAppointment, preReleaseCheck] =
+    await Promise.all([
+      getStatutoryHoldNotifications(),
+      getBehaviourReassessmentNotifications(),
+      getVaccineBoosterNotifications(),
+      getDesexingAppointmentNotifications(),
+      getPreReleaseCheckNotifications(),
+    ]);
   return [
-    ...getStatutoryHoldNotifications(),
-    ...getBehaviourReassessmentNotifications(),
-    ...getVaccineBoosterNotifications(),
-    ...getDesexingAppointmentNotifications(),
+    ...statutoryHold,
+    ...behaviourReassessment,
+    ...vaccineBooster,
+    ...desexingAppointment,
     ...getApplicationDecisionNotifications(),
     ...getMeetAndGreetNotifications(),
-    ...getPreReleaseCheckNotifications(),
+    ...preReleaseCheck,
     ...getFollowUpVisitNotifications(),
     ...getMockNotifications(),
   ];

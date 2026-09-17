@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -424,25 +424,13 @@ function MedicalContent({
   displayName: string;
   role: Role;
 }) {
-  const [animal] = useState<Animal | undefined>(() => getAnimalById(animalId));
-  const [healthAssessments, setHealthAssessments] = useState<HealthAssessment[]>(() =>
-    animal ? listHealthAssessments(animalId) : [],
-  );
-  const [treatmentEvents, setTreatmentEvents] = useState<TreatmentEvent[]>(() =>
-    animal ? listTreatmentEvents(animalId) : [],
-  );
-  const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>(() =>
-    animal ? listVaccinations(animalId) : [],
-  );
-  const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(() =>
-    animal ? getDesexingSchedule(animalId) : undefined,
-  );
-  const [clearance, setClearance] = useState<MedicalClearance | undefined>(() =>
-    animal ? getMedicalClearance(animalId) : undefined,
-  );
-  const [underTreatment, setUnderTreatment] = useState(() =>
-    animal ? Boolean(getActiveTreatmentTrigger(animalId)) : false,
-  );
+  const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
+  const [healthAssessments, setHealthAssessments] = useState<HealthAssessment[]>([]);
+  const [treatmentEvents, setTreatmentEvents] = useState<TreatmentEvent[]>([]);
+  const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
+  const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
+  const [clearance, setClearance] = useState<MedicalClearance | undefined>(undefined);
+  const [underTreatment, setUnderTreatment] = useState(false);
 
   const [showHealthForm, setShowHealthForm] = useState(false);
   const [showTreatmentForm, setShowTreatmentForm] = useState(false);
@@ -452,16 +440,42 @@ function MedicalContent({
   const medicationOptions = getActiveValues("Medication");
   const canAct = CAN_ACT_ROLES.includes(role);
 
+  useEffect(() => {
+    let cancelled = false;
+    getAnimalById(animalId).then((result) => {
+      if (cancelled) return;
+      setAnimal(result ?? null);
+      if (result) {
+        setHealthAssessments(listHealthAssessments(animalId));
+        setTreatmentEvents(listTreatmentEvents(animalId));
+        setVaccinations(listVaccinations(animalId));
+        setDesexing(getDesexingSchedule(animalId));
+        setClearance(getMedicalClearance(animalId));
+        setUnderTreatment(Boolean(getActiveTreatmentTrigger(animalId)));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId]);
+
+  if (animal === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!animal) return <NotFound />;
 
-  const refresh = () => {
+  const refresh = async () => {
     setHealthAssessments(listHealthAssessments(animalId));
     setTreatmentEvents(listTreatmentEvents(animalId));
     setVaccinations(listVaccinations(animalId));
     setDesexing(getDesexingSchedule(animalId));
     setClearance(getMedicalClearance(animalId));
     setUnderTreatment(Boolean(getActiveTreatmentTrigger(animalId)));
-    evaluatePreListingEligibility(animalId);
+    await evaluatePreListingEligibility(animalId);
   };
 
   const clearanceBlockers = getMedicalClearanceBlockers(animalId);
@@ -524,8 +538,8 @@ function MedicalContent({
         {canAct && showHealthForm && (
           <HealthAssessmentForm
             onCancel={() => setShowHealthForm(false)}
-            onSubmit={(input) => {
-              recordHealthAssessment(animalId, input, email, displayName);
+            onSubmit={async (input) => {
+              await recordHealthAssessment(animalId, input, email, displayName);
               setShowHealthForm(false);
               refresh();
             }}
@@ -571,8 +585,8 @@ function MedicalContent({
             <TreatmentEventForm
               medicationOptions={medicationOptions}
               onCancel={() => setShowTreatmentForm(false)}
-              onSubmit={(input) => {
-                addTreatmentEvent(animalId, input, email, displayName);
+              onSubmit={async (input) => {
+                await addTreatmentEvent(animalId, input, email, displayName);
                 setShowTreatmentForm(false);
                 refresh();
               }}
@@ -623,8 +637,8 @@ function MedicalContent({
         {canAct && showVaccinationForm && (
           <VaccinationForm
             onCancel={() => setShowVaccinationForm(false)}
-            onSubmit={(input) => {
-              recordVaccination(animalId, input, email, displayName);
+            onSubmit={async (input) => {
+              await recordVaccination(animalId, input, email, displayName);
               setShowVaccinationForm(false);
               refresh();
             }}
@@ -675,8 +689,8 @@ function MedicalContent({
                 <button
                   type="button"
                   disabled={!scheduledDate}
-                  onClick={() => {
-                    scheduleDesexing(animalId, scheduledDate, email, displayName);
+                  onClick={async () => {
+                    await scheduleDesexing(animalId, scheduledDate, email, displayName);
                     refresh();
                   }}
                   className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
