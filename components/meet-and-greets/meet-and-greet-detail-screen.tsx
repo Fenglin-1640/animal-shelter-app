@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -33,23 +33,38 @@ function NotFound() {
 }
 
 function MeetAndGreetDetailContent({ meetAndGreetId, email }: { meetAndGreetId: string; email: string }) {
-  const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | undefined>(() =>
-    getMeetAndGreet(meetAndGreetId),
-  );
+  const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | null | undefined>(undefined);
 
+  useEffect(() => {
+    let cancelled = false;
+    getMeetAndGreet(meetAndGreetId).then((result) => {
+      if (!cancelled) setMeetAndGreet(result ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [meetAndGreetId]);
+
+  if (meetAndGreet === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!meetAndGreet) return <NotFound />;
   if (meetAndGreet.adopterEmail.toLowerCase() !== email.toLowerCase()) return <AccessDenied />;
 
-  const refresh = () => setMeetAndGreet(getMeetAndGreet(meetAndGreetId));
+  const refresh = async () => setMeetAndGreet((await getMeetAndGreet(meetAndGreetId)) ?? null);
 
-  const handleSelectSlot = (slotId: string) => {
-    selectSlot(meetAndGreetId, slotId);
-    refresh();
+  const handleSelectSlot = async (slotId: string) => {
+    await selectSlot(meetAndGreetId, slotId);
+    await refresh();
   };
 
-  const handleConfirmAttendance = () => {
-    confirmAttendance(meetAndGreetId);
-    refresh();
+  const handleConfirmAttendance = async () => {
+    await confirmAttendance(meetAndGreetId);
+    await refresh();
   };
 
   return (

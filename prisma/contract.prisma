@@ -251,3 +251,35 @@ model SuitabilityCheck {
   completedByEmail String?
   completedByName  String?
 }
+
+// Mirrors lib/meet-and-greets/types.ts (FR-MG-01). slotOptions (array of
+// small {id, dateTime, location} objects, always read/written as a
+// whole) is JSON-encoded, same reasoning as AdoptionApplication.documents.
+// scheduledDate stays a plain String, not DateTime - it's copied
+// verbatim from whichever slotOptions entry the Adopter picks, and those
+// are themselves user-entered datetime-local strings, same reasoning as
+// Medical/Behaviour's user-entered date fields. attendanceConfirmed is
+// Int (0/1), not Boolean - see the note on HealthAssessment above.
+model MeetAndGreet {
+  meetAndGreetId      String    @id
+  applicationId       String
+  animalId            String
+  animalName          String
+  animalSpecies       String
+  adopterEmail        String
+  adopterName         String
+  slotOptions         String
+  selectedSlotId      String?
+  scheduledDate       String?
+  location            String?
+  participants        String
+  staffNotes          String
+  status              String
+  attendanceConfirmed Int
+  outcome             String?
+  outcomeReason       String?
+  createdByEmail      String
+  createdByName       String
+  createdAt           DateTime
+  updatedAt           DateTime
+}

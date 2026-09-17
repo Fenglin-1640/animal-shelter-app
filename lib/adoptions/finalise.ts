@@ -15,7 +15,7 @@ export async function getFinaliseBlockers(applicationId: string): Promise<string
   const application = await getApplication(applicationId);
   if (!application) return ["Application not found."];
 
-  const meetAndGreet = getMeetAndGreetForApplication(applicationId);
+  const meetAndGreet = await getMeetAndGreetForApplication(applicationId);
   if (meetAndGreet?.status !== "Compatible") {
     blockers.push("Meet and Greet outcome must be Compatible.");
   }

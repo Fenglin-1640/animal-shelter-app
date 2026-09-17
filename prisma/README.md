@@ -110,3 +110,14 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
 - `SuitabilityCheck` - see lib/checks/. Mirrored from
   lib/checks/types.ts; one row per check per application (3 per
   application, auto-created on submission).
+- `MeetAndGreet` - see lib/meet-and-greets/. Mirrored from
+  lib/meet-and-greets/types.ts; `slotOptions` (array of small
+  {id, dateTime, location} objects, always read/written as a whole) is
+  JSON-encoded, same reasoning as AdoptionApplication.documents.
+  `scheduledDate` stays a plain String, not DateTime - it's copied
+  verbatim from whichever slotOptions entry the Adopter picks, and
+  those are themselves user-entered datetime-local strings, same
+  reasoning as Medical/Behaviour's user-entered date fields.
+  `attendanceConfirmed` is Int (0/1), same reasoning as
+  HealthAssessment's boolean fields. See
+  lib/meet-and-greets/serialize.ts.

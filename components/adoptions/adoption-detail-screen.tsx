@@ -14,6 +14,7 @@ import type { AdoptionAgreement } from "@/lib/agreements/types";
 import { getApplication } from "@/lib/applications/store";
 import type { AdoptionApplication } from "@/lib/applications/types";
 import { getMeetAndGreetForApplication } from "@/lib/meet-and-greets/store";
+import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
 import { getLatestPaymentForAgreement, verifyPayment } from "@/lib/payments/store";
 import { PAYMENT_STATUS_CATEGORY } from "@/lib/payments/status";
 import type { AdoptionPayment } from "@/lib/payments/types";
@@ -324,13 +325,16 @@ function AdoptionDetailContent({
   role: Role;
 }) {
   const [application, setApplication] = useState<AdoptionApplication | null | undefined>(undefined);
-  const meetAndGreet = getMeetAndGreetForApplication(applicationId);
+  const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | undefined>(undefined);
   const agreement = getActiveAgreementForApplication(applicationId);
 
   useEffect(() => {
     let cancelled = false;
     getApplication(applicationId).then((result) => {
       if (!cancelled) setApplication(result ?? null);
+    });
+    getMeetAndGreetForApplication(applicationId).then((result) => {
+      if (!cancelled) setMeetAndGreet(result);
     });
     return () => {
       cancelled = true;

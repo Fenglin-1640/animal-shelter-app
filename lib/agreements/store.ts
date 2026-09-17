@@ -93,7 +93,7 @@ export async function generateAgreement(applicationId: string, email: string, na
   const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
 
-  const meetAndGreet = getMeetAndGreetForApplication(applicationId);
+  const meetAndGreet = await getMeetAndGreetForApplication(applicationId);
   if (!meetAndGreet || meetAndGreet.status !== "Compatible") {
     return { ok: false, reason: "not_compatible" };
   }

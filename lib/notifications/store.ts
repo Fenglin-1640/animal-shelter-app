@@ -163,8 +163,8 @@ async function getApplicationDecisionNotifications(): Promise<NotificationItem[]
 // FR-NOT-01 "Meet and Greet scheduled" - one entry each for Staff
 // (informational) and the specific Adopter (recipientEmail), matching
 // the two-audience shape the mock data already modelled.
-function getMeetAndGreetNotifications(): NotificationItem[] {
-  return listScheduledMeetAndGreets().flatMap((meetAndGreet) => {
+async function getMeetAndGreetNotifications(): Promise<NotificationItem[]> {
+  return (await listScheduledMeetAndGreets()).flatMap((meetAndGreet) => {
     if (!meetAndGreet.scheduledDate) return [];
     const staffItem: NotificationItem = {
       id: `meet-and-greet-staff-${meetAndGreet.meetAndGreetId}`,
@@ -232,22 +232,30 @@ function getFollowUpVisitNotifications(): NotificationItem[] {
 }
 
 export async function getAllNotifications(): Promise<NotificationItem[]> {
-  const [statutoryHold, behaviourReassessment, vaccineBooster, desexingAppointment, preReleaseCheck, applicationDecision] =
-    await Promise.all([
-      getStatutoryHoldNotifications(),
-      getBehaviourReassessmentNotifications(),
-      getVaccineBoosterNotifications(),
-      getDesexingAppointmentNotifications(),
-      getPreReleaseCheckNotifications(),
-      getApplicationDecisionNotifications(),
-    ]);
+  const [
+    statutoryHold,
+    behaviourReassessment,
+    vaccineBooster,
+    desexingAppointment,
+    preReleaseCheck,
+    applicationDecision,
+    meetAndGreet,
+  ] = await Promise.all([
+    getStatutoryHoldNotifications(),
+    getBehaviourReassessmentNotifications(),
+    getVaccineBoosterNotifications(),
+    getDesexingAppointmentNotifications(),
+    getPreReleaseCheckNotifications(),
+    getApplicationDecisionNotifications(),
+    getMeetAndGreetNotifications(),
+  ]);
   return [
     ...statutoryHold,
     ...behaviourReassessment,
     ...vaccineBooster,
     ...desexingAppointment,
     ...applicationDecision,
-    ...getMeetAndGreetNotifications(),
+    ...meetAndGreet,
     ...preReleaseCheck,
     ...getFollowUpVisitNotifications(),
     ...getMockNotifications(),

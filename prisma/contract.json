@@ -28,6 +28,10 @@
       "model": "MedicalClearance",
       "namespace": "__unbound__"
     },
+    "meetAndGreet": {
+      "model": "MeetAndGreet",
+      "namespace": "__unbound__"
+    },
     "preReleaseCheck": {
       "model": "PreReleaseCheck",
       "namespace": "__unbound__"
@@ -875,6 +879,227 @@
               },
               "namespaceId": "__unbound__",
               "table": "medicalClearance"
+            }
+          },
+          "MeetAndGreet": {
+            "fields": {
+              "adopterEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "adopterName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalSpecies": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "applicationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "attendanceConfirmed": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "location": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "meetAndGreetId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcome": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcomeReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "participants": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "scheduledDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "selectedSlotId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "slotOptions": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "staffNotes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "adopterEmail": {
+                  "column": "adopterEmail"
+                },
+                "adopterName": {
+                  "column": "adopterName"
+                },
+                "animalId": {
+                  "column": "animalId"
+                },
+                "animalName": {
+                  "column": "animalName"
+                },
+                "animalSpecies": {
+                  "column": "animalSpecies"
+                },
+                "applicationId": {
+                  "column": "applicationId"
+                },
+                "attendanceConfirmed": {
+                  "column": "attendanceConfirmed"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdByEmail": {
+                  "column": "createdByEmail"
+                },
+                "createdByName": {
+                  "column": "createdByName"
+                },
+                "location": {
+                  "column": "location"
+                },
+                "meetAndGreetId": {
+                  "column": "meetAndGreetId"
+                },
+                "outcome": {
+                  "column": "outcome"
+                },
+                "outcomeReason": {
+                  "column": "outcomeReason"
+                },
+                "participants": {
+                  "column": "participants"
+                },
+                "scheduledDate": {
+                  "column": "scheduledDate"
+                },
+                "selectedSlotId": {
+                  "column": "selectedSlotId"
+                },
+                "slotOptions": {
+                  "column": "slotOptions"
+                },
+                "staffNotes": {
+                  "column": "staffNotes"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "meetAndGreet"
             }
           },
           "PreReleaseCheck": {
@@ -2306,6 +2531,123 @@
               },
               "uniques": []
             },
+            "meetAndGreet": {
+              "columns": {
+                "adopterEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "adopterName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalSpecies": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "applicationId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "attendanceConfirmed": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "location": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "meetAndGreetId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "outcome": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "outcomeReason": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "participants": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "scheduledDate": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "selectedSlotId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "slotOptions": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "staffNotes": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "meetAndGreetId"
+                ]
+              },
+              "uniques": []
+            },
             "preReleaseCheck": {
               "columns": {
                 "animalId": {
@@ -2850,7 +3192,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "a37abf57421f3588318111cf4e1b9ffdeeeabe62ad7dedd83098b679473b14c6"
+    "storageHash": "d051d5011c212f923be3dc641aec4fea99bb085a98f293d312ea9c0e631ff255"
   },
   "capabilities": {
     "sql": {

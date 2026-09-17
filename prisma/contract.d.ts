@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a37abf57421f3588318111cf4e1b9ffdeeeabe62ad7dedd83098b679473b14c6'>;
+  StorageHashBase<'d051d5011c212f923be3dc641aec4fea99bb085a98f293d312ea9c0e631ff255'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -215,6 +215,29 @@ export type FieldOutputTypes = {
       readonly issuedByName: CodecTypes['sqlite/text@1']['output'];
       readonly issuedAt: CodecTypes['sqlite/datetime@1']['output'];
     };
+    readonly MeetAndGreet: {
+      readonly meetAndGreetId: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly slotOptions: CodecTypes['sqlite/text@1']['output'];
+      readonly selectedSlotId: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly location: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly participants: CodecTypes['sqlite/text@1']['output'];
+      readonly staffNotes: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly attendanceConfirmed: CodecTypes['sqlite/integer@1']['output'];
+      readonly outcome: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly outcomeReason: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly createdByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly createdByName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly PreReleaseCheck: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -408,6 +431,29 @@ export type FieldInputTypes = {
       readonly issuedByEmail: CodecTypes['sqlite/text@1']['input'];
       readonly issuedByName: CodecTypes['sqlite/text@1']['input'];
       readonly issuedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly MeetAndGreet: {
+      readonly meetAndGreetId: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly slotOptions: CodecTypes['sqlite/text@1']['input'];
+      readonly selectedSlotId: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly location: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly participants: CodecTypes['sqlite/text@1']['input'];
+      readonly staffNotes: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly attendanceConfirmed: CodecTypes['sqlite/integer@1']['input'];
+      readonly outcome: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly outcomeReason: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly createdByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly createdByName: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
     };
     readonly PreReleaseCheck: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -603,6 +649,29 @@ export type StorageColumnTypes = {
       readonly issuedByEmail: CodecTypes['sqlite/text@1']['output'];
       readonly issuedByName: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly meetAndGreet: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly attendanceConfirmed: CodecTypes['sqlite/integer@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly createdByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly createdByName: CodecTypes['sqlite/text@1']['output'];
+      readonly location: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly meetAndGreetId: CodecTypes['sqlite/text@1']['output'];
+      readonly outcome: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly outcomeReason: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly participants: CodecTypes['sqlite/text@1']['output'];
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly selectedSlotId: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly slotOptions: CodecTypes['sqlite/text@1']['output'];
+      readonly staffNotes: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly preReleaseCheck: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
       readonly careInstructions: CodecTypes['sqlite/text@1']['output'];
@@ -796,6 +865,29 @@ export type StorageColumnInputTypes = {
       readonly issuedAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly issuedByEmail: CodecTypes['sqlite/text@1']['input'];
       readonly issuedByName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly meetAndGreet: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly attendanceConfirmed: CodecTypes['sqlite/integer@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly createdByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly createdByName: CodecTypes['sqlite/text@1']['input'];
+      readonly location: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly meetAndGreetId: CodecTypes['sqlite/text@1']['input'];
+      readonly outcome: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly outcomeReason: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly participants: CodecTypes['sqlite/text@1']['input'];
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly selectedSlotId: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly slotOptions: CodecTypes['sqlite/text@1']['input'];
+      readonly staffNotes: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
     };
     readonly preReleaseCheck: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -1107,6 +1199,30 @@ export namespace Models {
     completedByName: CodecTypes['sqlite/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type MeetAndGreet = {
+    meetAndGreetId: CodecTypes['sqlite/text@1']['output'];
+    applicationId: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    animalName: CodecTypes['sqlite/text@1']['output'];
+    animalSpecies: CodecTypes['sqlite/text@1']['output'];
+    adopterEmail: CodecTypes['sqlite/text@1']['output'];
+    adopterName: CodecTypes['sqlite/text@1']['output'];
+    slotOptions: CodecTypes['sqlite/text@1']['output'];
+    selectedSlotId: CodecTypes['sqlite/text@1']['output'] | null;
+    scheduledDate: CodecTypes['sqlite/text@1']['output'] | null;
+    location: CodecTypes['sqlite/text@1']['output'] | null;
+    participants: CodecTypes['sqlite/text@1']['output'];
+    staffNotes: CodecTypes['sqlite/text@1']['output'];
+    status: CodecTypes['sqlite/text@1']['output'];
+    attendanceConfirmed: CodecTypes['sqlite/integer@1']['output'];
+    outcome: CodecTypes['sqlite/text@1']['output'] | null;
+    outcomeReason: CodecTypes['sqlite/text@1']['output'] | null;
+    createdByEmail: CodecTypes['sqlite/text@1']['output'];
+    createdByName: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -1123,6 +1239,7 @@ export declare const models: {
   StatutoryHold: Models.StatutoryHold;
   AdoptionApplication: Models.AdoptionApplication;
   SuitabilityCheck: Models.SuitabilityCheck;
+  MeetAndGreet: Models.MeetAndGreet;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -1562,6 +1679,119 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly meetAndGreet: {
+              columns: {
+                readonly meetAndGreetId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly applicationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalSpecies: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly slotOptions: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly selectedSlotId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly scheduledDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly location: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly participants: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly staffNotes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly attendanceConfirmed: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly outcome: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly outcomeReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly createdByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['meetAndGreetId'] };
               uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
@@ -2128,6 +2358,10 @@ type ContractBase = Omit<
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'SuitabilityCheck';
     };
+    readonly meetAndGreet: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'MeetAndGreet';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -2571,6 +2805,122 @@ type ContractBase = Omit<
                 readonly issuedByEmail: { readonly column: 'issuedByEmail' };
                 readonly issuedByName: { readonly column: 'issuedByName' };
                 readonly issuedAt: { readonly column: 'issuedAt' };
+              };
+            };
+          };
+          readonly MeetAndGreet: {
+            readonly fields: {
+              readonly meetAndGreetId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalSpecies: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly slotOptions: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly selectedSlotId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly scheduledDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly location: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly participants: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly staffNotes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly attendanceConfirmed: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly outcome: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly outcomeReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'meetAndGreet';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly meetAndGreetId: { readonly column: 'meetAndGreetId' };
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly animalName: { readonly column: 'animalName' };
+                readonly animalSpecies: { readonly column: 'animalSpecies' };
+                readonly adopterEmail: { readonly column: 'adopterEmail' };
+                readonly adopterName: { readonly column: 'adopterName' };
+                readonly slotOptions: { readonly column: 'slotOptions' };
+                readonly selectedSlotId: { readonly column: 'selectedSlotId' };
+                readonly scheduledDate: { readonly column: 'scheduledDate' };
+                readonly location: { readonly column: 'location' };
+                readonly participants: { readonly column: 'participants' };
+                readonly staffNotes: { readonly column: 'staffNotes' };
+                readonly status: { readonly column: 'status' };
+                readonly attendanceConfirmed: { readonly column: 'attendanceConfirmed' };
+                readonly outcome: { readonly column: 'outcome' };
+                readonly outcomeReason: { readonly column: 'outcomeReason' };
+                readonly createdByEmail: { readonly column: 'createdByEmail' };
+                readonly createdByName: { readonly column: 'createdByName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
           };

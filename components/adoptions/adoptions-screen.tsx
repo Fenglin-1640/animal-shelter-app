@@ -59,11 +59,15 @@ function AdoptionsContent() {
   useEffect(() => {
     let cancelled = false;
     listAllApplications()
-      .then((applications) => {
+      .then(async (applications) => {
         if (cancelled) return;
-        const result = applications
-          .filter((a) => isInAdoptionsStage(a.applicationStatus, getMeetAndGreetForApplication(a.applicationId)?.status))
-          .map((a) => {
+        const withMeetAndGreets = await Promise.all(
+          applications.map(async (a) => ({ a, meetAndGreet: await getMeetAndGreetForApplication(a.applicationId) })),
+        );
+        if (cancelled) return;
+        const result = withMeetAndGreets
+          .filter(({ a, meetAndGreet }) => isInAdoptionsStage(a.applicationStatus, meetAndGreet?.status))
+          .map(({ a }) => {
             const agreement = getActiveAgreementForApplication(a.applicationId);
             const payment = agreement ? getLatestPaymentForAgreement(agreement.agreementId) : undefined;
             const stage = computeStageLabel(a.applicationStatus, agreement?.isSigned, payment?.paymentStatus);

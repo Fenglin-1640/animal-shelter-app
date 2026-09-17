@@ -160,9 +160,7 @@ function MeetAndGreetSection({
   email: string;
   displayName: string;
 }) {
-  const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | undefined>(() =>
-    getMeetAndGreetForApplication(applicationId),
-  );
+  const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | null | undefined>(undefined);
   const [slots, setSlots] = useState([{ dateTime: "", location: "" }]);
   const [participants, setParticipants] = useState("");
   const [outcome, setOutcome] = useState<"Compatible" | "Incompatible">("Compatible");
@@ -170,7 +168,17 @@ function MeetAndGreetSection({
   const [staffNotes, setStaffNotes] = useState("");
   const [showOutcomeForm, setShowOutcomeForm] = useState(false);
 
-  const refresh = () => setMeetAndGreet(getMeetAndGreetForApplication(applicationId));
+  useEffect(() => {
+    let cancelled = false;
+    getMeetAndGreetForApplication(applicationId).then((result) => {
+      if (!cancelled) setMeetAndGreet(result ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
+
+  const refresh = async () => setMeetAndGreet((await getMeetAndGreetForApplication(applicationId)) ?? null);
 
   const handleProposeSlots = async () => {
     const validSlots = slots.filter((s) => s.dateTime && s.location.trim());
@@ -182,7 +190,7 @@ function MeetAndGreetSection({
       email,
       displayName,
     );
-    refresh();
+    await refresh();
   };
 
   const handleRecordOutcome = async () => {
@@ -190,8 +198,17 @@ function MeetAndGreetSection({
     if (outcome === "Incompatible" && !outcomeReason.trim()) return;
     await recordOutcome(meetAndGreet.meetAndGreetId, outcome, outcomeReason, staffNotes, email, displayName);
     setShowOutcomeForm(false);
-    refresh();
+    await refresh();
   };
+
+  if (meetAndGreet === undefined) {
+    return (
+      <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+        <h2 className="text-lg font-bold text-text">Meet and Greet</h2>
+        <p className="mt-2 text-sm text-text-muted">Loading...</p>
+      </section>
+    );
+  }
 
   if (!meetAndGreet) {
     if (!canAct) {
