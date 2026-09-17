@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -15,13 +15,8 @@ import {
 } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication } from "@/lib/applications/types";
-import {
-  allChecksComplete,
-  allChecksPass,
-  completeCheck,
-  listChecksForApplication,
-} from "@/lib/checks/store";
-import type { CheckOutcome, SuitabilityCheck } from "@/lib/checks/types";
+import { completeCheck, listChecksForApplication } from "@/lib/checks/store";
+import { CHECK_TYPES, type CheckOutcome, type SuitabilityCheck } from "@/lib/checks/types";
 import {
   getMeetAndGreetForApplication,
   proposeSlots,
@@ -177,10 +172,10 @@ function MeetAndGreetSection({
 
   const refresh = () => setMeetAndGreet(getMeetAndGreetForApplication(applicationId));
 
-  const handleProposeSlots = () => {
+  const handleProposeSlots = async () => {
     const validSlots = slots.filter((s) => s.dateTime && s.location.trim());
     if (validSlots.length === 0) return;
-    proposeSlots(
+    await proposeSlots(
       applicationId,
       validSlots.map((s) => ({ dateTime: new Date(s.dateTime).toISOString(), location: s.location })),
       participants,
@@ -190,10 +185,10 @@ function MeetAndGreetSection({
     refresh();
   };
 
-  const handleRecordOutcome = () => {
+  const handleRecordOutcome = async () => {
     if (!meetAndGreet) return;
     if (outcome === "Incompatible" && !outcomeReason.trim()) return;
-    recordOutcome(meetAndGreet.meetAndGreetId, outcome, outcomeReason, staffNotes, email, displayName);
+    await recordOutcome(meetAndGreet.meetAndGreetId, outcome, outcomeReason, staffNotes, email, displayName);
     setShowOutcomeForm(false);
     refresh();
   };
@@ -359,53 +354,74 @@ function AdoptionApplicationDetailContent({
   displayName: string;
   role: Role;
 }) {
-  const [application, setApplication] = useState<AdoptionApplication | undefined>(() =>
-    getApplication(applicationId),
-  );
-  const [checks, setChecks] = useState<SuitabilityCheck[]>(() =>
-    application ? listChecksForApplication(applicationId) : [],
-  );
+  const [application, setApplication] = useState<AdoptionApplication | null | undefined>(undefined);
+  const [checks, setChecks] = useState<SuitabilityCheck[]>([]);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
 
   const canAct = CAN_ACT_ROLES.includes(role);
 
-  if (!application) return <NotFound />;
-
-  const refresh = () => {
-    setApplication(getApplication(applicationId));
-    setChecks(listChecksForApplication(applicationId));
+  const refresh = async () => {
+    const [applicationResult, checksResult] = await Promise.all([
+      getApplication(applicationId),
+      listChecksForApplication(applicationId),
+    ]);
+    setApplication(applicationResult ?? null);
+    setChecks(checksResult);
   };
 
-  const handleCompleteCheck = (
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([getApplication(applicationId), listChecksForApplication(applicationId)]).then(
+      ([applicationResult, checksResult]) => {
+        if (cancelled) return;
+        setApplication(applicationResult ?? null);
+        setChecks(checksResult);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
+
+  if (application === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
+  if (!application) return <NotFound />;
+
+  const handleCompleteCheck = async (
     checkId: string,
     outcome: Exclude<CheckOutcome, "Pending">,
     notes: string,
     date: string,
   ) => {
-    completeCheck(checkId, outcome, notes, new Date(date).toISOString(), email, displayName);
-    refresh();
+    await completeCheck(checkId, outcome, notes, new Date(date).toISOString(), email, displayName);
+    await refresh();
   };
 
   const handleApprove = async () => {
     await approveApplication(applicationId, email, displayName);
-    refresh();
+    await refresh();
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!rejectionReason.trim()) return;
-    rejectApplication(applicationId, rejectionReason, email, displayName);
+    await rejectApplication(applicationId, rejectionReason, email, displayName);
     setShowRejectForm(false);
-    refresh();
+    await refresh();
   };
 
   const handleResume = async () => {
     const result = await resumeApplication(applicationId);
-    if (result.ok) refresh();
+    if (result.ok) await refresh();
   };
 
-  const checksComplete = allChecksComplete(applicationId);
-  const checksPass = allChecksPass(applicationId);
+  const checksComplete = checks.length === CHECK_TYPES.length && checks.every((c) => c.outcome !== "Pending");
+  const checksPass = checksComplete && checks.every((c) => c.outcome === "Pass");
   const canDecide = checksComplete && application.applicationStatus !== "Approved" && application.applicationStatus !== "Rejected";
   const snapshot = application.profileSnapshot;
 

@@ -99,3 +99,14 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   columns, same reasoning as Animal's `linkedPerson`. Every date field
   is system-generated (all `DateTime`) - unlike Medical/Behaviour, there
   are no user-entered dates here. See lib/statutory-hold/serialize.ts.
+- `AdoptionApplication` - see lib/applications/. Mirrored from
+  lib/applications/types.ts; `documents` (array) and `profileSnapshot`
+  (a whole nested object, read/written wholesale, never queried
+  field-by-field) are both JSON-encoded into single `String` columns -
+  unlike the flattened-column treatment given to Animal's
+  `linkedPerson`/StatutoryHold's `ownerContact`, which are small and
+  fixed-shape enough to be worth individual columns. See
+  lib/applications/serialize.ts.
+- `SuitabilityCheck` - see lib/checks/. Mirrored from
+  lib/checks/types.ts; one row per check per application (3 per
+  application, auto-created on submission).

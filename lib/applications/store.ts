@@ -4,50 +4,51 @@ import { getAdopterProfileSubmissionBlockers } from "@/lib/adopter-profile/types
 import { writeAuditLog } from "@/lib/audit/store";
 import type { AdoptionApplication, ApplicationDocument } from "@/lib/applications/types";
 
-// FR-APP-01: AdoptionApplication records, persisted to localStorage
-// since there is no backend.
-const STORAGE_KEY = "asams-adoption-applications";
+// FR-APP-01: AdoptionApplication now lives in the database (see
+// prisma/contract.prisma) behind /api/applications - see
+// prisma/README.md for this Prisma toolchain's quirks.
 
-function loadAll(): AdoptionApplication[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as AdoptionApplication[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAll(): Promise<AdoptionApplication[]> {
+  const response = await fetch("/api/applications");
+  const result = await response.json();
+  return result.items as AdoptionApplication[];
 }
 
-function saveAll(all: AdoptionApplication[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+async function patchApplication(applicationId: string, patch: Partial<AdoptionApplication>): Promise<void> {
+  await fetch(`/api/applications/${applicationId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
 }
 
 function generateApplicationId(): string {
   return `APP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-export function listMyApplications(email: string): AdoptionApplication[] {
+export async function listMyApplications(email: string): Promise<AdoptionApplication[]> {
   const normalized = email.trim().toLowerCase();
-  return loadAll()
+  const all = await fetchAll();
+  return all
     .filter((a) => a.adopterEmail.toLowerCase() === normalized)
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 }
 
-export function listApplicationsForAnimal(animalId: string): AdoptionApplication[] {
-  return loadAll()
+export async function listApplicationsForAnimal(animalId: string): Promise<AdoptionApplication[]> {
+  const all = await fetchAll();
+  return all
     .filter((a) => a.animalId === animalId)
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 }
 
-export function listAllApplications(): AdoptionApplication[] {
-  return loadAll().sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+export async function listAllApplications(): Promise<AdoptionApplication[]> {
+  const all = await fetchAll();
+  return all.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 }
 
-export function getApplication(applicationId: string): AdoptionApplication | undefined {
-  return loadAll().find((a) => a.applicationId === applicationId);
+export async function getApplication(applicationId: string): Promise<AdoptionApplication | undefined> {
+  const all = await fetchAll();
+  return all.find((a) => a.applicationId === applicationId);
 }
 
 // BR-008 / FR-APP-01: only an eligible, currently-listed, accepting
@@ -69,7 +70,7 @@ export async function startOrContinueDraft(
     return { ok: false, reason: "not_eligible" };
   }
 
-  const existingDraft = loadAll().find(
+  const existingDraft = (await fetchAll()).find(
     (a) =>
       a.animalId === animalId &&
       a.adopterEmail.toLowerCase() === email.trim().toLowerCase() &&
@@ -92,23 +93,25 @@ export async function startOrContinueDraft(
     createdAt: now,
     updatedAt: now,
   };
-  saveAll([...loadAll(), application]);
+  await fetch("/api/applications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(application),
+  });
   return { ok: true, applicationId: application.applicationId };
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: string };
 
-export function updateDraft(
+export async function updateDraft(
   applicationId: string,
   input: { motivationStatement: string; documents: ApplicationDocument[] },
-): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((a) => a.applicationId === applicationId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  if (all[index].applicationStatus !== "Draft") return { ok: false, reason: "not_draft" };
+): Promise<MutationResult> {
+  const application = await getApplication(applicationId);
+  if (!application) return { ok: false, reason: "not_found" };
+  if (application.applicationStatus !== "Draft") return { ok: false, reason: "not_draft" };
 
-  all[index] = { ...all[index], ...input, updatedAt: new Date().toISOString() };
-  saveAll(all);
+  await patchApplication(applicationId, { ...input, updatedAt: new Date().toISOString() });
   return { ok: true };
 }
 
@@ -121,11 +124,9 @@ export type SubmitResult =
   | { ok: true }
   | { ok: false; reason: "not_found" | "not_draft" | "blocked"; blockers?: string[] };
 
-export function submitApplication(applicationId: string): SubmitResult {
-  const all = loadAll();
-  const index = all.findIndex((a) => a.applicationId === applicationId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  const application = all[index];
+export async function submitApplication(applicationId: string): Promise<SubmitResult> {
+  const application = await getApplication(applicationId);
+  if (!application) return { ok: false, reason: "not_found" };
   if (application.applicationStatus !== "Draft") return { ok: false, reason: "not_draft" };
 
   const blockers: string[] = [];
@@ -137,14 +138,12 @@ export function submitApplication(applicationId: string): SubmitResult {
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
 
   const now = new Date().toISOString();
-  all[index] = {
-    ...application,
+  await patchApplication(applicationId, {
     profileSnapshot: profile,
     applicationStatus: "Submitted",
     submissionDate: now,
     updatedAt: now,
-  };
-  saveAll(all);
+  });
 
   writeAuditLog({
     userId: application.adopterEmail,
@@ -163,21 +162,14 @@ export function submitApplication(applicationId: string): SubmitResult {
 // Called once a check moves off Pending (components/checks), so
 // applicationStatus reflects that review has begun - avoids a circular
 // import between lib/applications and lib/checks.
-export function markUnderReview(applicationId: string) {
-  const all = loadAll();
-  const index = all.findIndex((a) => a.applicationId === applicationId);
-  if (index === -1) return;
-  if (all[index].applicationStatus !== "Submitted") return;
-  all[index] = { ...all[index], applicationStatus: "Under Review", updatedAt: new Date().toISOString() };
-  saveAll(all);
+export async function markUnderReview(applicationId: string): Promise<void> {
+  const application = await getApplication(applicationId);
+  if (!application || application.applicationStatus !== "Submitted") return;
+  await patchApplication(applicationId, { applicationStatus: "Under Review", updatedAt: new Date().toISOString() });
 }
 
-function setStatus(applicationId: string, patch: Partial<AdoptionApplication>) {
-  const all = loadAll();
-  const index = all.findIndex((a) => a.applicationId === applicationId);
-  if (index === -1) return;
-  all[index] = { ...all[index], ...patch, updatedAt: new Date().toISOString() };
-  saveAll(all);
+async function setStatus(applicationId: string, patch: Partial<AdoptionApplication>): Promise<void> {
+  await patchApplication(applicationId, { ...patch, updatedAt: new Date().toISOString() });
 }
 
 // FR-CHK-02: Approve moves the Animal to Application In Progress and
@@ -187,11 +179,11 @@ export async function approveApplication(
   email: string,
   name: string,
 ): Promise<MutationResult> {
-  const application = getApplication(applicationId);
+  const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
 
   const now = new Date().toISOString();
-  setStatus(applicationId, {
+  await setStatus(applicationId, {
     applicationStatus: "Approved",
     decisionDate: now,
     decisionByEmail: email,
@@ -220,12 +212,12 @@ export async function approveApplication(
     result: "Success",
   });
 
-  for (const other of listApplicationsForAnimal(application.animalId)) {
+  for (const other of await listApplicationsForAnimal(application.animalId)) {
     if (
       other.applicationId !== applicationId &&
       (other.applicationStatus === "Submitted" || other.applicationStatus === "Under Review")
     ) {
-      setStatus(other.applicationId, { applicationStatus: "On Hold" });
+      await setStatus(other.applicationId, { applicationStatus: "On Hold" });
     }
   }
 
@@ -236,17 +228,17 @@ export async function approveApplication(
 // Available For Adoption by an application that gets rejected before
 // ever being approved (the only path this prototype exercises), so
 // currentStatus is left untouched - "Animal 保持...Available For Adoption".
-export function rejectApplication(
+export async function rejectApplication(
   applicationId: string,
   reason: string,
   email: string,
   name: string,
-): MutationResult {
+): Promise<MutationResult> {
   if (!reason.trim()) return { ok: false, reason: "reason_required" };
-  const application = getApplication(applicationId);
+  const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
 
-  setStatus(applicationId, {
+  await setStatus(applicationId, {
     applicationStatus: "Rejected",
     decisionDate: new Date().toISOString(),
     decisionByEmail: email,
@@ -282,10 +274,10 @@ export async function closeApplicationIncompatible(
   email: string,
   name: string,
 ): Promise<MutationResult> {
-  const application = getApplication(applicationId);
+  const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
 
-  setStatus(applicationId, {
+  await setStatus(applicationId, {
     applicationStatus: "Rejected",
     decisionDate: new Date().toISOString(),
     decisionByEmail: email,
@@ -307,7 +299,7 @@ export async function closeApplicationIncompatible(
 // again (e.g. after a Meet and Greet Incompatible outcome returns it),
 // an On-Hold application for it can resume being processed.
 export async function resumeApplication(applicationId: string): Promise<MutationResult> {
-  const application = getApplication(applicationId);
+  const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
   if (application.applicationStatus !== "On Hold") return { ok: false, reason: "not_on_hold" };
 
@@ -316,10 +308,10 @@ export async function resumeApplication(applicationId: string): Promise<Mutation
     return { ok: false, reason: "animal_not_available" };
   }
 
-  setStatus(applicationId, { applicationStatus: "Under Review" });
+  await setStatus(applicationId, { applicationStatus: "Under Review" });
   return { ok: true };
 }
 
-export function markFinalised(applicationId: string) {
-  setStatus(applicationId, { applicationStatus: "Finalised" });
+export async function markFinalised(applicationId: string): Promise<void> {
+  await setStatus(applicationId, { applicationStatus: "Finalised" });
 }

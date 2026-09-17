@@ -1,17 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getActiveAgreementForApplication } from "@/lib/agreements/store";
+import type { AdoptionAgreement } from "@/lib/agreements/types";
 import { listAllApplications } from "@/lib/applications/store";
+import type { AdoptionApplication } from "@/lib/applications/types";
 import { getMeetAndGreetForApplication } from "@/lib/meet-and-greets/store";
 import { getLatestPaymentForAgreement } from "@/lib/payments/store";
+import type { AdoptionPayment } from "@/lib/payments/types";
 import type { Role } from "@/lib/roles/roles";
 import type { StatusCategory } from "@/lib/shared/status-category";
+
+interface AdoptionRow {
+  application: AdoptionApplication;
+  agreement: AdoptionAgreement | undefined;
+  payment: AdoptionPayment | undefined;
+  stage: { label: string; category: StatusCategory };
+}
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 
@@ -41,18 +51,40 @@ function formatDate(iso: string): string {
 
 function AdoptionsContent() {
   const [search, setSearch] = useState("");
+  const [rows, setRows] = useState<AdoptionRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const rows = useMemo(() => {
-    return listAllApplications()
-      .filter((a) => isInAdoptionsStage(a.applicationStatus, getMeetAndGreetForApplication(a.applicationId)?.status))
-      .map((a) => {
-        const agreement = getActiveAgreementForApplication(a.applicationId);
-        const payment = agreement ? getLatestPaymentForAgreement(agreement.agreementId) : undefined;
-        const stage = computeStageLabel(a.applicationStatus, agreement?.isSigned, payment?.paymentStatus);
-        return { application: a, agreement, payment, stage };
+  useEffect(() => {
+    let cancelled = false;
+    listAllApplications()
+      .then((applications) => {
+        if (cancelled) return;
+        const result = applications
+          .filter((a) => isInAdoptionsStage(a.applicationStatus, getMeetAndGreetForApplication(a.applicationId)?.status))
+          .map((a) => {
+            const agreement = getActiveAgreementForApplication(a.applicationId);
+            const payment = agreement ? getLatestPaymentForAgreement(agreement.agreementId) : undefined;
+            const stage = computeStageLabel(a.applicationStatus, agreement?.isSigned, payment?.paymentStatus);
+            return { application: a, agreement, payment, stage };
+          })
+          .sort((a, b) => new Date(b.application.updatedAt).getTime() - new Date(a.application.updatedAt).getTime());
+        setRows(result);
+        setLoadError(null);
       })
-      .sort((a, b) => new Date(b.application.updatedAt).getTime() - new Date(a.application.updatedAt).getTime());
-  }, []);
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load adoptions. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   const filtered = rows.filter((row) => {
     const query = search.trim().toLowerCase();
@@ -84,7 +116,25 @@ function AdoptionsContent() {
         />
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+          Loading adoptions...
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+          <p className="text-sm font-semibold text-text">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsLoading(true);
+              setRefreshKey((k) => k + 1);
+            }}
+            className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+          >
+            Retry
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
           <p className="text-sm font-semibold text-text">
             No adoptions are ready for an agreement yet.

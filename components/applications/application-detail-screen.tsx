@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -53,16 +53,34 @@ function nextStepMessage(application: AdoptionApplication): string | null {
 
 function ApplicationDetailContent({ applicationId, email }: { applicationId: string; email: string }) {
   const router = useRouter();
-  const [application, setApplication] = useState<AdoptionApplication | undefined>(() =>
-    getApplication(applicationId),
-  );
-  const [motivation, setMotivation] = useState(application?.motivationStatement ?? "");
-  const [documents, setDocuments] = useState<ApplicationDocument[]>(application?.documents ?? []);
+  const [application, setApplication] = useState<AdoptionApplication | null | undefined>(undefined);
+  const [motivation, setMotivation] = useState("");
+  const [documents, setDocuments] = useState<ApplicationDocument[]>([]);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitBlockers, setSubmitBlockers] = useState<string[] | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    getApplication(applicationId).then((result) => {
+      if (cancelled) return;
+      setApplication(result ?? null);
+      setMotivation(result?.motivationStatement ?? "");
+      setDocuments(result?.documents ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
+
+  if (application === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!application) return <NotFound />;
   if (application.adopterEmail.toLowerCase() !== email.toLowerCase()) return <AccessDenied />;
 
@@ -73,12 +91,12 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
     ...getAdopterProfileSubmissionBlockers(profile),
   ];
 
-  const handleSaveDraft = () => {
-    updateDraft(applicationId, { motivationStatement: motivation, documents });
-    setApplication(getApplication(applicationId));
+  const handleSaveDraft = async () => {
+    await updateDraft(applicationId, { motivationStatement: motivation, documents });
+    setApplication(await getApplication(applicationId));
   };
 
-  const handleAddDocument = () => {
+  const handleAddDocument = async () => {
     if (!pendingFile) return;
     const doc: ApplicationDocument = {
       id: `DOC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
@@ -90,21 +108,21 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
     setDocuments(nextDocuments);
     setPendingFile(null);
     setFileInputKey((k) => k + 1);
-    updateDraft(applicationId, { motivationStatement: motivation, documents: nextDocuments });
+    await updateDraft(applicationId, { motivationStatement: motivation, documents: nextDocuments });
   };
 
-  const handleRemoveDocument = (id: string) => {
+  const handleRemoveDocument = async (id: string) => {
     const nextDocuments = documents.filter((d) => d.id !== id);
     setDocuments(nextDocuments);
-    updateDraft(applicationId, { motivationStatement: motivation, documents: nextDocuments });
+    await updateDraft(applicationId, { motivationStatement: motivation, documents: nextDocuments });
   };
 
   const handleSubmit = async () => {
     setSubmitBlockers(null);
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
-    updateDraft(applicationId, { motivationStatement: motivation, documents });
-    const result = submitApplication(applicationId);
+    await updateDraft(applicationId, { motivationStatement: motivation, documents });
+    const result = await submitApplication(applicationId);
     setIsSubmitting(false);
 
     if (!result.ok) {
@@ -112,9 +130,9 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
       return;
     }
 
-    createChecksForApplication(applicationId);
+    await createChecksForApplication(applicationId);
     router.refresh();
-    setApplication(getApplication(applicationId));
+    setApplication(await getApplication(applicationId));
   };
 
   return (

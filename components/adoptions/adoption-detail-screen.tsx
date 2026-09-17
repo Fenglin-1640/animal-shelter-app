@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -59,8 +59,8 @@ function AgreementSection({
 
   const refresh = () => setAgreement(getActiveAgreementForApplication(applicationId));
 
-  const handleGenerate = () => {
-    generateAgreement(applicationId, email, displayName);
+  const handleGenerate = async () => {
+    await generateAgreement(applicationId, email, displayName);
     refresh();
   };
 
@@ -242,14 +242,29 @@ function FinaliseSection({
   onFinalised: () => void;
 }) {
   const [error, setError] = useState<string | null>(null);
-  // Recomputed on every render (not memoized) so it always reflects the
-  // latest Agreement/Payment state after those sections' own actions.
-  const blockers = isFinalised ? [] : getFinaliseBlockers(applicationId);
+  const [fetchedBlockers, setFetchedBlockers] = useState<string[]>([]);
+  const [blockersKey, setBlockersKey] = useState(0);
+  const blockers = isFinalised ? [] : fetchedBlockers;
+
+  // Refetched whenever this section (re)mounts, isFinalised changes, or a
+  // finalise attempt fails - so it reflects the latest Agreement/Payment
+  // state after those sections' own actions without polling.
+  useEffect(() => {
+    if (isFinalised) return;
+    let cancelled = false;
+    getFinaliseBlockers(applicationId).then((result) => {
+      if (!cancelled) setFetchedBlockers(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId, isFinalised, blockersKey]);
 
   const handleFinalise = async () => {
     const result = await finaliseAdoption(applicationId, email, displayName);
     if (!result.ok) {
       setError(result.blockers.length > 0 ? result.blockers.join(" ") : "Unable to finalise.");
+      setBlockersKey((k) => k + 1);
       return;
     }
     setError(null);
@@ -308,19 +323,34 @@ function AdoptionDetailContent({
   displayName: string;
   role: Role;
 }) {
-  const [application, setApplication] = useState<AdoptionApplication | undefined>(() =>
-    getApplication(applicationId),
-  );
+  const [application, setApplication] = useState<AdoptionApplication | null | undefined>(undefined);
   const meetAndGreet = getMeetAndGreetForApplication(applicationId);
   const agreement = getActiveAgreementForApplication(applicationId);
 
+  useEffect(() => {
+    let cancelled = false;
+    getApplication(applicationId).then((result) => {
+      if (!cancelled) setApplication(result ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
+
+  if (application === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!application) return <NotFound />;
 
   const canManage = CAN_MANAGE_ROLES.includes(role);
   const canSeePayment = role !== "Veterinarian";
   const isCompatible = meetAndGreet?.status === "Compatible";
   const isFinalised = application.applicationStatus === "Finalised";
-  const refreshApplication = () => setApplication(getApplication(applicationId));
+  const refreshApplication = async () => setApplication((await getApplication(applicationId)) ?? null);
 
   return (
     <div className="flex flex-col gap-6">

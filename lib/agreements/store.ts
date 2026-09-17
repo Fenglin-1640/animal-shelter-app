@@ -89,8 +89,8 @@ function nextVersionLabel(existing: AdoptionAgreement | undefined): string {
 // the Meet and Greet outcome being Compatible, since PRD 6.12 says
 // "Compatible 进入协议和付款阶段" - there is no agreement-worthy application
 // before that point.
-export function generateAgreement(applicationId: string, email: string, name: string): MutationResult {
-  const application = getApplication(applicationId);
+export async function generateAgreement(applicationId: string, email: string, name: string): Promise<MutationResult> {
+  const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
 
   const meetAndGreet = getMeetAndGreetForApplication(applicationId);

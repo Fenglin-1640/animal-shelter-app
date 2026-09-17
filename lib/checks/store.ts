@@ -1,24 +1,13 @@
 import { CHECK_TYPES, type CheckOutcome, type SuitabilityCheck } from "@/lib/checks/types";
 
-// FR-CHK-01: SuitabilityCheck records, persisted to localStorage since
-// there is no backend.
-const STORAGE_KEY = "asams-suitability-checks";
+// FR-CHK-01: SuitabilityCheck now lives in the database (see
+// prisma/contract.prisma) behind /api/checks - see prisma/README.md for
+// this Prisma toolchain's quirks.
 
-function loadAll(): SuitabilityCheck[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as SuitabilityCheck[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAll(checks: SuitabilityCheck[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(checks));
+async function fetchAll(): Promise<SuitabilityCheck[]> {
+  const response = await fetch("/api/checks");
+  const result = await response.json();
+  return result.items as SuitabilityCheck[];
 }
 
 function generateCheckId(): string {
@@ -28,54 +17,66 @@ function generateCheckId(): string {
 // "每个已提交的 AdoptionApplication 必须自动建立三条 SuitabilityCheck" - called once,
 // right after submitApplication() succeeds. Idempotent (a no-op if
 // checks already exist for this application).
-export function createChecksForApplication(applicationId: string) {
-  const all = loadAll();
+export async function createChecksForApplication(applicationId: string): Promise<void> {
+  const all = await fetchAll();
   if (all.some((c) => c.applicationId === applicationId)) return;
-  const created: SuitabilityCheck[] = CHECK_TYPES.map((checkType) => ({
-    checkId: generateCheckId(),
-    applicationId,
-    checkType,
-    outcome: "Pending",
-    checkNotes: "",
-  }));
-  saveAll([...all, ...created]);
+  for (const checkType of CHECK_TYPES) {
+    const check: SuitabilityCheck = {
+      checkId: generateCheckId(),
+      applicationId,
+      checkType,
+      outcome: "Pending",
+      checkNotes: "",
+    };
+    await fetch("/api/checks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(check),
+    });
+  }
 }
 
-export function listChecksForApplication(applicationId: string): SuitabilityCheck[] {
-  return loadAll().filter((c) => c.applicationId === applicationId);
+export async function listChecksForApplication(applicationId: string): Promise<SuitabilityCheck[]> {
+  const all = await fetchAll();
+  return all.filter((c) => c.applicationId === applicationId);
 }
 
-export function allChecksComplete(applicationId: string): boolean {
-  const checks = listChecksForApplication(applicationId);
+export async function allChecksComplete(applicationId: string): Promise<boolean> {
+  const checks = await listChecksForApplication(applicationId);
   return checks.length === CHECK_TYPES.length && checks.every((c) => c.outcome !== "Pending");
 }
 
-export function allChecksPass(applicationId: string): boolean {
-  return allChecksComplete(applicationId) && listChecksForApplication(applicationId).every((c) => c.outcome === "Pass");
+export async function allChecksPass(applicationId: string): Promise<boolean> {
+  const checks = await listChecksForApplication(applicationId);
+  return (
+    checks.length === CHECK_TYPES.length &&
+    checks.every((c) => c.outcome !== "Pending") &&
+    checks.every((c) => c.outcome === "Pass")
+  );
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: string };
 
-export function completeCheck(
+export async function completeCheck(
   checkId: string,
   outcome: Exclude<CheckOutcome, "Pending">,
   checkNotes: string,
   conductedDate: string,
   email: string,
   name: string,
-): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((c) => c.checkId === checkId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-
-  all[index] = {
-    ...all[index],
-    outcome,
-    checkNotes,
-    conductedDate,
-    completedByEmail: email,
-    completedByName: name,
-  };
-  saveAll(all);
+): Promise<MutationResult> {
+  const response = await fetch(`/api/checks/${checkId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      outcome,
+      checkNotes,
+      conductedDate,
+      completedByEmail: email,
+      completedByName: name,
+    }),
+  });
+  const result = await response.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
   return { ok: true };
 }

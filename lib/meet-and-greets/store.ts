@@ -50,14 +50,14 @@ export function listScheduledMeetAndGreets(): MeetAndGreet[] {
 export type MutationResult = { ok: true } | { ok: false; reason: string };
 
 // PRD: "只有 Approved Application 可安排 Meet and Greet。Staff 创建可选时段".
-export function proposeSlots(
+export async function proposeSlots(
   applicationId: string,
   slots: { dateTime: string; location: string }[],
   participants: string,
   email: string,
   name: string,
-): MutationResult {
-  const application = getApplication(applicationId);
+): Promise<MutationResult> {
+  const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
   if (application.applicationStatus !== "Approved") return { ok: false, reason: "not_approved" };
   if (slots.length === 0) return { ok: false, reason: "no_slots" };
@@ -121,14 +121,14 @@ export function confirmAttendance(meetAndGreetId: string): MutationResult {
 // Incompatible closes the Application and returns the Animal to
 // Available For Adoption via lib/applications/store.ts's
 // closeApplicationIncompatible().
-export function recordOutcome(
+export async function recordOutcome(
   meetAndGreetId: string,
   outcome: "Compatible" | "Incompatible",
   reason: string,
   staffNotes: string,
   email: string,
   name: string,
-): MutationResult {
+): Promise<MutationResult> {
   const all = loadAll();
   const index = all.findIndex((m) => m.meetAndGreetId === meetAndGreetId);
   if (index === -1) return { ok: false, reason: "not_found" };
@@ -146,7 +146,7 @@ export function recordOutcome(
   saveAll(all);
 
   if (outcome === "Incompatible") {
-    closeApplicationIncompatible(meetAndGreet.applicationId, reason, email, name);
+    await closeApplicationIncompatible(meetAndGreet.applicationId, reason, email, name);
   }
 
   return { ok: true };

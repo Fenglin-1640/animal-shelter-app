@@ -10,7 +10,7 @@ export interface AdoptionStatistic {
 
 export async function getAdoptionStatistics(): Promise<AdoptionStatistic[]> {
   const animals = await getAllAnimals();
-  const applications = listAllApplications();
+  const applications = await listAllApplications();
 
   return [
     { metric: "Total animals on record", value: animals.length },

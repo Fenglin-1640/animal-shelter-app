@@ -10,9 +10,9 @@ import { getLatestPaymentForAgreement } from "@/lib/payments/store";
 // four so none of them needs to import this one back.
 export type FinaliseResult = { ok: true } | { ok: false; reason: string; blockers: string[] };
 
-export function getFinaliseBlockers(applicationId: string): string[] {
+export async function getFinaliseBlockers(applicationId: string): Promise<string[]> {
   const blockers: string[] = [];
-  const application = getApplication(applicationId);
+  const application = await getApplication(applicationId);
   if (!application) return ["Application not found."];
 
   const meetAndGreet = getMeetAndGreetForApplication(applicationId);
@@ -48,10 +48,10 @@ export function getFinaliseBlockers(applicationId: string): string[] {
 // Pre-Release Check on file IS the task - FR-REL-01's Veterinarian
 // queue reads exactly that state.
 export async function finaliseAdoption(applicationId: string, email: string, name: string): Promise<FinaliseResult> {
-  const application = getApplication(applicationId);
+  const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found", blockers: [] };
 
-  const blockers = getFinaliseBlockers(applicationId);
+  const blockers = await getFinaliseBlockers(applicationId);
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
 
   const result = await changeAnimalStatus(
@@ -67,7 +67,7 @@ export async function finaliseAdoption(applicationId: string, email: string, nam
   );
   if (!result.ok) return { ok: false, reason: result.reason, blockers: [] };
 
-  markFinalised(applicationId);
+  await markFinalised(applicationId);
 
   return { ok: true };
 }

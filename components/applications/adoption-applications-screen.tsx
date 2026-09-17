@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listAllApplications } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
-import type { ApplicationStatus } from "@/lib/applications/types";
+import type { AdoptionApplication, ApplicationStatus } from "@/lib/applications/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -21,7 +21,32 @@ function AdoptionApplicationsContent() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "">("");
 
-  const applications = useMemo(() => listAllApplications(), []);
+  const [applications, setApplications] = useState<AdoptionApplication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    listAllApplications()
+      .then((result) => {
+        if (cancelled) return;
+        setApplications(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load applications. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
+
   const availableStatuses = useMemo(
     () => Array.from(new Set(applications.map((a) => a.applicationStatus))),
     [applications],
@@ -72,7 +97,25 @@ function AdoptionApplicationsContent() {
         </select>
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+          Loading applications...
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+          <p className="text-sm font-semibold text-text">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsLoading(true);
+              setRefreshKey((k) => k + 1);
+            }}
+            className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+          >
+            Retry
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
           <p className="text-sm font-semibold text-text">No submitted applications match.</p>
         </div>

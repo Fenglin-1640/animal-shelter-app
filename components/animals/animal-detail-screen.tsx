@@ -19,11 +19,12 @@ import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 import { listApplicationsForAnimal } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
+import type { AdoptionApplication } from "@/lib/applications/types";
 import { archiveUnsuitableAnimal, getActiveBehaviourProgram, listTemperamentAssessments } from "@/lib/behaviour/store";
 import { OUTCOME_CATEGORY, PROGRAM_STATUS_CATEGORY } from "@/lib/behaviour/status";
 import type { BehaviourProgram, TemperamentAssessment } from "@/lib/behaviour/types";
 import { listChecksForApplication } from "@/lib/checks/store";
-import type { CheckOutcome } from "@/lib/checks/types";
+import type { CheckOutcome, SuitabilityCheck } from "@/lib/checks/types";
 import { getLatestFollowUpVisitForAnimal } from "@/lib/follow-up-visits/store";
 import { FOLLOW_UP_VISIT_STATUS_CATEGORY } from "@/lib/follow-up-visits/status";
 import {
@@ -128,6 +129,8 @@ function AnimalDetailContent({
   const [latestPreReleaseCheck, setLatestPreReleaseCheck] = useState<PreReleaseCheck | undefined>(undefined);
   const [latestBehaviour, setLatestBehaviour] = useState<TemperamentAssessment | undefined>(undefined);
   const [activeProgram, setActiveProgram] = useState<BehaviourProgram | undefined>(undefined);
+  const [proposedApplications, setProposedApplications] = useState<AdoptionApplication[]>([]);
+  const [checksByApplication, setChecksByApplication] = useState<Record<string, SuitabilityCheck[]>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -157,6 +160,15 @@ function AnimalDetailContent({
     });
     getActiveBehaviourProgram(animal.animalId).then((result) => {
       if (!cancelled) setActiveProgram(result);
+    });
+    listApplicationsForAnimal(animal.animalId).then(async (applications) => {
+      if (cancelled) return;
+      const proposed = applications.filter((a) => a.applicationStatus !== "Draft");
+      setProposedApplications(proposed);
+      const checksEntries = await Promise.all(
+        proposed.map(async (a) => [a.applicationId, await listChecksForApplication(a.applicationId)] as const),
+      );
+      if (!cancelled) setChecksByApplication(Object.fromEntries(checksEntries));
     });
     return () => {
       cancelled = true;
@@ -200,9 +212,6 @@ function AnimalDetailContent({
 
   const photos = listPhotosForAnimal(animal.animalId);
   const followUpVisit = getLatestFollowUpVisitForAnimal(animal.animalId);
-  const proposedApplications = listApplicationsForAnimal(animal.animalId).filter(
-    (a) => a.applicationStatus !== "Draft",
-  );
   const primaryPhoto = getPrimaryPhoto(animal.animalId);
 
   return (
@@ -640,7 +649,7 @@ function AnimalDetailContent({
                 ) : (
                   <ul className="flex flex-col gap-3">
                     {proposedApplications.map((application) => {
-                      const checks = listChecksForApplication(application.applicationId);
+                      const checks = checksByApplication[application.applicationId] ?? [];
                       return (
                         <li
                           key={application.applicationId}

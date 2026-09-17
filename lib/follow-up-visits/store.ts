@@ -71,10 +71,10 @@ export function listMyFollowUpVisits(email: string): FollowUpVisit[] {
 // exercised for real - the same precedent as
 // lib/adoption-fitness/store.ts's lazy AssessmentTask backfill for
 // animals that predate that workflow too.
-function resolveAdopterForAnimal(
+async function resolveAdopterForAnimal(
   animal: Animal,
-): { applicationId: string; adopterEmail: string; adopterName: string } | undefined {
-  const finalised = listApplicationsForAnimal(animal.animalId).find((a) => a.applicationStatus === "Finalised");
+): Promise<{ applicationId: string; adopterEmail: string; adopterName: string } | undefined> {
+  const finalised = (await listApplicationsForAnimal(animal.animalId)).find((a) => a.applicationStatus === "Finalised");
   if (finalised) {
     return { applicationId: finalised.applicationId, adopterEmail: finalised.adopterEmail, adopterName: finalised.adopterName };
   }
@@ -120,7 +120,7 @@ export async function releaseAnimal(
   if (!input.careInstructionsProvided) return { ok: false, reason: "care_instructions_required" };
   if (!input.receivingAdopter.trim()) return { ok: false, reason: "receiving_adopter_required" };
 
-  const adopter = resolveAdopterForAnimal(animal);
+  const adopter = await resolveAdopterForAnimal(animal);
   if (!adopter) return { ok: false, reason: "no_finalised_application" };
 
   const now = new Date().toISOString();

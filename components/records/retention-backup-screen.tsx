@@ -72,16 +72,19 @@ async function exportAdoptionStatistics() {
 }
 
 function RetentionBackupContent() {
-  const applications = listAllApplications();
   const backupRuns = getBackupRuns();
   const recoveryTests = getRecoveryTests();
 
   const [stats, setStats] = useState<Awaited<ReturnType<typeof getAdoptionStatistics>>>([]);
+  const [hasApplications, setHasApplications] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     getAdoptionStatistics().then((result) => {
       if (!cancelled) setStats(result);
+    });
+    listAllApplications().then((result) => {
+      if (!cancelled) setHasApplications(result.length > 0);
     });
     return () => {
       cancelled = true;
@@ -140,7 +143,7 @@ function RetentionBackupContent() {
             Export Adoption Statistics
           </button>
         </div>
-        {applications.length === 0 && (
+        {!hasApplications && (
           <p className="mt-3 text-xs text-text-muted">
             No adoption applications exist yet - the Adoption Agreements/Statistics exports will
             be empty or near-empty until some do.

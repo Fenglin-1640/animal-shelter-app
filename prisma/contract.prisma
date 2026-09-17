@@ -207,3 +207,47 @@ model StatutoryHold {
   custodyTransferByName      String?
   expiredAt                  DateTime?
 }
+
+// Mirrors lib/applications/types.ts (FR-APP-01). documents (array of
+// small objects) and profileSnapshot (a whole nested AdopterProfile,
+// 16 fields, always read/written as one unit and never queried
+// field-by-field) are both JSON-encoded into single String columns
+// rather than flattened - unlike Animal/StatutoryHold's small
+// 2-3-field objects, flattening either of these would mean a lot of
+// schema surface for data nothing ever queries by field. See
+// lib/applications/serialize.ts.
+model AdoptionApplication {
+  applicationId       String    @id
+  adopterEmail        String
+  adopterName         String
+  animalId            String
+  animalName          String
+  animalSpecies       String
+  animalBreed         String
+  motivationStatement String
+  documents           String
+  profileSnapshot     String?
+  applicationStatus   String
+  submissionDate      DateTime?
+  decisionDate        DateTime?
+  decisionByEmail     String?
+  decisionByName      String?
+  rejectionReason     String?
+  createdAt           DateTime
+  updatedAt           DateTime
+}
+
+// Mirrors lib/checks/types.ts (FR-CHK-01/02). conductedDate stays
+// String - the caller already converts it to an ISO string before this
+// module ever sees it, same "not worth a second DateTime round-trip"
+// reasoning as PreReleaseCheck.checkDate.
+model SuitabilityCheck {
+  checkId          String  @id
+  applicationId    String
+  checkType        String
+  outcome          String
+  checkNotes       String
+  conductedDate    String?
+  completedByEmail String?
+  completedByName  String?
+}

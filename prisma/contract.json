@@ -4,6 +4,10 @@
   "target": "sqlite",
   "profileHash": "260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53",
   "roots": {
+    "adoptionApplication": {
+      "model": "AdoptionApplication",
+      "namespace": "__unbound__"
+    },
     "animal": {
       "model": "Animal",
       "namespace": "__unbound__"
@@ -32,6 +36,10 @@
       "model": "StatutoryHold",
       "namespace": "__unbound__"
     },
+    "suitabilityCheck": {
+      "model": "SuitabilityCheck",
+      "namespace": "__unbound__"
+    },
     "temperamentAssessment": {
       "model": "TemperamentAssessment",
       "namespace": "__unbound__"
@@ -53,6 +61,197 @@
     "namespaces": {
       "__unbound__": {
         "models": {
+          "AdoptionApplication": {
+            "fields": {
+              "adopterEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "adopterName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalBreed": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalSpecies": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "applicationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "applicationStatus": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "decisionByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "decisionByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "decisionDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "documents": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "motivationStatement": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "profileSnapshot": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "rejectionReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "submissionDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "adopterEmail": {
+                  "column": "adopterEmail"
+                },
+                "adopterName": {
+                  "column": "adopterName"
+                },
+                "animalBreed": {
+                  "column": "animalBreed"
+                },
+                "animalId": {
+                  "column": "animalId"
+                },
+                "animalName": {
+                  "column": "animalName"
+                },
+                "animalSpecies": {
+                  "column": "animalSpecies"
+                },
+                "applicationId": {
+                  "column": "applicationId"
+                },
+                "applicationStatus": {
+                  "column": "applicationStatus"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "decisionByEmail": {
+                  "column": "decisionByEmail"
+                },
+                "decisionByName": {
+                  "column": "decisionByName"
+                },
+                "decisionDate": {
+                  "column": "decisionDate"
+                },
+                "documents": {
+                  "column": "documents"
+                },
+                "motivationStatement": {
+                  "column": "motivationStatement"
+                },
+                "profileSnapshot": {
+                  "column": "profileSnapshot"
+                },
+                "rejectionReason": {
+                  "column": "rejectionReason"
+                },
+                "submissionDate": {
+                  "column": "submissionDate"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "adoptionApplication"
+            }
+          },
           "Animal": {
             "fields": {
               "adoptionFee": {
@@ -970,6 +1169,97 @@
               "table": "statutoryHold"
             }
           },
+          "SuitabilityCheck": {
+            "fields": {
+              "applicationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkNotes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "conductedDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcome": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "applicationId": {
+                  "column": "applicationId"
+                },
+                "checkId": {
+                  "column": "checkId"
+                },
+                "checkNotes": {
+                  "column": "checkNotes"
+                },
+                "checkType": {
+                  "column": "checkType"
+                },
+                "completedByEmail": {
+                  "column": "completedByEmail"
+                },
+                "completedByName": {
+                  "column": "completedByName"
+                },
+                "conductedDate": {
+                  "column": "conductedDate"
+                },
+                "outcome": {
+                  "column": "outcome"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "suitabilityCheck"
+            }
+          },
           "TemperamentAssessment": {
             "fields": {
               "animalId": {
@@ -1563,6 +1853,108 @@
       "__unbound__": {
         "entries": {
           "table": {
+            "adoptionApplication": {
+              "columns": {
+                "adopterEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "adopterName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalBreed": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalSpecies": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "applicationId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "applicationStatus": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "decisionByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "decisionByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "decisionDate": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "documents": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "motivationStatement": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "profileSnapshot": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "rejectionReason": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "submissionDate": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "applicationId"
+                ]
+              },
+              "uniques": []
+            },
             "animal": {
               "columns": {
                 "adoptionFee": {
@@ -2073,6 +2465,58 @@
               },
               "uniques": []
             },
+            "suitabilityCheck": {
+              "columns": {
+                "applicationId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "checkId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "checkNotes": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "checkType": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "completedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "completedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "conductedDate": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "outcome": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "checkId"
+                ]
+              },
+              "uniques": []
+            },
             "temperamentAssessment": {
               "columns": {
                 "animalId": {
@@ -2406,7 +2850,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "5aacb5869ef63db4d36ffd13b9b00e2e84ac16bc806f9b54dbb1088d5ccec905"
+    "storageHash": "a37abf57421f3588318111cf4e1b9ffdeeeabe62ad7dedd83098b679473b14c6"
   },
   "capabilities": {
     "sql": {

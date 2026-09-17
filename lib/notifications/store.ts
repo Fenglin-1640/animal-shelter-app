@@ -135,8 +135,9 @@ async function getDesexingAppointmentNotifications(): Promise<NotificationItem[]
 // (recipientEmail), scoped to a recent window so a decision made months
 // ago doesn't linger in the list forever (there is no other event that
 // naturally retires it, unlike e.g. a Statutory Hold expiring).
-function getApplicationDecisionNotifications(): NotificationItem[] {
-  return listAllApplications().flatMap((application) => {
+async function getApplicationDecisionNotifications(): Promise<NotificationItem[]> {
+  const applications = await listAllApplications();
+  return applications.flatMap((application) => {
     if (!application.decisionDate) return [];
     if (daysSince(application.decisionDate) > RECENT_DECISION_WINDOW_DAYS) return [];
     const approved = application.applicationStatus === "Approved";
@@ -231,20 +232,21 @@ function getFollowUpVisitNotifications(): NotificationItem[] {
 }
 
 export async function getAllNotifications(): Promise<NotificationItem[]> {
-  const [statutoryHold, behaviourReassessment, vaccineBooster, desexingAppointment, preReleaseCheck] =
+  const [statutoryHold, behaviourReassessment, vaccineBooster, desexingAppointment, preReleaseCheck, applicationDecision] =
     await Promise.all([
       getStatutoryHoldNotifications(),
       getBehaviourReassessmentNotifications(),
       getVaccineBoosterNotifications(),
       getDesexingAppointmentNotifications(),
       getPreReleaseCheckNotifications(),
+      getApplicationDecisionNotifications(),
     ]);
   return [
     ...statutoryHold,
     ...behaviourReassessment,
     ...vaccineBooster,
     ...desexingAppointment,
-    ...getApplicationDecisionNotifications(),
+    ...applicationDecision,
     ...getMeetAndGreetNotifications(),
     ...preReleaseCheck,
     ...getFollowUpVisitNotifications(),
