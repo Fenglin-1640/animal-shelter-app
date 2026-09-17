@@ -65,15 +65,20 @@ function AdoptionsContent() {
           applications.map(async (a) => ({ a, meetAndGreet: await getMeetAndGreetForApplication(a.applicationId) })),
         );
         if (cancelled) return;
-        const result = withMeetAndGreets
-          .filter(({ a, meetAndGreet }) => isInAdoptionsStage(a.applicationStatus, meetAndGreet?.status))
-          .map(({ a }) => {
-            const agreement = getActiveAgreementForApplication(a.applicationId);
-            const payment = agreement ? getLatestPaymentForAgreement(agreement.agreementId) : undefined;
-            const stage = computeStageLabel(a.applicationStatus, agreement?.isSigned, payment?.paymentStatus);
-            return { application: a, agreement, payment, stage };
-          })
-          .sort((a, b) => new Date(b.application.updatedAt).getTime() - new Date(a.application.updatedAt).getTime());
+        const inAdoptionsStage = withMeetAndGreets.filter(({ a, meetAndGreet }) =>
+          isInAdoptionsStage(a.applicationStatus, meetAndGreet?.status),
+        );
+        const result = (
+          await Promise.all(
+            inAdoptionsStage.map(async ({ a }) => {
+              const agreement = await getActiveAgreementForApplication(a.applicationId);
+              const payment = agreement ? await getLatestPaymentForAgreement(agreement.agreementId) : undefined;
+              const stage = computeStageLabel(a.applicationStatus, agreement?.isSigned, payment?.paymentStatus);
+              return { application: a, agreement, payment, stage };
+            }),
+          )
+        ).sort((a, b) => new Date(b.application.updatedAt).getTime() - new Date(a.application.updatedAt).getTime());
+        if (cancelled) return;
         setRows(result);
         setLoadError(null);
       })

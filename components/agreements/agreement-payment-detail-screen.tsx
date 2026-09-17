@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -37,18 +37,26 @@ function NotFound() {
 }
 
 function PaymentSection({ agreement, email, displayName }: { agreement: AdoptionAgreement; email: string; displayName: string }) {
-  const [payment, setPayment] = useState<AdoptionPayment | undefined>(() =>
-    getLatestPaymentForAgreement(agreement.agreementId),
-  );
+  const [payment, setPayment] = useState<AdoptionPayment | undefined>(undefined);
   const [paymentMethod, setPaymentMethod] = useState(() => getActiveValues("Payment Method")[0] ?? "");
   const methods = getActiveValues("Payment Method");
 
-  const refresh = () => setPayment(getLatestPaymentForAgreement(agreement.agreementId));
+  useEffect(() => {
+    let cancelled = false;
+    getLatestPaymentForAgreement(agreement.agreementId).then((result) => {
+      if (!cancelled) setPayment(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [agreement.agreementId]);
 
-  const handlePay = () => {
+  const refresh = async () => setPayment(await getLatestPaymentForAgreement(agreement.agreementId));
+
+  const handlePay = async () => {
     if (!paymentMethod) return;
-    initiatePayment(agreement.agreementId, paymentMethod, email, displayName);
-    refresh();
+    await initiatePayment(agreement.agreementId, paymentMethod, email, displayName);
+    await refresh();
   };
 
   return (
@@ -116,19 +124,34 @@ function PaymentSection({ agreement, email, displayName }: { agreement: Adoption
 }
 
 function AgreementPaymentDetailContent({ applicationId, email, displayName }: { applicationId: string; email: string; displayName: string }) {
-  const [agreement, setAgreement] = useState<AdoptionAgreement | undefined>(() =>
-    getActiveAgreementForApplication(applicationId),
-  );
+  const [agreement, setAgreement] = useState<AdoptionAgreement | null | undefined>(undefined);
 
+  useEffect(() => {
+    let cancelled = false;
+    getActiveAgreementForApplication(applicationId).then((result) => {
+      if (!cancelled) setAgreement(result ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
+
+  if (agreement === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
   if (!agreement) return <NotFound />;
   if (agreement.adopterEmail.toLowerCase() !== email.toLowerCase()) return <AccessDenied />;
 
   const status = getAgreementStatus(agreement.isSigned);
-  const refresh = () => setAgreement(getActiveAgreementForApplication(applicationId));
+  const refresh = async () => setAgreement((await getActiveAgreementForApplication(applicationId)) ?? null);
 
-  const handleSign = () => {
-    signAgreement(agreement.agreementId, email, displayName);
-    refresh();
+  const handleSign = async () => {
+    await signAgreement(agreement.agreementId, email, displayName);
+    await refresh();
   };
 
   return (

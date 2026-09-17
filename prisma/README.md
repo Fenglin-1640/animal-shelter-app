@@ -121,3 +121,13 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   `attendanceConfirmed` is Int (0/1), same reasoning as
   HealthAssessment's boolean fields. See
   lib/meet-and-greets/serialize.ts.
+- `AdoptionAgreement`, `AdoptionPayment` - see lib/agreements/,
+  lib/payments/. Mirrored from lib/agreements/types.ts and
+  lib/payments/types.ts; neither has any nested objects or arrays (no
+  JSON-encoded columns, unlike MeetAndGreet/AdoptionApplication), so
+  every field is a plain column. `isSigned` is Int (0/1), same
+  reasoning as MeetAndGreet's attendanceConfirmed.
+  generatedAt/signedDate/paymentDate/verifiedDate are all
+  system-generated timestamps (set to `now` when the action happens),
+  so all are DateTime. See lib/agreements/serialize.ts and
+  lib/payments/serialize.ts.

@@ -54,22 +54,32 @@ function AgreementSection({
   displayName: string;
   isCompatible: boolean;
 }) {
-  const [agreement, setAgreement] = useState<AdoptionAgreement | undefined>(() =>
-    getActiveAgreementForApplication(applicationId),
-  );
+  const [agreement, setAgreement] = useState<AdoptionAgreement | null | undefined>(undefined);
 
-  const refresh = () => setAgreement(getActiveAgreementForApplication(applicationId));
+  useEffect(() => {
+    let cancelled = false;
+    getActiveAgreementForApplication(applicationId).then((result) => {
+      if (!cancelled) setAgreement(result ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
+
+  const refresh = async () => setAgreement((await getActiveAgreementForApplication(applicationId)) ?? null);
 
   const handleGenerate = async () => {
     await generateAgreement(applicationId, email, displayName);
-    refresh();
+    await refresh();
   };
 
   return (
     <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
       <h2 className="text-lg font-bold text-text">Adoption Agreement</h2>
 
-      {!agreement ? (
+      {agreement === undefined ? (
+        <p className="mt-2 text-sm text-text-muted">Loading...</p>
+      ) : !agreement ? (
         <>
           <p className="mt-2 text-sm text-text-muted">No agreement has been generated yet.</p>
           {canManage && (
@@ -128,26 +138,35 @@ function PaymentSection({
   displayName: string;
   agreementId: string | undefined;
 }) {
-  const [payment, setPayment] = useState<AdoptionPayment | undefined>(() =>
-    agreementId ? getLatestPaymentForAgreement(agreementId) : undefined,
-  );
+  const [payment, setPayment] = useState<AdoptionPayment | undefined>(undefined);
   const [failureReason, setFailureReason] = useState("");
   const [showFailForm, setShowFailForm] = useState(false);
 
-  const refresh = () => setPayment(agreementId ? getLatestPaymentForAgreement(agreementId) : undefined);
+  useEffect(() => {
+    if (!agreementId) return;
+    let cancelled = false;
+    getLatestPaymentForAgreement(agreementId).then((result) => {
+      if (!cancelled) setPayment(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [agreementId]);
 
-  const handleClear = () => {
+  const refresh = async () => setPayment(agreementId ? await getLatestPaymentForAgreement(agreementId) : undefined);
+
+  const handleClear = async () => {
     if (!payment) return;
-    verifyPayment(payment.paymentId, "Cleared", email, displayName);
-    refresh();
+    await verifyPayment(payment.paymentId, "Cleared", email, displayName);
+    await refresh();
   };
 
-  const handleFail = () => {
+  const handleFail = async () => {
     if (!payment || !failureReason.trim()) return;
-    verifyPayment(payment.paymentId, "Failed", email, displayName, failureReason);
+    await verifyPayment(payment.paymentId, "Failed", email, displayName, failureReason);
     setShowFailForm(false);
     setFailureReason("");
-    refresh();
+    await refresh();
   };
 
   return (
@@ -326,7 +345,7 @@ function AdoptionDetailContent({
 }) {
   const [application, setApplication] = useState<AdoptionApplication | null | undefined>(undefined);
   const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | undefined>(undefined);
-  const agreement = getActiveAgreementForApplication(applicationId);
+  const [agreement, setAgreement] = useState<AdoptionAgreement | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -335,6 +354,9 @@ function AdoptionDetailContent({
     });
     getMeetAndGreetForApplication(applicationId).then((result) => {
       if (!cancelled) setMeetAndGreet(result);
+    });
+    getActiveAgreementForApplication(applicationId).then((result) => {
+      if (!cancelled) setAgreement(result);
     });
     return () => {
       cancelled = true;

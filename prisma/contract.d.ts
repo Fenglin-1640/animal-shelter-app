@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d051d5011c212f923be3dc641aec4fea99bb085a98f293d312ea9c0e631ff255'>;
+  StorageHashBase<'50978424e2f11e55a67b0fef9b2933723ba740ac694331820832313fda46327c'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -128,6 +128,26 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly __unbound__: {
+    readonly AdoptionAgreement: {
+      readonly agreementId: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly agreementVersion: CodecTypes['sqlite/text@1']['output'];
+      readonly templateVersion: CodecTypes['sqlite/text@1']['output'];
+      readonly adoptionConditions: CodecTypes['sqlite/text@1']['output'];
+      readonly returnPolicyPeriod: CodecTypes['sqlite/text@1']['output'];
+      readonly generatedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly generatedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly generatedByName: CodecTypes['sqlite/text@1']['output'];
+      readonly isSigned: CodecTypes['sqlite/integer@1']['output'];
+      readonly signedDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly AdoptionApplication: {
       readonly applicationId: CodecTypes['sqlite/text@1']['output'];
       readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
@@ -145,6 +165,27 @@ export type FieldOutputTypes = {
       readonly decisionByEmail: CodecTypes['sqlite/text@1']['output'] | null;
       readonly decisionByName: CodecTypes['sqlite/text@1']['output'] | null;
       readonly rejectionReason: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly AdoptionPayment: {
+      readonly paymentId: CodecTypes['sqlite/text@1']['output'];
+      readonly agreementId: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly amount: CodecTypes['sqlite/real@1']['output'];
+      readonly paymentMethod: CodecTypes['sqlite/text@1']['output'];
+      readonly paymentDate: CodecTypes['sqlite/datetime@1']['output'];
+      readonly paymentStatus: CodecTypes['sqlite/text@1']['output'];
+      readonly receiptNumber: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly verifiedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly verifiedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly verifiedDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly failureReason: CodecTypes['sqlite/text@1']['output'] | null;
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
     };
@@ -345,6 +386,26 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly __unbound__: {
+    readonly AdoptionAgreement: {
+      readonly agreementId: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly agreementVersion: CodecTypes['sqlite/text@1']['input'];
+      readonly templateVersion: CodecTypes['sqlite/text@1']['input'];
+      readonly adoptionConditions: CodecTypes['sqlite/text@1']['input'];
+      readonly returnPolicyPeriod: CodecTypes['sqlite/text@1']['input'];
+      readonly generatedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly generatedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly generatedByName: CodecTypes['sqlite/text@1']['input'];
+      readonly isSigned: CodecTypes['sqlite/integer@1']['input'];
+      readonly signedDate: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
     readonly AdoptionApplication: {
       readonly applicationId: CodecTypes['sqlite/text@1']['input'];
       readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
@@ -362,6 +423,27 @@ export type FieldInputTypes = {
       readonly decisionByEmail: CodecTypes['sqlite/text@1']['input'] | null;
       readonly decisionByName: CodecTypes['sqlite/text@1']['input'] | null;
       readonly rejectionReason: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly AdoptionPayment: {
+      readonly paymentId: CodecTypes['sqlite/text@1']['input'];
+      readonly agreementId: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly amount: CodecTypes['sqlite/real@1']['input'];
+      readonly paymentMethod: CodecTypes['sqlite/text@1']['input'];
+      readonly paymentDate: CodecTypes['sqlite/datetime@1']['input'];
+      readonly paymentStatus: CodecTypes['sqlite/text@1']['input'];
+      readonly receiptNumber: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly verifiedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly verifiedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly verifiedDate: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly failureReason: CodecTypes['sqlite/text@1']['input'] | null;
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
     };
@@ -562,6 +644,26 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly __unbound__: {
+    readonly adoptionAgreement: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly adoptionConditions: CodecTypes['sqlite/text@1']['output'];
+      readonly agreementId: CodecTypes['sqlite/text@1']['output'];
+      readonly agreementVersion: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly generatedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly generatedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly generatedByName: CodecTypes['sqlite/text@1']['output'];
+      readonly isSigned: CodecTypes['sqlite/integer@1']['output'];
+      readonly returnPolicyPeriod: CodecTypes['sqlite/text@1']['output'];
+      readonly signedDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly templateVersion: CodecTypes['sqlite/text@1']['output'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly adoptionApplication: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
       readonly adopterName: CodecTypes['sqlite/text@1']['output'];
@@ -581,6 +683,27 @@ export type StorageColumnTypes = {
       readonly rejectionReason: CodecTypes['sqlite/text@1']['output'] | null;
       readonly submissionDate: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly adoptionPayment: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly agreementId: CodecTypes['sqlite/text@1']['output'];
+      readonly amount: CodecTypes['sqlite/real@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly failureReason: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly paymentDate: CodecTypes['sqlite/datetime@1']['output'];
+      readonly paymentId: CodecTypes['sqlite/text@1']['output'];
+      readonly paymentMethod: CodecTypes['sqlite/text@1']['output'];
+      readonly paymentStatus: CodecTypes['sqlite/text@1']['output'];
+      readonly receiptNumber: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly verifiedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly verifiedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly verifiedDate: CodecTypes['sqlite/datetime@1']['output'] | null;
     };
     readonly animal: {
       readonly adoptionFee: CodecTypes['sqlite/real@1']['output'] | null;
@@ -779,6 +902,26 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly __unbound__: {
+    readonly adoptionAgreement: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly adoptionConditions: CodecTypes['sqlite/text@1']['input'];
+      readonly agreementId: CodecTypes['sqlite/text@1']['input'];
+      readonly agreementVersion: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly generatedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly generatedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly generatedByName: CodecTypes['sqlite/text@1']['input'];
+      readonly isSigned: CodecTypes['sqlite/integer@1']['input'];
+      readonly returnPolicyPeriod: CodecTypes['sqlite/text@1']['input'];
+      readonly signedDate: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly templateVersion: CodecTypes['sqlite/text@1']['input'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
     readonly adoptionApplication: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
       readonly adopterName: CodecTypes['sqlite/text@1']['input'];
@@ -798,6 +941,27 @@ export type StorageColumnInputTypes = {
       readonly rejectionReason: CodecTypes['sqlite/text@1']['input'] | null;
       readonly submissionDate: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly adoptionPayment: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly agreementId: CodecTypes['sqlite/text@1']['input'];
+      readonly amount: CodecTypes['sqlite/real@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly failureReason: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly paymentDate: CodecTypes['sqlite/datetime@1']['input'];
+      readonly paymentId: CodecTypes['sqlite/text@1']['input'];
+      readonly paymentMethod: CodecTypes['sqlite/text@1']['input'];
+      readonly paymentStatus: CodecTypes['sqlite/text@1']['input'];
+      readonly receiptNumber: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly verifiedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly verifiedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly verifiedDate: CodecTypes['sqlite/datetime@1']['input'] | null;
     };
     readonly animal: {
       readonly adoptionFee: CodecTypes['sqlite/real@1']['input'] | null;
@@ -1199,6 +1363,49 @@ export namespace Models {
     completedByName: CodecTypes['sqlite/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type AdoptionAgreement = {
+    agreementId: CodecTypes['sqlite/text@1']['output'];
+    applicationId: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    animalName: CodecTypes['sqlite/text@1']['output'];
+    animalSpecies: CodecTypes['sqlite/text@1']['output'];
+    adopterEmail: CodecTypes['sqlite/text@1']['output'];
+    adopterName: CodecTypes['sqlite/text@1']['output'];
+    agreementVersion: CodecTypes['sqlite/text@1']['output'];
+    templateVersion: CodecTypes['sqlite/text@1']['output'];
+    adoptionConditions: CodecTypes['sqlite/text@1']['output'];
+    returnPolicyPeriod: CodecTypes['sqlite/text@1']['output'];
+    generatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    generatedByEmail: CodecTypes['sqlite/text@1']['output'];
+    generatedByName: CodecTypes['sqlite/text@1']['output'];
+    isSigned: CodecTypes['sqlite/integer@1']['output'];
+    signedDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type AdoptionPayment = {
+    paymentId: CodecTypes['sqlite/text@1']['output'];
+    agreementId: CodecTypes['sqlite/text@1']['output'];
+    applicationId: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    animalName: CodecTypes['sqlite/text@1']['output'];
+    animalSpecies: CodecTypes['sqlite/text@1']['output'];
+    adopterEmail: CodecTypes['sqlite/text@1']['output'];
+    adopterName: CodecTypes['sqlite/text@1']['output'];
+    amount: CodecTypes['sqlite/real@1']['output'];
+    paymentMethod: CodecTypes['sqlite/text@1']['output'];
+    paymentDate: CodecTypes['sqlite/datetime@1']['output'];
+    paymentStatus: CodecTypes['sqlite/text@1']['output'];
+    receiptNumber: CodecTypes['sqlite/text@1']['output'] | null;
+    verifiedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    verifiedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    verifiedDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+    failureReason: CodecTypes['sqlite/text@1']['output'] | null;
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type MeetAndGreet = {
     meetAndGreetId: CodecTypes['sqlite/text@1']['output'];
     applicationId: CodecTypes['sqlite/text@1']['output'];
@@ -1239,6 +1446,8 @@ export declare const models: {
   StatutoryHold: Models.StatutoryHold;
   AdoptionApplication: Models.AdoptionApplication;
   SuitabilityCheck: Models.SuitabilityCheck;
+  AdoptionAgreement: Models.AdoptionAgreement;
+  AdoptionPayment: Models.AdoptionPayment;
   MeetAndGreet: Models.MeetAndGreet;
 };
 
@@ -1260,6 +1469,104 @@ type ContractBase = Omit<
         readonly kind: 'sqlite-namespace';
         readonly entries: {
           readonly table: {
+            readonly adoptionAgreement: {
+              columns: {
+                readonly agreementId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly applicationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalSpecies: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly agreementVersion: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly templateVersion: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adoptionConditions: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly returnPolicyPeriod: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly generatedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly generatedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly generatedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly isSigned: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly signedDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['agreementId'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly adoptionApplication: {
               columns: {
                 readonly applicationId: {
@@ -1354,6 +1661,109 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['applicationId'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly adoptionPayment: {
+              columns: {
+                readonly paymentId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly agreementId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly applicationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalSpecies: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly amount: {
+                  readonly nativeType: 'real';
+                  readonly codecId: 'sqlite/real@1';
+                  readonly nullable: false;
+                };
+                readonly paymentMethod: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly paymentDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly paymentStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly receiptNumber: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly verifiedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly verifiedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly verifiedDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly failureReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['paymentId'] };
               uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
@@ -2358,6 +2768,14 @@ type ContractBase = Omit<
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'SuitabilityCheck';
     };
+    readonly adoptionAgreement: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'AdoptionAgreement';
+    };
+    readonly adoptionPayment: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'AdoptionPayment';
+    };
     readonly meetAndGreet: {
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'MeetAndGreet';
@@ -2367,6 +2785,107 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly __unbound__: {
         readonly models: {
+          readonly AdoptionAgreement: {
+            readonly fields: {
+              readonly agreementId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalSpecies: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly agreementVersion: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly templateVersion: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adoptionConditions: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly returnPolicyPeriod: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly generatedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly generatedByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly generatedByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly isSigned: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly signedDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'adoptionAgreement';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly agreementId: { readonly column: 'agreementId' };
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly animalName: { readonly column: 'animalName' };
+                readonly animalSpecies: { readonly column: 'animalSpecies' };
+                readonly adopterEmail: { readonly column: 'adopterEmail' };
+                readonly adopterName: { readonly column: 'adopterName' };
+                readonly agreementVersion: { readonly column: 'agreementVersion' };
+                readonly templateVersion: { readonly column: 'templateVersion' };
+                readonly adoptionConditions: { readonly column: 'adoptionConditions' };
+                readonly returnPolicyPeriod: { readonly column: 'returnPolicyPeriod' };
+                readonly generatedAt: { readonly column: 'generatedAt' };
+                readonly generatedByEmail: { readonly column: 'generatedByEmail' };
+                readonly generatedByName: { readonly column: 'generatedByName' };
+                readonly isSigned: { readonly column: 'isSigned' };
+                readonly signedDate: { readonly column: 'signedDate' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly AdoptionApplication: {
             readonly fields: {
               readonly applicationId: {
@@ -2463,6 +2982,112 @@ type ContractBase = Omit<
                 readonly decisionByEmail: { readonly column: 'decisionByEmail' };
                 readonly decisionByName: { readonly column: 'decisionByName' };
                 readonly rejectionReason: { readonly column: 'rejectionReason' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly AdoptionPayment: {
+            readonly fields: {
+              readonly paymentId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly agreementId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalSpecies: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/real@1' };
+              };
+              readonly paymentMethod: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly paymentDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly paymentStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly receiptNumber: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly verifiedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly verifiedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly verifiedDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly failureReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'adoptionPayment';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly paymentId: { readonly column: 'paymentId' };
+                readonly agreementId: { readonly column: 'agreementId' };
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly animalName: { readonly column: 'animalName' };
+                readonly animalSpecies: { readonly column: 'animalSpecies' };
+                readonly adopterEmail: { readonly column: 'adopterEmail' };
+                readonly adopterName: { readonly column: 'adopterName' };
+                readonly amount: { readonly column: 'amount' };
+                readonly paymentMethod: { readonly column: 'paymentMethod' };
+                readonly paymentDate: { readonly column: 'paymentDate' };
+                readonly paymentStatus: { readonly column: 'paymentStatus' };
+                readonly receiptNumber: { readonly column: 'receiptNumber' };
+                readonly verifiedByEmail: { readonly column: 'verifiedByEmail' };
+                readonly verifiedByName: { readonly column: 'verifiedByName' };
+                readonly verifiedDate: { readonly column: 'verifiedDate' };
+                readonly failureReason: { readonly column: 'failureReason' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };

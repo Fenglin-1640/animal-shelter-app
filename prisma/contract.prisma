@@ -260,6 +260,59 @@ model SuitabilityCheck {
 // are themselves user-entered datetime-local strings, same reasoning as
 // Medical/Behaviour's user-entered date fields. attendanceConfirmed is
 // Int (0/1), not Boolean - see the note on HealthAssessment above.
+// Mirrors lib/agreements/types.ts (FR-AGR-01). No nested objects/arrays
+// here (unlike MeetAndGreet.slotOptions) so every field is a plain
+// column. isSigned is Int (0/1), same reasoning as MeetAndGreet's
+// attendanceConfirmed. generatedAt/signedDate are both system-generated
+// timestamps (set to `now` when the action happens), so both are
+// DateTime, unlike Medical/Behaviour's user-entered date strings.
+model AdoptionAgreement {
+  agreementId       String    @id
+  applicationId     String
+  animalId          String
+  animalName        String
+  animalSpecies     String
+  adopterEmail      String
+  adopterName       String
+  agreementVersion  String
+  templateVersion   String
+  adoptionConditions String
+  returnPolicyPeriod String
+  generatedAt       DateTime
+  generatedByEmail  String
+  generatedByName   String
+  isSigned          Int
+  signedDate        DateTime?
+  createdAt         DateTime
+  updatedAt         DateTime
+}
+
+// Mirrors lib/payments/types.ts (FR-PAY-01). Same "no nested
+// objects/arrays, every field a plain column" shape as
+// AdoptionAgreement above. paymentDate/verifiedDate are both
+// system-generated timestamps, so both are DateTime.
+model AdoptionPayment {
+  paymentId        String    @id
+  agreementId      String
+  applicationId    String
+  animalId         String
+  animalName       String
+  animalSpecies    String
+  adopterEmail     String
+  adopterName      String
+  amount           Float
+  paymentMethod    String
+  paymentDate      DateTime
+  paymentStatus    String
+  receiptNumber    String?
+  verifiedByEmail  String?
+  verifiedByName   String?
+  verifiedDate     DateTime?
+  failureReason    String?
+  createdAt        DateTime
+  updatedAt        DateTime
+}
+
 model MeetAndGreet {
   meetAndGreetId      String    @id
   applicationId       String

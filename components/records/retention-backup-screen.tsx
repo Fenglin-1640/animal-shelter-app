@@ -53,8 +53,8 @@ async function exportMedicalClearances() {
   );
 }
 
-function exportAdoptionAgreements() {
-  const agreements = listAllAgreements();
+async function exportAdoptionAgreements() {
+  const agreements = await listAllAgreements();
   downloadCsv(
     `adoption-agreements-${timestampForFilename()}.csv`,
     ["agreementId", "applicationId", "animalName", "adopterName", "agreementVersion", "templateVersion", "isSigned", "signedDate", "generatedAt"],

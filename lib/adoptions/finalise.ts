@@ -20,12 +20,12 @@ export async function getFinaliseBlockers(applicationId: string): Promise<string
     blockers.push("Meet and Greet outcome must be Compatible.");
   }
 
-  const agreement = getActiveAgreementForApplication(applicationId);
+  const agreement = await getActiveAgreementForApplication(applicationId);
   if (!agreement?.isSigned) {
     blockers.push("Adoption Agreement must be signed.");
   }
 
-  const payment = agreement ? getLatestPaymentForAgreement(agreement.agreementId) : undefined;
+  const payment = agreement ? await getLatestPaymentForAgreement(agreement.agreementId) : undefined;
   if (payment?.paymentStatus !== "Cleared") {
     blockers.push("Adoption Payment must be Cleared.");
   }

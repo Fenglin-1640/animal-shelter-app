@@ -4,29 +4,18 @@ import { getMeetAndGreetForApplication } from "@/lib/meet-and-greets/store";
 import { getSystemSettings } from "@/lib/system-administration/settings-store";
 import type { AdoptionAgreement } from "@/lib/agreements/types";
 
-// FR-AGR-01: AdoptionAgreement records, persisted to localStorage since
-// there is no backend.
-const STORAGE_KEY = "asams-agreements";
+// FR-AGR-01: AdoptionAgreement now lives in the database (see
+// prisma/contract.prisma) behind /api/agreements - see
+// prisma/README.md for this Prisma toolchain's quirks.
 
 const STANDARD_CONDITIONS =
   "Standard adoption conditions apply, including desexing and registration requirements, compliance with the ASAMS Code of Care, and notifying the shelter of any change of address.";
 const STANDARD_RETURN_POLICY = "14 days";
 
-function loadAll(): AdoptionAgreement[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as AdoptionAgreement[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAll(all: AdoptionAgreement[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+async function fetchAll(): Promise<AdoptionAgreement[]> {
+  const response = await fetch("/api/agreements");
+  const result = await response.json();
+  return result.items as AdoptionAgreement[];
 }
 
 function generateId(): string {
@@ -36,8 +25,8 @@ function generateId(): string {
 // Every version generated for an application, oldest first - "签署后协议不可
 // 编辑，只能查看或生成新版本并重新签署" means a signed version stays in history
 // once superseded.
-export function listAgreementsForApplication(applicationId: string): AdoptionAgreement[] {
-  return loadAll()
+export async function listAgreementsForApplication(applicationId: string): Promise<AdoptionAgreement[]> {
+  return (await fetchAll())
     .filter((a) => a.applicationId === applicationId)
     .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 }
@@ -46,23 +35,23 @@ export function listAgreementsForApplication(applicationId: string): AdoptionAgr
 // most one unsigned version at a time (generateAgreement blocks a
 // second while one is Pending Signature), so "most recent" is
 // unambiguous.
-export function getActiveAgreementForApplication(applicationId: string): AdoptionAgreement | undefined {
-  const versions = listAgreementsForApplication(applicationId);
+export async function getActiveAgreementForApplication(applicationId: string): Promise<AdoptionAgreement | undefined> {
+  const versions = await listAgreementsForApplication(applicationId);
   return versions[versions.length - 1];
 }
 
-export function getAgreement(agreementId: string): AdoptionAgreement | undefined {
-  return loadAll().find((a) => a.agreementId === agreementId);
+export async function getAgreement(agreementId: string): Promise<AdoptionAgreement | undefined> {
+  return (await fetchAll()).find((a) => a.agreementId === agreementId);
 }
 
 // FR-REC-01 "导出...adoption agreement": every version of every agreement.
-export function listAllAgreements(): AdoptionAgreement[] {
-  return loadAll();
+export async function listAllAgreements(): Promise<AdoptionAgreement[]> {
+  return fetchAll();
 }
 
-export function listMyAgreements(email: string): AdoptionAgreement[] {
+export async function listMyAgreements(email: string): Promise<AdoptionAgreement[]> {
   const normalized = email.trim().toLowerCase();
-  const versions = loadAll().filter((a) => a.adopterEmail.toLowerCase() === normalized);
+  const versions = (await fetchAll()).filter((a) => a.adopterEmail.toLowerCase() === normalized);
   // One card per application, showing only the active (latest) version.
   const byApplication = new Map<string, AdoptionAgreement>();
   for (const version of versions) {
@@ -98,7 +87,7 @@ export async function generateAgreement(applicationId: string, email: string, na
     return { ok: false, reason: "not_compatible" };
   }
 
-  const existing = getActiveAgreementForApplication(applicationId);
+  const existing = await getActiveAgreementForApplication(applicationId);
   if (existing && !existing.isSigned) return { ok: false, reason: "already_pending" };
 
   const now = new Date().toISOString();
@@ -121,7 +110,11 @@ export async function generateAgreement(applicationId: string, email: string, na
     createdAt: now,
     updatedAt: now,
   };
-  saveAll([...loadAll(), agreement]);
+  await fetch("/api/agreements", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(agreement),
+  });
 
   writeAuditLog({
     userId: email,
@@ -140,16 +133,19 @@ export async function generateAgreement(applicationId: string, email: string, na
 // PRD 6.13: "Adopter 可在线签署。签署后协议不可编辑." Once signed, the record is
 // immutable - the only way forward is generateAgreement() creating a new
 // version.
-export function signAgreement(agreementId: string, email: string, name: string): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((a) => a.agreementId === agreementId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  if (all[index].isSigned) return { ok: false, reason: "already_signed" };
+export async function signAgreement(agreementId: string, email: string, name: string): Promise<MutationResult> {
+  const agreement = await getAgreement(agreementId);
+  if (!agreement) return { ok: false, reason: "not_found" };
+  if (agreement.isSigned) return { ok: false, reason: "already_signed" };
 
   const now = new Date().toISOString();
-  const agreement = all[index];
-  all[index] = { ...agreement, isSigned: true, signedDate: now, updatedAt: now };
-  saveAll(all);
+  const response = await fetch(`/api/agreements/${agreementId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ isSigned: true, signedDate: now, updatedAt: now }),
+  });
+  const result = await response.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
 
   writeAuditLog({
     userId: email,
