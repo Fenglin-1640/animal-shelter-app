@@ -12,7 +12,6 @@ import type { Animal } from "@/lib/animals/types";
 import { releaseAnimal, type ReleaseInput } from "@/lib/follow-up-visits/store";
 import type { FollowUpType } from "@/lib/follow-up-visits/types";
 import {
-  getLatestPreReleaseCheck,
   isFitForRelease,
   listPreReleaseChecks,
   recordPreReleaseCheck,
@@ -279,6 +278,7 @@ function PreReleaseCheckContent({
 }) {
   const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
   const [checks, setChecks] = useState<PreReleaseCheck[]>([]);
+  const [latest, setLatest] = useState<PreReleaseCheck | undefined>(undefined);
   const [fitForRelease, setFitForRelease] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showReleaseForm, setShowReleaseForm] = useState(false);
@@ -287,21 +287,27 @@ function PreReleaseCheckContent({
   const canAct = CAN_ACT_ROLES.includes(role);
   const canRelease = CAN_RELEASE_ROLES.includes(role);
 
+  const reloadChecks = async () => {
+    const [checksResult, fitResult] = await Promise.all([
+      listPreReleaseChecks(animalId),
+      isFitForRelease(animalId),
+    ]);
+    setChecks(checksResult);
+    setLatest(checksResult[0]);
+    setFitForRelease(fitResult);
+  };
+
   useEffect(() => {
     let cancelled = false;
-    getAnimalById(animalId).then((result) => {
+    getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
-      if (result) {
-        setChecks(listPreReleaseChecks(animalId));
-        isFitForRelease(animalId).then((fit) => {
-          if (!cancelled) setFitForRelease(fit);
-        });
-      }
+      if (result) await reloadChecks();
     });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reloadChecks is recreated every render but only reads animalId, which is already a dependency.
   }, [animalId]);
 
   if (animal === undefined) {
@@ -315,11 +321,9 @@ function PreReleaseCheckContent({
 
   const refresh = async () => {
     setAnimal((await getAnimalById(animalId)) ?? null);
-    setChecks(listPreReleaseChecks(animalId));
-    setFitForRelease(await isFitForRelease(animalId));
+    await reloadChecks();
   };
 
-  const latest = getLatestPreReleaseCheck(animalId);
   const canConduct = animal.currentStatus === "Awaiting Release";
   const underTreatment = animal.currentStatus === "Under Treatment";
   const released = animal.currentStatus === "inFollowUpPeriod" || animal.currentStatus === "Rehomed";

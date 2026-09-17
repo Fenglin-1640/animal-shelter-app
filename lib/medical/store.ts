@@ -11,29 +11,27 @@ import type {
   VaccinationRecord,
 } from "@/lib/medical/types";
 
-// FR-MED-01/02/03/FR-REL-01: persisted to localStorage since there is no backend.
-const HEALTH_KEY = "asams-health-assessments";
-const TREATMENT_KEY = "asams-treatment-events";
-const VACCINATION_KEY = "asams-vaccination-records";
-const DESEXING_KEY = "asams-desexing-schedules";
-const CLEARANCE_KEY = "asams-medical-clearances";
-const PRE_RELEASE_KEY = "asams-pre-release-checks";
+// FR-MED-01/02/03/FR-REL-01: these 6 event kinds now live in the
+// database (see prisma/contract.prisma) behind /api/medical/** - see
+// prisma/README.md for this Prisma toolchain's quirks. Every export here
+// that reads or writes one of them is async now; the ~6 that were
+// already async (because they call lib/animals/animal-store, itself
+// converted in the previous pilot slice) keep the same signature.
 
-function loadList<T>(key: string): T[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as T[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAll<T>(url: string): Promise<T[]> {
+  const response = await fetch(url);
+  const result = await response.json();
+  return result.items as T[];
 }
 
-function saveList<T>(key: string, items: T[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, JSON.stringify(items));
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const result = await response.json();
+  return result.item as T;
 }
 
 function generateId(prefix: string): string {
@@ -42,8 +40,9 @@ function generateId(prefix: string): string {
 
 // --- Health Assessment (FR-MED-01) ---
 
-export function listHealthAssessments(animalId: string): HealthAssessment[] {
-  return loadList<HealthAssessment>(HEALTH_KEY)
+export async function listHealthAssessments(animalId: string): Promise<HealthAssessment[]> {
+  const all = await fetchAll<HealthAssessment>("/api/medical/health-assessments");
+  return all
     .filter((h) => h.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -51,14 +50,18 @@ export function listHealthAssessments(animalId: string): HealthAssessment[] {
 // The triggering assessment of the CURRENT (unresolved) treatment
 // episode, if any - the most recent urgent-treatment assessment that has
 // no later treatment event marking recovery complete.
-export function getActiveTreatmentTrigger(animalId: string): HealthAssessment | undefined {
-  const triggers = loadList<HealthAssessment>(HEALTH_KEY)
+export async function getActiveTreatmentTrigger(animalId: string): Promise<HealthAssessment | undefined> {
+  const [healthAssessments, treatmentEvents] = await Promise.all([
+    fetchAll<HealthAssessment>("/api/medical/health-assessments"),
+    fetchAll<TreatmentEvent>("/api/medical/treatment-events"),
+  ]);
+  const triggers = healthAssessments
     .filter((h) => h.animalId === animalId && h.urgentTreatmentRequired)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const latest = triggers[0];
   if (!latest) return undefined;
 
-  const resolved = loadList<TreatmentEvent>(TREATMENT_KEY).some(
+  const resolved = treatmentEvents.some(
     (e) => e.linkedHealthAssessmentId === latest.id && !e.furtherTreatmentRequired,
   );
   return resolved ? undefined : latest;
@@ -101,7 +104,7 @@ export async function recordHealthAssessment(
     veterinarianName: name,
     createdAt: now,
   };
-  saveList(HEALTH_KEY, [...loadList<HealthAssessment>(HEALTH_KEY), assessment]);
+  await postJson("/api/medical/health-assessments", assessment);
 
   if (input.urgentTreatmentRequired) {
     await changeAnimalStatus(
@@ -119,8 +122,9 @@ export async function recordHealthAssessment(
 
 // --- Treatment and Recovery (FR-MED-02) ---
 
-export function listTreatmentEvents(animalId: string): TreatmentEvent[] {
-  return loadList<TreatmentEvent>(TREATMENT_KEY)
+export async function listTreatmentEvents(animalId: string): Promise<TreatmentEvent[]> {
+  const all = await fetchAll<TreatmentEvent>("/api/medical/treatment-events");
+  return all
     .filter((e) => e.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -139,7 +143,7 @@ export async function addTreatmentEvent(
   email: string,
   name: string,
 ): Promise<MutationResult> {
-  const trigger = getActiveTreatmentTrigger(animalId);
+  const trigger = await getActiveTreatmentTrigger(animalId);
   if (!trigger) return { ok: false, reason: "not_under_treatment" };
 
   const now = new Date().toISOString();
@@ -152,7 +156,7 @@ export async function addTreatmentEvent(
     veterinarianName: name,
     createdAt: now,
   };
-  saveList(TREATMENT_KEY, [...loadList<TreatmentEvent>(TREATMENT_KEY), event]);
+  await postJson("/api/medical/treatment-events", event);
 
   if (!input.furtherTreatmentRequired) {
     const pathway = trigger.treatmentPathway ?? "intake";
@@ -171,8 +175,9 @@ export async function addTreatmentEvent(
 
 // --- Vaccination, Desexing and Medical Clearance (FR-MED-03) ---
 
-export function listVaccinations(animalId: string): VaccinationRecord[] {
-  return loadList<VaccinationRecord>(VACCINATION_KEY)
+export async function listVaccinations(animalId: string): Promise<VaccinationRecord[]> {
+  const all = await fetchAll<VaccinationRecord>("/api/medical/vaccinations");
+  return all
     .filter((v) => v.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -180,8 +185,8 @@ export function listVaccinations(animalId: string): VaccinationRecord[] {
 // FR-NOT-01 "Vaccine booster due": every recorded vaccination across all
 // animals, so notifications can find the ones whose nextBoosterDueDate
 // is approaching.
-export function listAllVaccinations(): VaccinationRecord[] {
-  return loadList<VaccinationRecord>(VACCINATION_KEY);
+export async function listAllVaccinations(): Promise<VaccinationRecord[]> {
+  return fetchAll<VaccinationRecord>("/api/medical/vaccinations");
 }
 
 export interface VaccinationInput {
@@ -206,18 +211,20 @@ export async function recordVaccination(
     veterinarianName: name,
     createdAt: new Date().toISOString(),
   };
-  saveList(VACCINATION_KEY, [...loadList<VaccinationRecord>(VACCINATION_KEY), record]);
+  await postJson("/api/medical/vaccinations", record);
   return { ok: true };
 }
 
-export function getDesexingSchedule(animalId: string): DesexingSchedule | undefined {
-  return loadList<DesexingSchedule>(DESEXING_KEY).find((d) => d.animalId === animalId);
+export async function getDesexingSchedule(animalId: string): Promise<DesexingSchedule | undefined> {
+  const all = await fetchAll<DesexingSchedule>("/api/medical/desexing-schedules");
+  return all.find((d) => d.animalId === animalId);
 }
 
 // FR-NOT-01 "Desexing appointment due": every Scheduled (not yet
 // Completed) desexing appointment across all animals.
-export function listScheduledDesexing(): DesexingSchedule[] {
-  return loadList<DesexingSchedule>(DESEXING_KEY).filter((d) => d.status === "Scheduled");
+export async function listScheduledDesexing(): Promise<DesexingSchedule[]> {
+  const all = await fetchAll<DesexingSchedule>("/api/medical/desexing-schedules");
+  return all.filter((d) => d.status === "Scheduled");
 }
 
 export async function scheduleDesexing(
@@ -227,7 +234,7 @@ export async function scheduleDesexing(
   name: string,
 ): Promise<MutationResult> {
   if (!(await getAnimalById(animalId))) return { ok: false, reason: "not_found" };
-  if (getDesexingSchedule(animalId)) return { ok: false, reason: "already_scheduled" };
+  if (await getDesexingSchedule(animalId)) return { ok: false, reason: "already_scheduled" };
 
   const schedule: DesexingSchedule = {
     id: generateId("DX"),
@@ -238,34 +245,38 @@ export async function scheduleDesexing(
     veterinarianName: name,
     createdAt: new Date().toISOString(),
   };
-  saveList(DESEXING_KEY, [...loadList<DesexingSchedule>(DESEXING_KEY), schedule]);
+  await postJson("/api/medical/desexing-schedules", schedule);
   return { ok: true };
 }
 
-export function completeDesexing(animalId: string, email: string, name: string): MutationResult {
-  const all = loadList<DesexingSchedule>(DESEXING_KEY);
-  const index = all.findIndex((d) => d.animalId === animalId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  if (all[index].status === "Completed") return { ok: false, reason: "already_completed" };
+export async function completeDesexing(animalId: string, email: string, name: string): Promise<MutationResult> {
+  const schedule = await getDesexingSchedule(animalId);
+  if (!schedule) return { ok: false, reason: "not_found" };
+  if (schedule.status === "Completed") return { ok: false, reason: "already_completed" };
 
-  all[index] = {
-    ...all[index],
-    status: "Completed",
-    completedAt: new Date().toISOString(),
-    completedByEmail: email,
-    completedByName: name,
-  };
-  saveList(DESEXING_KEY, all);
+  const response = await fetch(`/api/medical/desexing-schedules/${schedule.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      status: "Completed",
+      completedAt: new Date().toISOString(),
+      completedByEmail: email,
+      completedByName: name,
+    }),
+  });
+  const result = await response.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
   return { ok: true };
 }
 
-export function getMedicalClearance(animalId: string): MedicalClearance | undefined {
-  return loadList<MedicalClearance>(CLEARANCE_KEY).find((c) => c.animalId === animalId);
+export async function getMedicalClearance(animalId: string): Promise<MedicalClearance | undefined> {
+  const all = await fetchAll<MedicalClearance>("/api/medical/clearances");
+  return all.find((c) => c.animalId === animalId);
 }
 
 // FR-REC-01 "导出...medical clearance": every issued clearance across all animals.
-export function listAllMedicalClearances(): MedicalClearance[] {
-  return loadList<MedicalClearance>(CLEARANCE_KEY);
+export async function listAllMedicalClearances(): Promise<MedicalClearance[]> {
+  return fetchAll<MedicalClearance>("/api/medical/clearances");
 }
 
 // PRD: "系统只有在必需疫苗完成且绝育已经完成或排期后，才允许 issueMedicalClearance()". There
@@ -273,24 +284,28 @@ export function listAllMedicalClearances(): MedicalClearance[] {
 // types (only 13 categories exist and none is vaccine-specific), so
 // this prototype treats "at least one vaccination recorded" as
 // satisfying "必需疫苗完成" - disclosed in the UI and BUILD-PROGRESS.md.
-export function getMedicalClearanceBlockers(animalId: string): string[] {
+export async function getMedicalClearanceBlockers(animalId: string): Promise<string[]> {
   const blockers: string[] = [];
-  if (listVaccinations(animalId).length === 0) {
+  const [vaccinations, desexing] = await Promise.all([
+    listVaccinations(animalId),
+    getDesexingSchedule(animalId),
+  ]);
+  if (vaccinations.length === 0) {
     blockers.push("At least one vaccination must be recorded.");
   }
-  if (!getDesexingSchedule(animalId)) {
+  if (!desexing) {
     blockers.push("Desexing must be scheduled or completed.");
   }
   return blockers;
 }
 
-export function issueMedicalClearance(
+export async function issueMedicalClearance(
   animalId: string,
   email: string,
   name: string,
-): MutationResult {
-  if (getMedicalClearance(animalId)) return { ok: false, reason: "already_issued" };
-  const blockers = getMedicalClearanceBlockers(animalId);
+): Promise<MutationResult> {
+  if (await getMedicalClearance(animalId)) return { ok: false, reason: "already_issued" };
+  const blockers = await getMedicalClearanceBlockers(animalId);
   if (blockers.length > 0) return { ok: false, reason: "blocked" };
 
   const clearance: MedicalClearance = {
@@ -300,7 +315,7 @@ export function issueMedicalClearance(
     issuedByName: name,
     issuedAt: new Date().toISOString(),
   };
-  saveList(CLEARANCE_KEY, [...loadList<MedicalClearance>(CLEARANCE_KEY), clearance]);
+  await postJson("/api/medical/clearances", clearance);
 
   // Doesn't itself change currentStatus/listingStatus (that's a separate
   // evaluatePreListingEligibility() call from the UI layer, see
@@ -322,14 +337,15 @@ export function issueMedicalClearance(
 
 // --- Pre-Release Check (FR-REL-01) ---
 
-export function listPreReleaseChecks(animalId: string): PreReleaseCheck[] {
-  return loadList<PreReleaseCheck>(PRE_RELEASE_KEY)
+export async function listPreReleaseChecks(animalId: string): Promise<PreReleaseCheck[]> {
+  const all = await fetchAll<PreReleaseCheck>("/api/medical/pre-release-checks");
+  return all
     .filter((c) => c.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-export function getLatestPreReleaseCheck(animalId: string): PreReleaseCheck | undefined {
-  return listPreReleaseChecks(animalId)[0];
+export async function getLatestPreReleaseCheck(animalId: string): Promise<PreReleaseCheck | undefined> {
+  return (await listPreReleaseChecks(animalId))[0];
 }
 
 // "Fit for Release 允许 Staff Release Animal to Adopter" - the most recent
@@ -341,7 +357,7 @@ export function getLatestPreReleaseCheck(animalId: string): PreReleaseCheck | un
 export async function isFitForRelease(animalId: string): Promise<boolean> {
   const animal = await getAnimalById(animalId);
   if (!animal || animal.currentStatus !== "Awaiting Release") return false;
-  return getLatestPreReleaseCheck(animalId)?.fitnessResult === "Fit for Release";
+  return (await getLatestPreReleaseCheck(animalId))?.fitnessResult === "Fit for Release";
 }
 
 export interface PreReleaseCheckInput {
@@ -377,7 +393,7 @@ export async function recordPreReleaseCheck(
     veterinarianName: name,
     createdAt: now,
   };
-  saveList(PRE_RELEASE_KEY, [...loadList<PreReleaseCheck>(PRE_RELEASE_KEY), check]);
+  await postJson("/api/medical/pre-release-checks", check);
 
   if (input.fitnessResult === "Health Concern") {
     await recordHealthAssessment(

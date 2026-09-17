@@ -40,7 +40,7 @@ function PreReleaseChecksContent() {
       const withFitness = await Promise.all(
         queued.map(async (animal) => ({
           animal,
-          latest: getLatestPreReleaseCheck(animal.animalId),
+          latest: await getLatestPreReleaseCheck(animal.animalId),
           fitForRelease: await isFitForRelease(animal.animalId),
         })),
       );

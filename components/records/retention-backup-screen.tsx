@@ -44,8 +44,8 @@ function exportIntakeSummary() {
   );
 }
 
-function exportMedicalClearances() {
-  const clearances = listAllMedicalClearances();
+async function exportMedicalClearances() {
+  const clearances = await listAllMedicalClearances();
   downloadCsv(
     `medical-clearances-${timestampForFilename()}.csv`,
     ["id", "animalId", "issuedAt", "issuedByName", "issuedByEmail"],

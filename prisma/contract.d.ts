@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'760a883a1ff5bf19938530c7dd7bf52d6d375d649ff1bd91efb508b9c4db1d02'>;
+  StorageHashBase<'7d6b8b66e18c9bb1a9db46f5de8d0fa40a26fc466ac9c45937ea34ec75c09588'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -153,6 +153,65 @@ export type FieldOutputTypes = {
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['output'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
     };
+    readonly DesexingSchedule: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly HealthAssessment: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly examinationObservations: CodecTypes['sqlite/text@1']['output'];
+      readonly sampleTestResults: CodecTypes['sqlite/text@1']['output'];
+      readonly diagnosedConditions: CodecTypes['sqlite/text@1']['output'];
+      readonly bodyCondition: CodecTypes['sqlite/text@1']['output'];
+      readonly urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
+      readonly urgentTreatmentNotes: CodecTypes['sqlite/text@1']['output'];
+      readonly treatmentPathway: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly MedicalClearance: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly issuedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly issuedByName: CodecTypes['sqlite/text@1']['output'];
+      readonly issuedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly PreReleaseCheck: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly checkDate: CodecTypes['sqlite/text@1']['output'];
+      readonly fitnessResult: CodecTypes['sqlite/text@1']['output'];
+      readonly healthFindings: CodecTypes['sqlite/text@1']['output'];
+      readonly medicationGuidance: CodecTypes['sqlite/text@1']['output'];
+      readonly careInstructions: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly TreatmentEvent: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly linkedHealthAssessmentId: CodecTypes['sqlite/text@1']['output'];
+      readonly medication: CodecTypes['sqlite/text@1']['output'];
+      readonly dose: CodecTypes['sqlite/text@1']['output'];
+      readonly date: CodecTypes['sqlite/text@1']['output'];
+      readonly outcome: CodecTypes['sqlite/text@1']['output'];
+      readonly furtherTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly User: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly email: CodecTypes['sqlite/text@1']['output'];
@@ -171,6 +230,17 @@ export type FieldOutputTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly failedLoginAttempts: CodecTypes['sqlite/integer@1']['output'];
       readonly lockedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    };
+    readonly VaccinationRecord: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly vaccineType: CodecTypes['sqlite/text@1']['output'];
+      readonly administrationDate: CodecTypes['sqlite/text@1']['output'];
+      readonly doseOrChipId: CodecTypes['sqlite/text@1']['output'];
+      readonly nextBoosterDueDate: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
   };
 };
@@ -201,6 +271,65 @@ export type FieldInputTypes = {
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['input'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['input'] | null;
     };
+    readonly DesexingSchedule: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly HealthAssessment: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly examinationObservations: CodecTypes['sqlite/text@1']['input'];
+      readonly sampleTestResults: CodecTypes['sqlite/text@1']['input'];
+      readonly diagnosedConditions: CodecTypes['sqlite/text@1']['input'];
+      readonly bodyCondition: CodecTypes['sqlite/text@1']['input'];
+      readonly urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['input'];
+      readonly urgentTreatmentNotes: CodecTypes['sqlite/text@1']['input'];
+      readonly treatmentPathway: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly MedicalClearance: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly issuedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly issuedByName: CodecTypes['sqlite/text@1']['input'];
+      readonly issuedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly PreReleaseCheck: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly checkDate: CodecTypes['sqlite/text@1']['input'];
+      readonly fitnessResult: CodecTypes['sqlite/text@1']['input'];
+      readonly healthFindings: CodecTypes['sqlite/text@1']['input'];
+      readonly medicationGuidance: CodecTypes['sqlite/text@1']['input'];
+      readonly careInstructions: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly TreatmentEvent: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly linkedHealthAssessmentId: CodecTypes['sqlite/text@1']['input'];
+      readonly medication: CodecTypes['sqlite/text@1']['input'];
+      readonly dose: CodecTypes['sqlite/text@1']['input'];
+      readonly date: CodecTypes['sqlite/text@1']['input'];
+      readonly outcome: CodecTypes['sqlite/text@1']['input'];
+      readonly furtherTreatmentRequired: CodecTypes['sqlite/integer@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
     readonly User: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly email: CodecTypes['sqlite/text@1']['input'];
@@ -219,6 +348,17 @@ export type FieldInputTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly failedLoginAttempts: CodecTypes['sqlite/integer@1']['input'];
       readonly lockedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+    };
+    readonly VaccinationRecord: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly vaccineType: CodecTypes['sqlite/text@1']['input'];
+      readonly administrationDate: CodecTypes['sqlite/text@1']['input'];
+      readonly doseOrChipId: CodecTypes['sqlite/text@1']['input'];
+      readonly nextBoosterDueDate: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
     };
   };
 };
@@ -249,6 +389,65 @@ export type StorageColumnTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly temperaments: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly desexingSchedule: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly healthAssessment: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['output'];
+      readonly bodyCondition: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly diagnosedConditions: CodecTypes['sqlite/text@1']['output'];
+      readonly examinationObservations: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly sampleTestResults: CodecTypes['sqlite/text@1']['output'];
+      readonly treatmentPathway: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly urgentTreatmentNotes: CodecTypes['sqlite/text@1']['output'];
+      readonly urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly medicalClearance: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly issuedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly issuedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly issuedByName: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly preReleaseCheck: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly careInstructions: CodecTypes['sqlite/text@1']['output'];
+      readonly checkDate: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly fitnessResult: CodecTypes['sqlite/text@1']['output'];
+      readonly healthFindings: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly medicationGuidance: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly treatmentEvent: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly date: CodecTypes['sqlite/text@1']['output'];
+      readonly dose: CodecTypes['sqlite/text@1']['output'];
+      readonly furtherTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly linkedHealthAssessmentId: CodecTypes['sqlite/text@1']['output'];
+      readonly medication: CodecTypes['sqlite/text@1']['output'];
+      readonly outcome: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly user: {
       readonly email: CodecTypes['sqlite/text@1']['output'];
       readonly failedLoginAttempts: CodecTypes['sqlite/integer@1']['output'];
@@ -267,6 +466,17 @@ export type StorageColumnTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly statusUpdatedBy: CodecTypes['sqlite/text@1']['output'] | null;
       readonly title: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly vaccinationRecord: {
+      readonly administrationDate: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly doseOrChipId: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly nextBoosterDueDate: CodecTypes['sqlite/text@1']['output'];
+      readonly vaccineType: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
     };
   };
 };
@@ -297,6 +507,65 @@ export type StorageColumnInputTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly temperaments: CodecTypes['sqlite/text@1']['input'];
     };
+    readonly desexingSchedule: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly scheduledDate: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly healthAssessment: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['input'];
+      readonly bodyCondition: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly diagnosedConditions: CodecTypes['sqlite/text@1']['input'];
+      readonly examinationObservations: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly sampleTestResults: CodecTypes['sqlite/text@1']['input'];
+      readonly treatmentPathway: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly urgentTreatmentNotes: CodecTypes['sqlite/text@1']['input'];
+      readonly urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly medicalClearance: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly issuedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly issuedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly issuedByName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly preReleaseCheck: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly careInstructions: CodecTypes['sqlite/text@1']['input'];
+      readonly checkDate: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly fitnessResult: CodecTypes['sqlite/text@1']['input'];
+      readonly healthFindings: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly medicationGuidance: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly treatmentEvent: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly date: CodecTypes['sqlite/text@1']['input'];
+      readonly dose: CodecTypes['sqlite/text@1']['input'];
+      readonly furtherTreatmentRequired: CodecTypes['sqlite/integer@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly linkedHealthAssessmentId: CodecTypes['sqlite/text@1']['input'];
+      readonly medication: CodecTypes['sqlite/text@1']['input'];
+      readonly outcome: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly user: {
       readonly email: CodecTypes['sqlite/text@1']['input'];
       readonly failedLoginAttempts: CodecTypes['sqlite/integer@1']['input'];
@@ -315,6 +584,17 @@ export type StorageColumnInputTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly statusUpdatedBy: CodecTypes['sqlite/text@1']['input'] | null;
       readonly title: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly vaccinationRecord: {
+      readonly administrationDate: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly doseOrChipId: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly nextBoosterDueDate: CodecTypes['sqlite/text@1']['input'];
+      readonly vaccineType: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
     };
   };
 };
@@ -366,11 +646,93 @@ export namespace Models {
     linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type HealthAssessment = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    examinationObservations: CodecTypes['sqlite/text@1']['output'];
+    sampleTestResults: CodecTypes['sqlite/text@1']['output'];
+    diagnosedConditions: CodecTypes['sqlite/text@1']['output'];
+    bodyCondition: CodecTypes['sqlite/text@1']['output'];
+    urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
+    urgentTreatmentNotes: CodecTypes['sqlite/text@1']['output'];
+    treatmentPathway: CodecTypes['sqlite/text@1']['output'] | null;
+    assessmentDate: CodecTypes['sqlite/text@1']['output'];
+    veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+    veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type TreatmentEvent = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    linkedHealthAssessmentId: CodecTypes['sqlite/text@1']['output'];
+    medication: CodecTypes['sqlite/text@1']['output'];
+    dose: CodecTypes['sqlite/text@1']['output'];
+    date: CodecTypes['sqlite/text@1']['output'];
+    outcome: CodecTypes['sqlite/text@1']['output'];
+    furtherTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
+    veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+    veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type VaccinationRecord = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    vaccineType: CodecTypes['sqlite/text@1']['output'];
+    administrationDate: CodecTypes['sqlite/text@1']['output'];
+    doseOrChipId: CodecTypes['sqlite/text@1']['output'];
+    nextBoosterDueDate: CodecTypes['sqlite/text@1']['output'];
+    veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+    veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type DesexingSchedule = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    scheduledDate: CodecTypes['sqlite/text@1']['output'];
+    status: CodecTypes['sqlite/text@1']['output'];
+    completedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    completedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    completedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+    veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type MedicalClearance = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    issuedByEmail: CodecTypes['sqlite/text@1']['output'];
+    issuedByName: CodecTypes['sqlite/text@1']['output'];
+    issuedAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type PreReleaseCheck = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    checkDate: CodecTypes['sqlite/text@1']['output'];
+    fitnessResult: CodecTypes['sqlite/text@1']['output'];
+    healthFindings: CodecTypes['sqlite/text@1']['output'];
+    medicationGuidance: CodecTypes['sqlite/text@1']['output'];
+    careInstructions: CodecTypes['sqlite/text@1']['output'];
+    veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
+    veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
   User: Models.User;
   Animal: Models.Animal;
+  HealthAssessment: Models.HealthAssessment;
+  TreatmentEvent: Models.TreatmentEvent;
+  VaccinationRecord: Models.VaccinationRecord;
+  DesexingSchedule: Models.DesexingSchedule;
+  MedicalClearance: Models.MedicalClearance;
+  PreReleaseCheck: Models.PreReleaseCheck;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -514,6 +876,291 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly desexingSchedule: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly scheduledDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly completedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly completedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly completedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly veterinarianEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly healthAssessment: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly examinationObservations: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly sampleTestResults: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly diagnosedConditions: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly bodyCondition: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly urgentTreatmentRequired: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly urgentTreatmentNotes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly treatmentPathway: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly assessmentDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly medicalClearance: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly issuedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly issuedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly issuedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly preReleaseCheck: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly checkDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly fitnessResult: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly healthFindings: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly medicationGuidance: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly careInstructions: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly treatmentEvent: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly linkedHealthAssessmentId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly medication: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly dose: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly date: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly outcome: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly furtherTreatmentRequired: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly user: {
               columns: {
                 readonly id: {
@@ -611,6 +1258,59 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly vaccinationRecord: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly vaccineType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly administrationDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly doseOrChipId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly nextBoosterDueDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly veterinarianName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
           };
         };
       };
@@ -624,6 +1324,30 @@ type ContractBase = Omit<
   readonly roots: {
     readonly user: { readonly namespace: '__unbound__' & NamespaceId; readonly model: 'User' };
     readonly animal: { readonly namespace: '__unbound__' & NamespaceId; readonly model: 'Animal' };
+    readonly healthAssessment: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'HealthAssessment';
+    };
+    readonly treatmentEvent: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'TreatmentEvent';
+    };
+    readonly vaccinationRecord: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'VaccinationRecord';
+    };
+    readonly desexingSchedule: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'DesexingSchedule';
+    };
+    readonly medicalClearance: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'MedicalClearance';
+    };
+    readonly preReleaseCheck: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'PreReleaseCheck';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -755,6 +1479,306 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly DesexingSchedule: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly scheduledDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly completedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly completedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'desexingSchedule';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly scheduledDate: { readonly column: 'scheduledDate' };
+                readonly status: { readonly column: 'status' };
+                readonly completedAt: { readonly column: 'completedAt' };
+                readonly completedByEmail: { readonly column: 'completedByEmail' };
+                readonly completedByName: { readonly column: 'completedByName' };
+                readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
+                readonly veterinarianName: { readonly column: 'veterinarianName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
+          readonly HealthAssessment: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly examinationObservations: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly sampleTestResults: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly diagnosedConditions: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly bodyCondition: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly urgentTreatmentRequired: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly urgentTreatmentNotes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly treatmentPathway: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly assessmentDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'healthAssessment';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly examinationObservations: { readonly column: 'examinationObservations' };
+                readonly sampleTestResults: { readonly column: 'sampleTestResults' };
+                readonly diagnosedConditions: { readonly column: 'diagnosedConditions' };
+                readonly bodyCondition: { readonly column: 'bodyCondition' };
+                readonly urgentTreatmentRequired: { readonly column: 'urgentTreatmentRequired' };
+                readonly urgentTreatmentNotes: { readonly column: 'urgentTreatmentNotes' };
+                readonly treatmentPathway: { readonly column: 'treatmentPathway' };
+                readonly assessmentDate: { readonly column: 'assessmentDate' };
+                readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
+                readonly veterinarianName: { readonly column: 'veterinarianName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
+          readonly MedicalClearance: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly issuedByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly issuedByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly issuedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'medicalClearance';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly issuedByEmail: { readonly column: 'issuedByEmail' };
+                readonly issuedByName: { readonly column: 'issuedByName' };
+                readonly issuedAt: { readonly column: 'issuedAt' };
+              };
+            };
+          };
+          readonly PreReleaseCheck: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly checkDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly fitnessResult: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly healthFindings: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly medicationGuidance: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly careInstructions: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'preReleaseCheck';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly checkDate: { readonly column: 'checkDate' };
+                readonly fitnessResult: { readonly column: 'fitnessResult' };
+                readonly healthFindings: { readonly column: 'healthFindings' };
+                readonly medicationGuidance: { readonly column: 'medicationGuidance' };
+                readonly careInstructions: { readonly column: 'careInstructions' };
+                readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
+                readonly veterinarianName: { readonly column: 'veterinarianName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
+          readonly TreatmentEvent: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly linkedHealthAssessmentId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly medication: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly dose: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly date: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly outcome: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly furtherTreatmentRequired: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly veterinarianEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'treatmentEvent';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly linkedHealthAssessmentId: { readonly column: 'linkedHealthAssessmentId' };
+                readonly medication: { readonly column: 'medication' };
+                readonly dose: { readonly column: 'dose' };
+                readonly date: { readonly column: 'date' };
+                readonly outcome: { readonly column: 'outcome' };
+                readonly furtherTreatmentRequired: { readonly column: 'furtherTreatmentRequired' };
+                readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
+                readonly veterinarianName: { readonly column: 'veterinarianName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
           readonly User: {
             readonly fields: {
               readonly id: {
@@ -848,6 +1872,62 @@ type ContractBase = Omit<
                 readonly statusUpdatedAt: { readonly column: 'statusUpdatedAt' };
                 readonly failedLoginAttempts: { readonly column: 'failedLoginAttempts' };
                 readonly lockedAt: { readonly column: 'lockedAt' };
+              };
+            };
+          };
+          readonly VaccinationRecord: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly vaccineType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly administrationDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly doseOrChipId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly nextBoosterDueDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly veterinarianName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'vaccinationRecord';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly vaccineType: { readonly column: 'vaccineType' };
+                readonly administrationDate: { readonly column: 'administrationDate' };
+                readonly doseOrChipId: { readonly column: 'doseOrChipId' };
+                readonly nextBoosterDueDate: { readonly column: 'nextBoosterDueDate' };
+                readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
+                readonly veterinarianName: { readonly column: 'veterinarianName' };
+                readonly createdAt: { readonly column: 'createdAt' };
               };
             };
           };

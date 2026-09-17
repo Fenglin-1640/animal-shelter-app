@@ -63,3 +63,90 @@ model Animal {
   linkedPersonRole    String?
   linkedPersonName    String?
 }
+
+// Mirrors lib/medical/types.ts (FR-MED-01/02/03, FR-REL-01) - one model
+// per event kind, same shape as the original localStorage arrays.
+// createdAt/issuedAt/completedAt are system-generated timestamps (kept
+// as DateTime, like Animal's enteredAt/lastModifiedAt); the
+// user-entered/free-editable dates below them (assessmentDate,
+// administrationDate, nextBoosterDueDate, scheduledDate, checkDate,
+// TreatmentEvent.date) stay plain strings for the same reason Animal's
+// dateOfBirth does - see lib/medical/serialize.ts.
+model HealthAssessment {
+  id                      String   @id
+  animalId                String
+  examinationObservations String
+  sampleTestResults       String
+  diagnosedConditions     String
+  bodyCondition           String
+  // Int (0/1), not Boolean - this SQL PSL provider doesn't support the
+  // Boolean field type (CONTRACT.SOURCE_LOAD_FAILED /
+  // PSL_UNSUPPORTED_FIELD_TYPE) - see lib/medical/serialize.ts.
+  urgentTreatmentRequired Int
+  urgentTreatmentNotes    String
+  treatmentPathway        String?
+  assessmentDate          String
+  veterinarianEmail       String
+  veterinarianName        String
+  createdAt               DateTime
+}
+
+model TreatmentEvent {
+  id                       String   @id
+  animalId                 String
+  linkedHealthAssessmentId String
+  medication                String
+  dose                      String
+  date                      String
+  outcome                   String
+  furtherTreatmentRequired  Int
+  veterinarianEmail         String
+  veterinarianName          String
+  createdAt                 DateTime
+}
+
+model VaccinationRecord {
+  id                 String   @id
+  animalId           String
+  vaccineType        String
+  administrationDate String
+  doseOrChipId       String
+  nextBoosterDueDate String
+  veterinarianEmail  String
+  veterinarianName   String
+  createdAt          DateTime
+}
+
+model DesexingSchedule {
+  id                String    @id
+  animalId          String
+  scheduledDate     String
+  status            String
+  completedAt       DateTime?
+  completedByEmail  String?
+  completedByName   String?
+  veterinarianEmail String
+  veterinarianName  String
+  createdAt         DateTime
+}
+
+model MedicalClearance {
+  id            String   @id
+  animalId      String
+  issuedByEmail String
+  issuedByName  String
+  issuedAt      DateTime
+}
+
+model PreReleaseCheck {
+  id                 String   @id
+  animalId           String
+  checkDate          String
+  fitnessResult      String
+  healthFindings     String
+  medicationGuidance String
+  careInstructions   String
+  veterinarianEmail  String
+  veterinarianName   String
+  createdAt          DateTime
+}

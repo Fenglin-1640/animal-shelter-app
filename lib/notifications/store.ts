@@ -83,7 +83,7 @@ async function getBehaviourReassessmentNotifications(): Promise<NotificationItem
 // leave a stale reminder pointing at the superseded record.
 async function getVaccineBoosterNotifications(): Promise<NotificationItem[]> {
   const latestByAnimalAndType = new Map<string, VaccinationRecord>();
-  for (const v of listAllVaccinations()) {
+  for (const v of await listAllVaccinations()) {
     const key = `${v.animalId}::${v.vaccineType}`;
     const existing = latestByAnimalAndType.get(key);
     if (!existing || new Date(v.administrationDate) > new Date(existing.administrationDate)) {
@@ -113,7 +113,7 @@ async function getVaccineBoosterNotifications(): Promise<NotificationItem[]> {
 // FR-NOT-01 "Desexing appointment due".
 async function getDesexingAppointmentNotifications(): Promise<NotificationItem[]> {
   const items: NotificationItem[] = [];
-  for (const d of listScheduledDesexing()) {
+  for (const d of await listScheduledDesexing()) {
     if (daysUntil(d.scheduledDate) > REMINDER_LEAD_DAYS) continue;
     const animal = await getAnimalById(d.animalId);
     if (!animal) continue;
@@ -198,7 +198,7 @@ async function getPreReleaseCheckNotifications(): Promise<NotificationItem[]> {
   const items: NotificationItem[] = [];
   for (const animal of animals) {
     if (animal.currentStatus !== "Awaiting Release" || (await isFitForRelease(animal.animalId))) continue;
-    const latest = getLatestPreReleaseCheck(animal.animalId);
+    const latest = await getLatestPreReleaseCheck(animal.animalId);
     items.push({
       id: `pre-release-${animal.animalId}`,
       type: "Pre-Release Check",

@@ -440,23 +440,39 @@ function MedicalContent({
   const medicationOptions = getActiveValues("Medication");
   const canAct = CAN_ACT_ROLES.includes(role);
 
+  const [clearanceBlockers, setClearanceBlockers] = useState<string[]>([]);
+
+  const reloadMedical = async () => {
+    const [healthAssessmentsResult, treatmentEventsResult, vaccinationsResult, desexingResult, clearanceResult, triggerResult, blockersResult] =
+      await Promise.all([
+        listHealthAssessments(animalId),
+        listTreatmentEvents(animalId),
+        listVaccinations(animalId),
+        getDesexingSchedule(animalId),
+        getMedicalClearance(animalId),
+        getActiveTreatmentTrigger(animalId),
+        getMedicalClearanceBlockers(animalId),
+      ]);
+    setHealthAssessments(healthAssessmentsResult);
+    setTreatmentEvents(treatmentEventsResult);
+    setVaccinations(vaccinationsResult);
+    setDesexing(desexingResult);
+    setClearance(clearanceResult);
+    setUnderTreatment(Boolean(triggerResult));
+    setClearanceBlockers(blockersResult);
+  };
+
   useEffect(() => {
     let cancelled = false;
-    getAnimalById(animalId).then((result) => {
+    getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
-      if (result) {
-        setHealthAssessments(listHealthAssessments(animalId));
-        setTreatmentEvents(listTreatmentEvents(animalId));
-        setVaccinations(listVaccinations(animalId));
-        setDesexing(getDesexingSchedule(animalId));
-        setClearance(getMedicalClearance(animalId));
-        setUnderTreatment(Boolean(getActiveTreatmentTrigger(animalId)));
-      }
+      if (result) await reloadMedical();
     });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reloadMedical is recreated every render but only reads animalId, which is already a dependency.
   }, [animalId]);
 
   if (animal === undefined) {
@@ -469,16 +485,9 @@ function MedicalContent({
   if (!animal) return <NotFound />;
 
   const refresh = async () => {
-    setHealthAssessments(listHealthAssessments(animalId));
-    setTreatmentEvents(listTreatmentEvents(animalId));
-    setVaccinations(listVaccinations(animalId));
-    setDesexing(getDesexingSchedule(animalId));
-    setClearance(getMedicalClearance(animalId));
-    setUnderTreatment(Boolean(getActiveTreatmentTrigger(animalId)));
+    await reloadMedical();
     await evaluatePreListingEligibility(animalId);
   };
-
-  const clearanceBlockers = getMedicalClearanceBlockers(animalId);
 
   return (
     <div className="flex flex-col gap-6">

@@ -34,6 +34,13 @@ import {
   listVaccinations,
 } from "@/lib/medical/store";
 import { DESEXING_STATUS_CATEGORY } from "@/lib/medical/status";
+import type {
+  DesexingSchedule,
+  HealthAssessment,
+  MedicalClearance,
+  PreReleaseCheck,
+  VaccinationRecord,
+} from "@/lib/medical/types";
 import { getPublishBlockers, publishAdoptionProfile, unpublishAdoptionProfile } from "@/lib/adoption-listings/publish";
 import { getPrimaryPhoto, listPhotosForAnimal } from "@/lib/photos/store";
 import type { Role } from "@/lib/roles/roles";
@@ -113,6 +120,11 @@ function AnimalDetailContent({
 
   const [fitForRelease, setFitForRelease] = useState(false);
   const [publishBlockers, setPublishBlockers] = useState<string[]>([]);
+  const [healthAssessments, setHealthAssessments] = useState<HealthAssessment[]>([]);
+  const [medicalClearance, setMedicalClearance] = useState<MedicalClearance | undefined>(undefined);
+  const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
+  const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
+  const [latestPreReleaseCheck, setLatestPreReleaseCheck] = useState<PreReleaseCheck | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -121,6 +133,21 @@ function AnimalDetailContent({
     });
     getPublishBlockers(animal.animalId).then((result) => {
       if (!cancelled) setPublishBlockers(result);
+    });
+    listHealthAssessments(animal.animalId).then((result) => {
+      if (!cancelled) setHealthAssessments(result);
+    });
+    getMedicalClearance(animal.animalId).then((result) => {
+      if (!cancelled) setMedicalClearance(result);
+    });
+    getDesexingSchedule(animal.animalId).then((result) => {
+      if (!cancelled) setDesexing(result);
+    });
+    listVaccinations(animal.animalId).then((result) => {
+      if (!cancelled) setVaccinations(result);
+    });
+    getLatestPreReleaseCheck(animal.animalId).then((result) => {
+      if (!cancelled) setLatestPreReleaseCheck(result);
     });
     return () => {
       cancelled = true;
@@ -162,15 +189,10 @@ function AnimalDetailContent({
     if (result.ok) setAnimal((await getAnimalById(animal.animalId)) ?? animal);
   };
 
-  const healthAssessments = listHealthAssessments(animal.animalId);
-  const medicalClearance = getMedicalClearance(animal.animalId);
-  const desexing = getDesexingSchedule(animal.animalId);
-  const vaccinations = listVaccinations(animal.animalId);
   const temperamentAssessments = listTemperamentAssessments(animal.animalId);
   const latestBehaviour = temperamentAssessments[0];
   const activeProgram = getActiveBehaviourProgram(animal.animalId);
   const photos = listPhotosForAnimal(animal.animalId);
-  const latestPreReleaseCheck = getLatestPreReleaseCheck(animal.animalId);
   const followUpVisit = getLatestFollowUpVisitForAnimal(animal.animalId);
   const proposedApplications = listApplicationsForAnimal(animal.animalId).filter(
     (a) => a.applicationStatus !== "Draft",

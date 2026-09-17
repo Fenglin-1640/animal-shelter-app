@@ -48,6 +48,12 @@ no `prisma generate` / `prisma migrate dev` commands at all - see
   recompiles the edited route files. Symptom: `TypeError: Cannot read
   properties of undefined (reading 'where')` on `db.orm.<NewModel>`.
   Fix: stop and restart `next dev` after every `contract.prisma` change.
+- **The `Boolean` field type isn't supported by this SQL PSL provider.**
+  `prisma contract emit` fails with `CONTRACT.SOURCE_LOAD_FAILED` /
+  `PSL_UNSUPPORTED_FIELD_TYPE` on any `Boolean` field. Use `Int` (0/1)
+  instead and convert in the serializer (see
+  `lib/medical/serialize.ts`'s `urgentTreatmentRequired`/
+  `furtherTreatmentRequired`).
 
 ## Commands
 
@@ -66,3 +72,10 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   `Animal` interface; `temperaments` is JSON-encoded, `linkedPerson` is
   flattened into `linkedPersonRole`/`linkedPersonName` columns (see
   lib/animals/serialize.ts).
+- `HealthAssessment`, `TreatmentEvent`, `VaccinationRecord`,
+  `DesexingSchedule`, `MedicalClearance`, `PreReleaseCheck` - see
+  lib/medical/. One model per event kind, mirrored from
+  lib/medical/types.ts. System-generated timestamps (`createdAt`,
+  `issuedAt`, `completedAt`) are `DateTime`; user-entered/free dates
+  (`assessmentDate`, `administrationDate`, etc.) stay `String`, same
+  reasoning as Animal's `dateOfBirth`. See lib/medical/serialize.ts.
