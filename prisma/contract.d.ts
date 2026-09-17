@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7b78532374adcc29e3d71a479a9ba50deabffcc4772265a0f6f6659e0db8785a'>;
+  StorageHashBase<'5aacb5869ef63db4d36ffd13b9b00e2e84ac16bc806f9b54dbb1088d5ccec905'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -207,6 +207,25 @@ export type FieldOutputTypes = {
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
+    readonly StatutoryHold: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['output'];
+      readonly holdStartAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly holdEndAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly reclaimedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly reclaimedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly reclaimedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly custodyTransferCompletedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly custodyTransferByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly custodyTransferByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly expiredAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    };
     readonly TemperamentAssessment: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -351,6 +370,25 @@ export type FieldInputTypes = {
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly StatutoryHold: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['input'];
+      readonly holdStartAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly holdEndAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly reclaimedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly reclaimedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly reclaimedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly custodyTransferCompletedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly custodyTransferByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly custodyTransferByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly expiredAt: CodecTypes['sqlite/datetime@1']['input'] | null;
     };
     readonly TemperamentAssessment: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -497,6 +535,25 @@ export type StorageColumnTypes = {
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly statutoryHold: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly custodyTransferByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly custodyTransferByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly custodyTransferCompletedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly expiredAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly holdEndAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['output'];
+      readonly holdStartAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['output'];
+      readonly reclaimedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly reclaimedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly reclaimedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly temperamentAssessment: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
       readonly assessmentDate: CodecTypes['sqlite/text@1']['output'];
@@ -641,6 +698,25 @@ export type StorageColumnInputTypes = {
       readonly medicationGuidance: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly statutoryHold: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly custodyTransferByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly custodyTransferByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly custodyTransferCompletedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly expiredAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly holdEndAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['input'];
+      readonly holdStartAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['input'];
+      readonly reclaimedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly reclaimedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly reclaimedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['input'];
     };
     readonly temperamentAssessment: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -859,6 +935,26 @@ export namespace Models {
     resolvedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type StatutoryHold = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    ownerContactName: CodecTypes['sqlite/text@1']['output'];
+    ownerContactPhone: CodecTypes['sqlite/text@1']['output'];
+    ownerContactAddress: CodecTypes['sqlite/text@1']['output'];
+    holdStartAt: CodecTypes['sqlite/datetime@1']['output'];
+    holdEndAt: CodecTypes['sqlite/datetime@1']['output'];
+    holdingPeriodDays: CodecTypes['sqlite/integer@1']['output'];
+    status: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    reclaimedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    reclaimedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    reclaimedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    custodyTransferCompletedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    custodyTransferByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    custodyTransferByName: CodecTypes['sqlite/text@1']['output'] | null;
+    expiredAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -872,6 +968,7 @@ export declare const models: {
   PreReleaseCheck: Models.PreReleaseCheck;
   TemperamentAssessment: Models.TemperamentAssessment;
   BehaviourProgram: Models.BehaviourProgram;
+  StatutoryHold: Models.StatutoryHold;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -1275,6 +1372,99 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly statutoryHold: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly ownerContactName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly ownerContactPhone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly ownerContactAddress: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly holdStartAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly holdEndAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly holdingPeriodDays: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly reclaimedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly reclaimedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly reclaimedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly custodyTransferCompletedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly custodyTransferByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly custodyTransferByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly expiredAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly temperamentAssessment: {
               columns: {
                 readonly id: {
@@ -1625,6 +1815,10 @@ type ContractBase = Omit<
     readonly behaviourProgram: {
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'BehaviourProgram';
+    };
+    readonly statutoryHold: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'StatutoryHold';
     };
   };
   readonly domain: {
@@ -2029,6 +2223,104 @@ type ContractBase = Omit<
                 readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
                 readonly veterinarianName: { readonly column: 'veterinarianName' };
                 readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
+          readonly StatutoryHold: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly ownerContactName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly ownerContactPhone: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly ownerContactAddress: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly holdStartAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly holdEndAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly holdingPeriodDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly reclaimedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly reclaimedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly reclaimedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly custodyTransferCompletedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly custodyTransferByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly custodyTransferByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly expiredAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'statutoryHold';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly ownerContactName: { readonly column: 'ownerContactName' };
+                readonly ownerContactPhone: { readonly column: 'ownerContactPhone' };
+                readonly ownerContactAddress: { readonly column: 'ownerContactAddress' };
+                readonly holdStartAt: { readonly column: 'holdStartAt' };
+                readonly holdEndAt: { readonly column: 'holdEndAt' };
+                readonly holdingPeriodDays: { readonly column: 'holdingPeriodDays' };
+                readonly status: { readonly column: 'status' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly reclaimedAt: { readonly column: 'reclaimedAt' };
+                readonly reclaimedByEmail: { readonly column: 'reclaimedByEmail' };
+                readonly reclaimedByName: { readonly column: 'reclaimedByName' };
+                readonly custodyTransferCompletedAt: {
+                  readonly column: 'custodyTransferCompletedAt';
+                };
+                readonly custodyTransferByEmail: { readonly column: 'custodyTransferByEmail' };
+                readonly custodyTransferByName: { readonly column: 'custodyTransferByName' };
+                readonly expiredAt: { readonly column: 'expiredAt' };
               };
             };
           };

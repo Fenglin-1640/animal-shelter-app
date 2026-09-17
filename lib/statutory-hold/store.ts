@@ -5,27 +5,24 @@ import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 import { getSystemSettings } from "@/lib/system-administration/settings-store";
 import type { StatutoryHold } from "@/lib/statutory-hold/types";
 
-// FR-MC-02: StatutoryHold records, persisted to localStorage since there
-// is no backend. One hold per animal in this prototype (Owner Match is
-// idempotent - re-scanning an animal that already has a hold does not
-// create a second one).
-const STORAGE_KEY = "asams-statutory-holds";
+// FR-MC-02: StatutoryHold now lives in the database (see
+// prisma/contract.prisma) behind /api/statutory-holds - see
+// prisma/README.md for this Prisma toolchain's quirks. One hold per
+// animal (Owner Match is idempotent - re-scanning an animal that already
+// has a hold does not create a second one).
 
-function loadAll(): StatutoryHold[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as StatutoryHold[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAllHolds(): Promise<StatutoryHold[]> {
+  const response = await fetch("/api/statutory-holds");
+  const result = await response.json();
+  return result.items as StatutoryHold[];
 }
 
-function saveAll(holds: StatutoryHold[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(holds));
+async function patchHold(id: string, patch: Partial<StatutoryHold>): Promise<void> {
+  await fetch(`/api/statutory-holds/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
 }
 
 function generateHoldId(): string {
@@ -38,17 +35,14 @@ function generateHoldId(): string {
 // the Animal is still On Statutory Hold (nothing else has moved it on),
 // reverted to Under Assessment.
 async function resolveExpiredHolds() {
-  const all = loadAll();
+  const all = await fetchAllHolds();
   const now = new Date();
-  let changed = false;
 
-  for (let i = 0; i < all.length; i++) {
-    const hold = all[i];
+  for (const hold of all) {
     if (hold.status !== "Active" || new Date(hold.holdEndAt) > now) continue;
 
     const expiredAt = now.toISOString();
-    all[i] = { ...hold, status: "Expired", expiredAt };
-    changed = true;
+    await patchHold(hold.id, { status: "Expired", expiredAt });
 
     const animal = await getAnimalById(hold.animalId);
     if (animal?.currentStatus === "On Statutory Hold") {
@@ -60,13 +54,12 @@ async function resolveExpiredHolds() {
       );
     }
   }
-
-  if (changed) saveAll(all);
 }
 
 export async function listHoldsForAnimal(animalId: string): Promise<StatutoryHold[]> {
   await resolveExpiredHolds();
-  return loadAll()
+  const all = await fetchAllHolds();
+  return all
     .filter((h) => h.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -94,7 +87,7 @@ export async function createHoldForOwnerMatch(
   const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
-  const existing = loadAll().find((h) => h.animalId === animalId);
+  const existing = (await fetchAllHolds()).find((h) => h.animalId === animalId);
   if (existing) return { ok: true, hold: existing };
 
   const holdingPeriodDays = getSystemSettings().holdingPeriodDays;
@@ -113,7 +106,12 @@ export async function createHoldForOwnerMatch(
     status: "Active",
     createdAt: now,
   };
-  saveAll([...loadAll(), hold]);
+  const response = await fetch("/api/statutory-holds", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(hold),
+  });
+  const result = await response.json();
 
   await changeAnimalStatus(
     animalId,
@@ -127,7 +125,7 @@ export async function createHoldForOwnerMatch(
   );
   linkRegisteredOwnerContact(animalId, ownerContact);
 
-  return { ok: true, hold };
+  return { ok: true, hold: result.item as StatutoryHold };
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: "not_found" | "invalid_state" };
@@ -142,17 +140,13 @@ export async function recordOwnerReclamation(
   if (!hold) return { ok: false, reason: "not_found" };
   if (hold.status !== "Active") return { ok: false, reason: "invalid_state" };
 
-  const all = loadAll();
-  const index = all.findIndex((h) => h.id === hold.id);
   const now = new Date().toISOString();
-  all[index] = {
-    ...hold,
+  await patchHold(hold.id, {
     status: "Reclaimed By Owner",
     reclaimedAt: now,
     reclaimedByEmail: email,
     reclaimedByName: name,
-  };
-  saveAll(all);
+  });
 
   await changeAnimalStatus(
     animalId,
@@ -176,16 +170,12 @@ export async function confirmCustodyTransfer(
     return { ok: false, reason: "invalid_state" };
   }
 
-  const all = loadAll();
-  const index = all.findIndex((h) => h.id === hold.id);
   const now = new Date().toISOString();
-  all[index] = {
-    ...hold,
+  await patchHold(hold.id, {
     custodyTransferCompletedAt: now,
     custodyTransferByEmail: email,
     custodyTransferByName: name,
-  };
-  saveAll(all);
+  });
 
   await changeAnimalStatus(
     animalId,
@@ -203,7 +193,8 @@ export async function listHoldsNeedingReminder(): Promise<StatutoryHold[]> {
   await resolveExpiredHolds();
   const now = new Date();
   const reminderLeadDays = getSystemSettings().reminderLeadDays;
-  return loadAll().filter((h) => {
+  const all = await fetchAllHolds();
+  return all.filter((h) => {
     if (h.status !== "Active") return false;
     const reminderFrom = new Date(h.holdEndAt);
     reminderFrom.setDate(reminderFrom.getDate() - reminderLeadDays);

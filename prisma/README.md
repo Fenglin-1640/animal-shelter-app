@@ -94,3 +94,8 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   Mirrored from lib/behaviour/types.ts; `followUpRequired` is Int (0/1),
   same reasoning as Medical's boolean fields. See
   lib/behaviour/serialize.ts.
+- `StatutoryHold` - see lib/statutory-hold/. Mirrored from
+  lib/statutory-hold/types.ts; `ownerContact` is flattened into 3
+  columns, same reasoning as Animal's `linkedPerson`. Every date field
+  is system-generated (all `DateTime`) - unlike Medical/Behaviour, there
+  are no user-entered dates here. See lib/statutory-hold/serialize.ts.

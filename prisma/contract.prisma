@@ -181,3 +181,29 @@ model BehaviourProgram {
   createdAt              DateTime
   resolvedAt             DateTime?
 }
+
+// Mirrors lib/statutory-hold/types.ts (FR-MC-02). ownerContact is
+// flattened into 3 columns, same "one small object" reasoning as
+// Animal's linkedPerson. Every date field here is system-generated
+// (computed from intake date + configured holding period, or a
+// timestamp of when an action happened), so all of them are DateTime,
+// unlike Medical/Behaviour's mix of DateTime and user-entered String.
+model StatutoryHold {
+  id                         String    @id
+  animalId                   String
+  ownerContactName           String
+  ownerContactPhone          String
+  ownerContactAddress        String
+  holdStartAt                DateTime
+  holdEndAt                  DateTime
+  holdingPeriodDays          Int
+  status                     String
+  createdAt                  DateTime
+  reclaimedAt                DateTime?
+  reclaimedByEmail           String?
+  reclaimedByName            String?
+  custodyTransferCompletedAt DateTime?
+  custodyTransferByEmail     String?
+  custodyTransferByName      String?
+  expiredAt                  DateTime?
+}
