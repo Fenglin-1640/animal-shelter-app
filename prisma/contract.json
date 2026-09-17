@@ -8,6 +8,10 @@
       "model": "Animal",
       "namespace": "__unbound__"
     },
+    "behaviourProgram": {
+      "model": "BehaviourProgram",
+      "namespace": "__unbound__"
+    },
     "desexingSchedule": {
       "model": "DesexingSchedule",
       "namespace": "__unbound__"
@@ -22,6 +26,10 @@
     },
     "preReleaseCheck": {
       "model": "PreReleaseCheck",
+      "namespace": "__unbound__"
+    },
+    "temperamentAssessment": {
+      "model": "TemperamentAssessment",
       "namespace": "__unbound__"
     },
     "treatmentEvent": {
@@ -280,6 +288,77 @@
               },
               "namespaceId": "__unbound__",
               "table": "animal"
+            }
+          },
+          "BehaviourProgram": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "resolvedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "triggeringAssessmentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "resolvedAt": {
+                  "column": "resolvedAt"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "triggeringAssessmentId": {
+                  "column": "triggeringAssessmentId"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "behaviourProgram"
             }
           },
           "DesexingSchedule": {
@@ -704,6 +783,187 @@
               },
               "namespaceId": "__unbound__",
               "table": "preReleaseCheck"
+            }
+          },
+          "TemperamentAssessment": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "assessmentDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "assessorEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "assessorName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "followUpRequired": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "foodBehaviour": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "handlingResponse": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "interactionWithOtherAnimals": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "observations": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcome": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "programReassessmentOf": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reactionToStrangers": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reassessmentDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "recommendations": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "socialisationScore": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "assessmentDate": {
+                  "column": "assessmentDate"
+                },
+                "assessorEmail": {
+                  "column": "assessorEmail"
+                },
+                "assessorName": {
+                  "column": "assessorName"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "followUpRequired": {
+                  "column": "followUpRequired"
+                },
+                "foodBehaviour": {
+                  "column": "foodBehaviour"
+                },
+                "handlingResponse": {
+                  "column": "handlingResponse"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "interactionWithOtherAnimals": {
+                  "column": "interactionWithOtherAnimals"
+                },
+                "observations": {
+                  "column": "observations"
+                },
+                "outcome": {
+                  "column": "outcome"
+                },
+                "programReassessmentOf": {
+                  "column": "programReassessmentOf"
+                },
+                "reactionToStrangers": {
+                  "column": "reactionToStrangers"
+                },
+                "reassessmentDate": {
+                  "column": "reassessmentDate"
+                },
+                "recommendations": {
+                  "column": "recommendations"
+                },
+                "socialisationScore": {
+                  "column": "socialisationScore"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "temperamentAssessment"
             }
           },
           "TreatmentEvent": {
@@ -1251,6 +1511,48 @@
                 }
               ]
             },
+            "behaviourProgram": {
+              "columns": {
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "resolvedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "triggeringAssessmentId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "desexingSchedule": {
               "columns": {
                 "animalId": {
@@ -1477,6 +1779,103 @@
                 "veterinarianName": {
                   "codecId": "sqlite/text@1",
                   "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "temperamentAssessment": {
+              "columns": {
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "assessmentDate": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "assessorEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "assessorName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "followUpRequired": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "foodBehaviour": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "handlingResponse": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "interactionWithOtherAnimals": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "observations": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "outcome": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "programReassessmentOf": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "reactionToStrangers": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "reassessmentDate": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "recommendations": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "socialisationScore": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
                   "nullable": false
                 }
               },
@@ -1725,7 +2124,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "7d6b8b66e18c9bb1a9db46f5de8d0fa40a26fc466ac9c45937ea34ec75c09588"
+    "storageHash": "7b78532374adcc29e3d71a479a9ba50deabffcc4772265a0f6f6659e0db8785a"
   },
   "capabilities": {
     "sql": {

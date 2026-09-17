@@ -150,3 +150,34 @@ model PreReleaseCheck {
   veterinarianName   String
   createdAt          DateTime
 }
+
+// Mirrors lib/behaviour/types.ts (FR-BEH-01/02). followUpRequired is
+// Int (0/1), not Boolean - see the note on HealthAssessment above.
+model TemperamentAssessment {
+  id                          String   @id
+  animalId                    String
+  handlingResponse            String
+  reactionToStrangers         String
+  foodBehaviour                String
+  interactionWithOtherAnimals  String
+  socialisationScore            Int
+  observations                   String
+  recommendations                 String
+  assessmentDate                   String
+  assessorEmail                     String
+  assessorName                      String
+  followUpRequired                   Int
+  reassessmentDate                    String?
+  outcome                             String
+  createdAt                            DateTime
+  programReassessmentOf                String?
+}
+
+model BehaviourProgram {
+  id                     String    @id
+  animalId               String
+  triggeringAssessmentId String
+  status                 String
+  createdAt              DateTime
+  resolvedAt             DateTime?
+}

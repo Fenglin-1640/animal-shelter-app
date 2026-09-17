@@ -54,6 +54,17 @@ no `prisma generate` / `prisma migrate dev` commands at all - see
   instead and convert in the serializer (see
   `lib/medical/serialize.ts`'s `urgentTreatmentRequired`/
   `furtherTreatmentRequired`).
+- **This isn't a Prisma quirk, but bit us because of the async cascade:**
+  `if (!someNowAsyncFunction(id))` type-checks cleanly and is always
+  `false` - negating a `Promise` object, not its resolved value. `tsc`
+  only catches a missed `await` when the Promise is later used somewhere
+  its shape doesn't match (assigned to typed state, a property accessed
+  on it, etc.) - a bare truthiness check slips through silently. Found
+  two real instances this way after the Medical slice (both in
+  lib/adoption-listings/{publish,pre-listing}.ts, checking
+  `getMedicalClearance()`) - `grep -rn "if (!\(get\|is\|has\|list\)" `
+  across the whole repo is a fast way to audit for this after converting
+  any store to async.
 
 ## Commands
 
@@ -79,3 +90,7 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   `issuedAt`, `completedAt`) are `DateTime`; user-entered/free dates
   (`assessmentDate`, `administrationDate`, etc.) stay `String`, same
   reasoning as Animal's `dateOfBirth`. See lib/medical/serialize.ts.
+- `TemperamentAssessment`, `BehaviourProgram` - see lib/behaviour/.
+  Mirrored from lib/behaviour/types.ts; `followUpRequired` is Int (0/1),
+  same reasoning as Medical's boolean fields. See
+  lib/behaviour/serialize.ts.

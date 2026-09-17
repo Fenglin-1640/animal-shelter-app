@@ -23,9 +23,9 @@ export async function evaluatePreListingEligibility(animalId: string) {
   const animal = await getAnimalById(animalId);
   if (!animal || animal.listingStatus !== "Not Fit") return;
 
-  if (!getMedicalClearance(animalId)) return;
+  if (!(await getMedicalClearance(animalId))) return;
   if (await hasUnresolvedHold(animalId)) return;
-  if (getLatestTemperamentAssessment(animalId)?.outcome !== "Suitable for Adoption") return;
+  if ((await getLatestTemperamentAssessment(animalId))?.outcome !== "Suitable for Adoption") return;
 
   await updateAnimal(animalId, { listingStatus: "Pre-Listing" });
 }

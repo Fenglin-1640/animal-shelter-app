@@ -5,49 +5,50 @@ import type {
   TemperamentAssessment,
 } from "@/lib/behaviour/types";
 
-// FR-BEH-01/02: persisted to localStorage since there is no backend.
-const ASSESSMENT_KEY = "asams-temperament-assessments";
-const PROGRAM_KEY = "asams-behaviour-programs";
+// FR-BEH-01/02: TemperamentAssessment and BehaviourProgram now live in
+// the database (see prisma/contract.prisma) behind /api/behaviour/** -
+// see prisma/README.md for this Prisma toolchain's quirks.
 
-function loadList<T>(key: string): T[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as T[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAll<T>(url: string): Promise<T[]> {
+  const response = await fetch(url);
+  const result = await response.json();
+  return result.items as T[];
 }
 
-function saveList<T>(key: string, items: T[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, JSON.stringify(items));
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const result = await response.json();
+  return result.item as T;
 }
 
 function generateId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-export function listTemperamentAssessments(animalId: string): TemperamentAssessment[] {
-  return loadList<TemperamentAssessment>(ASSESSMENT_KEY)
+export async function listTemperamentAssessments(animalId: string): Promise<TemperamentAssessment[]> {
+  const all = await fetchAll<TemperamentAssessment>("/api/behaviour/temperament-assessments");
+  return all
     .filter((a) => a.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-export function getLatestTemperamentAssessment(animalId: string): TemperamentAssessment | undefined {
-  return listTemperamentAssessments(animalId)[0];
+export async function getLatestTemperamentAssessment(animalId: string): Promise<TemperamentAssessment | undefined> {
+  return (await listTemperamentAssessments(animalId))[0];
 }
 
-export function listBehaviourPrograms(animalId: string): BehaviourProgram[] {
-  return loadList<BehaviourProgram>(PROGRAM_KEY)
+export async function listBehaviourPrograms(animalId: string): Promise<BehaviourProgram[]> {
+  const all = await fetchAll<BehaviourProgram>("/api/behaviour/programs");
+  return all
     .filter((p) => p.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-export function getActiveBehaviourProgram(animalId: string): BehaviourProgram | undefined {
-  return listBehaviourPrograms(animalId).find((p) => p.status === "Active");
+export async function getActiveBehaviourProgram(animalId: string): Promise<BehaviourProgram | undefined> {
+  return (await listBehaviourPrograms(animalId)).find((p) => p.status === "Active");
 }
 
 // FR-NOT-01 "Behaviour reassessment due": the latest assessment per
@@ -56,9 +57,12 @@ export function getActiveBehaviourProgram(animalId: string): BehaviourProgram | 
 // recordTemperamentAssessment below).
 export async function listAssessmentsNeedingReassessment(): Promise<TemperamentAssessment[]> {
   const animals = await getAllAnimals();
-  return animals
-    .map((animal) => getLatestTemperamentAssessment(animal.animalId))
-    .filter((a): a is TemperamentAssessment => !!a?.followUpRequired && !!a.reassessmentDate);
+  const latest = await Promise.all(
+    animals.map((animal) => getLatestTemperamentAssessment(animal.animalId)),
+  );
+  return latest.filter(
+    (a): a is TemperamentAssessment => !!a?.followUpRequired && !!a.reassessmentDate,
+  );
 }
 
 export interface TemperamentAssessmentInput {
@@ -91,7 +95,7 @@ export async function recordTemperamentAssessment(
   const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
-  const activeProgram = getActiveBehaviourProgram(animalId);
+  const activeProgram = await getActiveBehaviourProgram(animalId);
   const now = new Date().toISOString();
   const assessment: TemperamentAssessment = {
     id: generateId("BA"),
@@ -102,7 +106,7 @@ export async function recordTemperamentAssessment(
     createdAt: now,
     programReassessmentOf: activeProgram?.id,
   };
-  saveList(ASSESSMENT_KEY, [...loadList<TemperamentAssessment>(ASSESSMENT_KEY), assessment]);
+  await postJson("/api/behaviour/temperament-assessments", assessment);
 
   // PRD 7.1's state table only allows Under Assessment -> In Behaviour
   // Program for a negative outcome - there is no direct Under Assessment
@@ -115,7 +119,7 @@ export async function recordTemperamentAssessment(
   // reassessment -> Suitable after Program | Permanently Unsuitable).
   if (input.outcome === "Suitable for Adoption") {
     if (activeProgram) {
-      resolveProgram(activeProgram.id, "Completed - Suitable", now);
+      await resolveProgram(activeProgram.id, "Completed - Suitable", now);
       await changeAnimalStatus(
         animalId,
         { currentStatus: "Under Assessment", statusUpdatedAt: now },
@@ -125,7 +129,7 @@ export async function recordTemperamentAssessment(
     }
     completeTaskByType(animalId, "Temperament Assessment", email, name);
   } else if (activeProgram && input.outcome === "Unsuitable for Public Adoption") {
-    resolveProgram(activeProgram.id, "Completed - Permanently Unsuitable", now);
+    await resolveProgram(activeProgram.id, "Completed - Permanently Unsuitable", now);
     await changeAnimalStatus(
       animalId,
       {
@@ -145,7 +149,7 @@ export async function recordTemperamentAssessment(
         status: "Active",
         createdAt: now,
       };
-      saveList(PROGRAM_KEY, [...loadList<BehaviourProgram>(PROGRAM_KEY), program]);
+      await postJson("/api/behaviour/programs", program);
     }
     await changeAnimalStatus(
       animalId,
@@ -158,16 +162,16 @@ export async function recordTemperamentAssessment(
   return { ok: true };
 }
 
-function resolveProgram(
+async function resolveProgram(
   programId: string,
   status: BehaviourProgram["status"],
   resolvedAt: string,
 ) {
-  const all = loadList<BehaviourProgram>(PROGRAM_KEY);
-  const index = all.findIndex((p) => p.id === programId);
-  if (index === -1) return;
-  all[index] = { ...all[index], status, resolvedAt };
-  saveList(PROGRAM_KEY, all);
+  await fetch(`/api/behaviour/programs/${programId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, resolvedAt }),
+  });
 }
 
 // PRD 7.1: "Unsuitable For Adoption | permanently unsuitable | Staff |

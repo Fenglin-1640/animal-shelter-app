@@ -276,12 +276,12 @@ function BehaviourContent({
 
   useEffect(() => {
     let cancelled = false;
-    getAnimalById(animalId).then((result) => {
+    getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
       if (result) {
-        setAssessments(listTemperamentAssessments(animalId));
-        setPrograms(listBehaviourPrograms(animalId));
+        setAssessments(await listTemperamentAssessments(animalId));
+        setPrograms(await listBehaviourPrograms(animalId));
       }
     });
     return () => {
@@ -301,8 +301,8 @@ function BehaviourContent({
   const activeProgram = programs.find((p) => p.status === "Active");
 
   const refresh = async () => {
-    setAssessments(listTemperamentAssessments(animalId));
-    setPrograms(listBehaviourPrograms(animalId));
+    setAssessments(await listTemperamentAssessments(animalId));
+    setPrograms(await listBehaviourPrograms(animalId));
     await evaluatePreListingEligibility(animalId);
   };
 

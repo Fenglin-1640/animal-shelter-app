@@ -21,6 +21,7 @@ import { listApplicationsForAnimal } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import { archiveUnsuitableAnimal, getActiveBehaviourProgram, listTemperamentAssessments } from "@/lib/behaviour/store";
 import { OUTCOME_CATEGORY, PROGRAM_STATUS_CATEGORY } from "@/lib/behaviour/status";
+import type { BehaviourProgram, TemperamentAssessment } from "@/lib/behaviour/types";
 import { listChecksForApplication } from "@/lib/checks/store";
 import type { CheckOutcome } from "@/lib/checks/types";
 import { getLatestFollowUpVisitForAnimal } from "@/lib/follow-up-visits/store";
@@ -125,6 +126,8 @@ function AnimalDetailContent({
   const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
   const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
   const [latestPreReleaseCheck, setLatestPreReleaseCheck] = useState<PreReleaseCheck | undefined>(undefined);
+  const [latestBehaviour, setLatestBehaviour] = useState<TemperamentAssessment | undefined>(undefined);
+  const [activeProgram, setActiveProgram] = useState<BehaviourProgram | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,6 +151,12 @@ function AnimalDetailContent({
     });
     getLatestPreReleaseCheck(animal.animalId).then((result) => {
       if (!cancelled) setLatestPreReleaseCheck(result);
+    });
+    listTemperamentAssessments(animal.animalId).then((result) => {
+      if (!cancelled) setLatestBehaviour(result[0]);
+    });
+    getActiveBehaviourProgram(animal.animalId).then((result) => {
+      if (!cancelled) setActiveProgram(result);
     });
     return () => {
       cancelled = true;
@@ -189,9 +198,6 @@ function AnimalDetailContent({
     if (result.ok) setAnimal((await getAnimalById(animal.animalId)) ?? animal);
   };
 
-  const temperamentAssessments = listTemperamentAssessments(animal.animalId);
-  const latestBehaviour = temperamentAssessments[0];
-  const activeProgram = getActiveBehaviourProgram(animal.animalId);
   const photos = listPhotosForAnimal(animal.animalId);
   const followUpVisit = getLatestFollowUpVisitForAnimal(animal.animalId);
   const proposedApplications = listApplicationsForAnimal(animal.animalId).filter(

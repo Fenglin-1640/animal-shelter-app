@@ -15,8 +15,8 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
   if (!animal) return ["Animal not found."];
 
   const blockers: string[] = [];
-  if (!getMedicalClearance(animalId)) blockers.push("Medical Clearance has not been issued.");
-  if (getLatestTemperamentAssessment(animalId)?.outcome !== "Suitable for Adoption") {
+  if (!(await getMedicalClearance(animalId))) blockers.push("Medical Clearance has not been issued.");
+  if ((await getLatestTemperamentAssessment(animalId))?.outcome !== "Suitable for Adoption") {
     blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
   }
   if (await hasUnresolvedHold(animalId)) blockers.push("There is an unresolved Statutory Hold on this animal.");

@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7d6b8b66e18c9bb1a9db46f5de8d0fa40a26fc466ac9c45937ea34ec75c09588'>;
+  StorageHashBase<'7b78532374adcc29e3d71a479a9ba50deabffcc4772265a0f6f6659e0db8785a'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -153,6 +153,14 @@ export type FieldOutputTypes = {
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['output'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
     };
+    readonly BehaviourProgram: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly triggeringAssessmentId: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly resolvedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    };
     readonly DesexingSchedule: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -198,6 +206,25 @@ export type FieldOutputTypes = {
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly TemperamentAssessment: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly handlingResponse: CodecTypes['sqlite/text@1']['output'];
+      readonly reactionToStrangers: CodecTypes['sqlite/text@1']['output'];
+      readonly foodBehaviour: CodecTypes['sqlite/text@1']['output'];
+      readonly interactionWithOtherAnimals: CodecTypes['sqlite/text@1']['output'];
+      readonly socialisationScore: CodecTypes['sqlite/integer@1']['output'];
+      readonly observations: CodecTypes['sqlite/text@1']['output'];
+      readonly recommendations: CodecTypes['sqlite/text@1']['output'];
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['output'];
+      readonly assessorEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly assessorName: CodecTypes['sqlite/text@1']['output'];
+      readonly followUpRequired: CodecTypes['sqlite/integer@1']['output'];
+      readonly reassessmentDate: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly outcome: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly programReassessmentOf: CodecTypes['sqlite/text@1']['output'] | null;
     };
     readonly TreatmentEvent: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -271,6 +298,14 @@ export type FieldInputTypes = {
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['input'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['input'] | null;
     };
+    readonly BehaviourProgram: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly triggeringAssessmentId: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly resolvedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+    };
     readonly DesexingSchedule: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -316,6 +351,25 @@ export type FieldInputTypes = {
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly TemperamentAssessment: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly handlingResponse: CodecTypes['sqlite/text@1']['input'];
+      readonly reactionToStrangers: CodecTypes['sqlite/text@1']['input'];
+      readonly foodBehaviour: CodecTypes['sqlite/text@1']['input'];
+      readonly interactionWithOtherAnimals: CodecTypes['sqlite/text@1']['input'];
+      readonly socialisationScore: CodecTypes['sqlite/integer@1']['input'];
+      readonly observations: CodecTypes['sqlite/text@1']['input'];
+      readonly recommendations: CodecTypes['sqlite/text@1']['input'];
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['input'];
+      readonly assessorEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly assessorName: CodecTypes['sqlite/text@1']['input'];
+      readonly followUpRequired: CodecTypes['sqlite/integer@1']['input'];
+      readonly reassessmentDate: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly outcome: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly programReassessmentOf: CodecTypes['sqlite/text@1']['input'] | null;
     };
     readonly TreatmentEvent: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -389,6 +443,14 @@ export type StorageColumnTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly temperaments: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly behaviourProgram: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly resolvedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly triggeringAssessmentId: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly desexingSchedule: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
       readonly completedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
@@ -434,6 +496,25 @@ export type StorageColumnTypes = {
       readonly medicationGuidance: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly temperamentAssessment: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['output'];
+      readonly assessorEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly assessorName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly followUpRequired: CodecTypes['sqlite/integer@1']['output'];
+      readonly foodBehaviour: CodecTypes['sqlite/text@1']['output'];
+      readonly handlingResponse: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly interactionWithOtherAnimals: CodecTypes['sqlite/text@1']['output'];
+      readonly observations: CodecTypes['sqlite/text@1']['output'];
+      readonly outcome: CodecTypes['sqlite/text@1']['output'];
+      readonly programReassessmentOf: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly reactionToStrangers: CodecTypes['sqlite/text@1']['output'];
+      readonly reassessmentDate: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly recommendations: CodecTypes['sqlite/text@1']['output'];
+      readonly socialisationScore: CodecTypes['sqlite/integer@1']['output'];
     };
     readonly treatmentEvent: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -507,6 +588,14 @@ export type StorageColumnInputTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly temperaments: CodecTypes['sqlite/text@1']['input'];
     };
+    readonly behaviourProgram: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly resolvedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly triggeringAssessmentId: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly desexingSchedule: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
       readonly completedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
@@ -552,6 +641,25 @@ export type StorageColumnInputTypes = {
       readonly medicationGuidance: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly temperamentAssessment: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly assessmentDate: CodecTypes['sqlite/text@1']['input'];
+      readonly assessorEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly assessorName: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly followUpRequired: CodecTypes['sqlite/integer@1']['input'];
+      readonly foodBehaviour: CodecTypes['sqlite/text@1']['input'];
+      readonly handlingResponse: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly interactionWithOtherAnimals: CodecTypes['sqlite/text@1']['input'];
+      readonly observations: CodecTypes['sqlite/text@1']['input'];
+      readonly outcome: CodecTypes['sqlite/text@1']['input'];
+      readonly programReassessmentOf: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly reactionToStrangers: CodecTypes['sqlite/text@1']['input'];
+      readonly reassessmentDate: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly recommendations: CodecTypes['sqlite/text@1']['input'];
+      readonly socialisationScore: CodecTypes['sqlite/integer@1']['input'];
     };
     readonly treatmentEvent: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -722,6 +830,35 @@ export namespace Models {
     createdAt: CodecTypes['sqlite/datetime@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type TemperamentAssessment = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    handlingResponse: CodecTypes['sqlite/text@1']['output'];
+    reactionToStrangers: CodecTypes['sqlite/text@1']['output'];
+    foodBehaviour: CodecTypes['sqlite/text@1']['output'];
+    interactionWithOtherAnimals: CodecTypes['sqlite/text@1']['output'];
+    socialisationScore: CodecTypes['sqlite/integer@1']['output'];
+    observations: CodecTypes['sqlite/text@1']['output'];
+    recommendations: CodecTypes['sqlite/text@1']['output'];
+    assessmentDate: CodecTypes['sqlite/text@1']['output'];
+    assessorEmail: CodecTypes['sqlite/text@1']['output'];
+    assessorName: CodecTypes['sqlite/text@1']['output'];
+    followUpRequired: CodecTypes['sqlite/integer@1']['output'];
+    reassessmentDate: CodecTypes['sqlite/text@1']['output'] | null;
+    outcome: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    programReassessmentOf: CodecTypes['sqlite/text@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
+  export type BehaviourProgram = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    triggeringAssessmentId: CodecTypes['sqlite/text@1']['output'];
+    status: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    resolvedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -733,6 +870,8 @@ export declare const models: {
   DesexingSchedule: Models.DesexingSchedule;
   MedicalClearance: Models.MedicalClearance;
   PreReleaseCheck: Models.PreReleaseCheck;
+  TemperamentAssessment: Models.TemperamentAssessment;
+  BehaviourProgram: Models.BehaviourProgram;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -873,6 +1012,44 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['animalId'] };
               uniques: readonly [{ readonly columns: readonly ['shelterId'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly behaviourProgram: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly triggeringAssessmentId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly resolvedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
             };
@@ -1091,6 +1268,99 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'sqlite/datetime@1';
                   readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly temperamentAssessment: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly handlingResponse: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly reactionToStrangers: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly foodBehaviour: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly interactionWithOtherAnimals: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly socialisationScore: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly observations: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly recommendations: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly assessmentDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly assessorEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly assessorName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly followUpRequired: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly reassessmentDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly outcome: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly programReassessmentOf: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -1348,6 +1618,14 @@ type ContractBase = Omit<
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'PreReleaseCheck';
     };
+    readonly temperamentAssessment: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'TemperamentAssessment';
+    };
+    readonly behaviourProgram: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'BehaviourProgram';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -1476,6 +1754,47 @@ type ContractBase = Omit<
                 readonly intakeSource: { readonly column: 'intakeSource' };
                 readonly linkedPersonRole: { readonly column: 'linkedPersonRole' };
                 readonly linkedPersonName: { readonly column: 'linkedPersonName' };
+              };
+            };
+          };
+          readonly BehaviourProgram: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly triggeringAssessmentId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly resolvedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'behaviourProgram';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly triggeringAssessmentId: { readonly column: 'triggeringAssessmentId' };
+                readonly status: { readonly column: 'status' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly resolvedAt: { readonly column: 'resolvedAt' };
               };
             };
           };
@@ -1710,6 +2029,104 @@ type ContractBase = Omit<
                 readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
                 readonly veterinarianName: { readonly column: 'veterinarianName' };
                 readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
+          readonly TemperamentAssessment: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly handlingResponse: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly reactionToStrangers: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly foodBehaviour: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly interactionWithOtherAnimals: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly socialisationScore: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly observations: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly recommendations: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly assessmentDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly assessorEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly assessorName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly followUpRequired: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly reassessmentDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly outcome: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly programReassessmentOf: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'temperamentAssessment';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly handlingResponse: { readonly column: 'handlingResponse' };
+                readonly reactionToStrangers: { readonly column: 'reactionToStrangers' };
+                readonly foodBehaviour: { readonly column: 'foodBehaviour' };
+                readonly interactionWithOtherAnimals: {
+                  readonly column: 'interactionWithOtherAnimals';
+                };
+                readonly socialisationScore: { readonly column: 'socialisationScore' };
+                readonly observations: { readonly column: 'observations' };
+                readonly recommendations: { readonly column: 'recommendations' };
+                readonly assessmentDate: { readonly column: 'assessmentDate' };
+                readonly assessorEmail: { readonly column: 'assessorEmail' };
+                readonly assessorName: { readonly column: 'assessorName' };
+                readonly followUpRequired: { readonly column: 'followUpRequired' };
+                readonly reassessmentDate: { readonly column: 'reassessmentDate' };
+                readonly outcome: { readonly column: 'outcome' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly programReassessmentOf: { readonly column: 'programReassessmentOf' };
               };
             };
           };
