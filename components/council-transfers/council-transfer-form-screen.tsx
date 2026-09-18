@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -14,7 +14,7 @@ import {
   updateDraft,
 } from "@/lib/council-transfers/store";
 import { TRANSFER_STATUS_CATEGORY } from "@/lib/council-transfers/status";
-import type { TransferAttachment } from "@/lib/council-transfers/types";
+import type { CouncilTransferSubmission, TransferAttachment } from "@/lib/council-transfers/types";
 import type { Role } from "@/lib/roles/roles";
 import { getActiveValues } from "@/lib/system-administration/store";
 
@@ -72,23 +72,18 @@ function CouncilTransferFormContent({
   transferId?: string;
 }) {
   const router = useRouter();
-  const [existing] = useState(() => (transferId ? getTransfer(transferId) : undefined));
-  const notFound = Boolean(transferId) && !existing;
+  const [existing, setExisting] = useState<CouncilTransferSubmission | null | undefined>(undefined);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const notFound = Boolean(transferId) && dataLoaded && !existing;
   const notOwner =
     Boolean(existing) && existing!.submittedByEmail.toLowerCase() !== email.toLowerCase();
   const isReadOnly = existing ? existing.status !== "Draft" : false;
 
-  const [source, setSource] = useState(existing?.source ?? "");
-  const [arrivalCircumstance, setArrivalCircumstance] = useState(
-    existing?.arrivalCircumstance ?? "",
-  );
-  const [foundLocation, setFoundLocation] = useState(existing?.foundLocation ?? "");
-  const [animalDescription, setAnimalDescription] = useState(
-    existing?.animalDescription ?? "",
-  );
-  const [attachments, setAttachments] = useState<TransferAttachment[]>(
-    existing?.attachments ?? [],
-  );
+  const [source, setSource] = useState("");
+  const [arrivalCircumstance, setArrivalCircumstance] = useState("");
+  const [foundLocation, setFoundLocation] = useState("");
+  const [animalDescription, setAnimalDescription] = useState("");
+  const [attachments, setAttachments] = useState<TransferAttachment[]>([]);
   const [pendingDocType, setPendingDocType] = useState("");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
@@ -105,6 +100,26 @@ function CouncilTransferFormContent({
 
   const documentTypeOptions = getActiveValues("Document Type");
 
+  useEffect(() => {
+    let cancelled = false;
+    (transferId ? getTransfer(transferId) : Promise.resolve(undefined)).then((record) => {
+      if (cancelled) return;
+      setExisting(record ?? null);
+      setSource(record?.source ?? "");
+      setArrivalCircumstance(record?.arrivalCircumstance ?? "");
+      setFoundLocation(record?.foundLocation ?? "");
+      setAnimalDescription(record?.animalDescription ?? "");
+      setAttachments(record?.attachments ?? []);
+      setDataLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [transferId]);
+
+  if (!dataLoaded) {
+    return <div className="text-sm text-text-muted">Loading...</div>;
+  }
   if (notFound) return <NotFound />;
   if (notOwner) return <AccessDenied />;
 
@@ -183,13 +198,13 @@ function CouncilTransferFormContent({
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     if (existing) {
-      updateDraft(existing.id, buildInput());
+      await updateDraft(existing.id, buildInput());
       setIsSaving(false);
       setSavedMessage("Draft saved.");
       return;
     }
 
-    const id = createDraft(email, displayName, buildInput());
+    const id = await createDraft(email, displayName, buildInput());
     setIsSaving(false);
     router.push(`/council-transfers/${id}`);
   };
@@ -220,9 +235,9 @@ function CouncilTransferFormContent({
     setIsSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 250));
 
-    const id = existing ? existing.id : createDraft(email, displayName, buildInput());
-    if (existing) updateDraft(id, buildInput());
-    const result = submitTransfer(id);
+    const id = existing ? existing.id : await createDraft(email, displayName, buildInput());
+    if (existing) await updateDraft(id, buildInput());
+    const result = await submitTransfer(id);
     setIsSaving(false);
 
     if (!result.ok) {

@@ -371,3 +371,59 @@ model FollowUpVisit {
   completedAt               DateTime?
   createdAt                 DateTime
 }
+
+// Mirrors lib/council-transfers/types.ts (FR-INT-01). attachments
+// (array of small {id, documentType, fileName, fileSizeKB, uploadedAt}
+// objects, always read/written as a whole) is JSON-encoded, same
+// reasoning as AdoptionApplication.documents. submissionDate is a
+// system-generated timestamp (set to `now` when submitted), so it's
+// DateTime.
+model CouncilTransferSubmission {
+  id                 String    @id
+  submittedByEmail   String
+  submittedByName    String
+  source             String
+  arrivalCircumstance String
+  foundLocation       String
+  animalDescription    String
+  attachments           String
+  status                 String
+  submissionDate          DateTime?
+  createdAt                DateTime
+  updatedAt                 DateTime
+}
+
+// Mirrors lib/intake-records/types.ts (FR-INT-02). photos (array of
+// small {id, fileName, fileSizeKB, uploadedAt} objects) is JSON-encoded,
+// same reasoning as CouncilTransferSubmission.attachments.
+// registeredOwnerContact is flattened into 3 columns, same "one small
+// object" reasoning as Animal.linkedPerson. arrivalDateTime stays a
+// plain String, not DateTime - it's a user-entered value from a
+// datetime-local input, same reasoning as MeetAndGreet.scheduledDate.
+// finalisedAt is a system-generated timestamp (set to `now` when
+// Finalise Intake runs), so it's DateTime.
+model IntakeRecord {
+  intakeId            String    @id
+  animalId             String
+  createdByEmail        String
+  createdByName          String
+  animalName               String
+  arrivalCircumstance       String
+  arrivalDateTime            String
+  intakeSource                String
+  surrenderingPartyName        String
+  councilTransferSubmissionId   String?
+  species                         String
+  estimatedAge                    String
+  dateOfBirth                      String
+  sex                                String
+  coatColour                         String
+  coatMarkings                        String
+  photos                               String
+  createdAt                            DateTime
+  updatedAt                             DateTime
+  finalisedAt                           DateTime?
+  registeredOwnerContactName             String?
+  registeredOwnerContactPhone             String?
+  registeredOwnerContactAddress            String?
+}

@@ -10,57 +10,55 @@ import {
   type IntakeRecordFormInput,
 } from "@/lib/intake-records/types";
 
-// FR-INT-02: formal Intake Records, persisted to localStorage since
-// there is no backend.
-const STORAGE_KEY = "asams-intake-records";
+// FR-INT-02: IntakeRecord now lives in the database (see
+// prisma/contract.prisma) behind /api/intake-records - see
+// prisma/README.md for this Prisma toolchain's quirks.
 
-function loadAll(): IntakeRecord[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as IntakeRecord[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAll(): Promise<IntakeRecord[]> {
+  const response = await fetch("/api/intake-records");
+  const result = await response.json();
+  return result.items as IntakeRecord[];
 }
 
-function saveAll(all: IntakeRecord[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+async function patchIntakeRecord(intakeId: string, patch: Partial<IntakeRecord>): Promise<IntakeRecord | undefined> {
+  const response = await fetch(`/api/intake-records/${intakeId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  const result = await response.json();
+  if (!result.ok) return undefined;
+  return result.item as IntakeRecord;
 }
 
-export function listIntakeRecords(): IntakeRecord[] {
-  return loadAll();
+export async function listIntakeRecords(): Promise<IntakeRecord[]> {
+  return fetchAll();
 }
 
-export function getIntakeRecord(intakeId: string): IntakeRecord | undefined {
-  return loadAll().find((r) => r.intakeId === intakeId);
+export async function getIntakeRecord(intakeId: string): Promise<IntakeRecord | undefined> {
+  return (await fetchAll()).find((r) => r.intakeId === intakeId);
 }
 
 // Council Transfer submissions already linked to some intake record,
 // keyed by transfer id - used to keep a transfer from being linked twice.
-export function listLinkedTransferIds(excludingIntakeId?: string): Set<string> {
+export async function listLinkedTransferIds(excludingIntakeId?: string): Promise<Set<string>> {
   return new Set(
-    loadAll()
+    (await fetchAll())
       .filter((r) => r.intakeId !== excludingIntakeId && r.councilTransferSubmissionId)
       .map((r) => r.councilTransferSubmissionId as string),
   );
 }
 
-export function getIntakeRecordByAnimalId(animalId: string): IntakeRecord | undefined {
-  return loadAll().find((r) => r.animalId === animalId);
+export async function getIntakeRecordByAnimalId(animalId: string): Promise<IntakeRecord | undefined> {
+  return (await fetchAll()).find((r) => r.animalId === animalId);
 }
 
 // FR-MC-02 step 1. A no-op if this animal has no formal IntakeRecord
 // (e.g. the static PRD 12.1 seed animals, which predate Finalise Intake).
-export function linkRegisteredOwnerContact(animalId: string, contact: RegisteredOwnerContact) {
-  const all = loadAll();
-  const index = all.findIndex((r) => r.animalId === animalId);
-  if (index === -1) return;
-  all[index] = { ...all[index], registeredOwnerContact: contact, updatedAt: new Date().toISOString() };
-  saveAll(all);
+export async function linkRegisteredOwnerContact(animalId: string, contact: RegisteredOwnerContact): Promise<void> {
+  const record = await getIntakeRecordByAnimalId(animalId);
+  if (!record) return;
+  await patchIntakeRecord(record.intakeId, { registeredOwnerContact: contact, updatedAt: new Date().toISOString() });
 }
 
 function generateIntakeId(): string {
@@ -71,11 +69,11 @@ function generateAnimalId(): string {
   return `A-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-export function createIntakeRecord(
+export async function createIntakeRecord(
   email: string,
   name: string,
   input: IntakeRecordFormInput,
-): string {
+): Promise<string> {
   const now = new Date().toISOString();
   const record: IntakeRecord = {
     intakeId: generateIntakeId(),
@@ -86,10 +84,14 @@ export function createIntakeRecord(
     createdAt: now,
     updatedAt: now,
   };
-  saveAll([...loadAll(), record]);
+  await fetch("/api/intake-records", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(record),
+  });
 
   if (record.councilTransferSubmissionId) {
-    acceptTransfer(record.councilTransferSubmissionId);
+    await acceptTransfer(record.councilTransferSubmissionId);
   }
 
   return record.intakeId;
@@ -97,19 +99,15 @@ export function createIntakeRecord(
 
 export type MutationResult = { ok: true } | { ok: false; reason: "not_found" };
 
-export function updateIntakeRecord(
+export async function updateIntakeRecord(
   intakeId: string,
   input: IntakeRecordFormInput,
-): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((r) => r.intakeId === intakeId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-
-  all[index] = { ...all[index], ...input, updatedAt: new Date().toISOString() };
-  saveAll(all);
+): Promise<MutationResult> {
+  const updated = await patchIntakeRecord(intakeId, { ...input, updatedAt: new Date().toISOString() });
+  if (!updated) return { ok: false, reason: "not_found" };
 
   if (input.councilTransferSubmissionId) {
-    acceptTransfer(input.councilTransferSubmissionId);
+    await acceptTransfer(input.councilTransferSubmissionId);
   }
 
   return { ok: true };
@@ -126,15 +124,12 @@ export type FinaliseResult =
 // reads/displays one yet, so an empty shell object would have no
 // observable effect.
 export async function finaliseIntake(intakeId: string, email: string, name: string): Promise<FinaliseResult> {
-  const all = loadAll();
-  const index = all.findIndex((r) => r.intakeId === intakeId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-
-  const record = all[index];
+  const record = await getIntakeRecord(intakeId);
+  if (!record) return { ok: false, reason: "not_found" };
   if (record.finalisedAt) return { ok: false, reason: "already_finalised" };
 
   const linkedTransfer = record.councilTransferSubmissionId
-    ? getTransfer(record.councilTransferSubmissionId)
+    ? await getTransfer(record.councilTransferSubmissionId)
     : undefined;
   const blockers = getFinaliseBlockers(record, linkedTransfer);
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
@@ -165,8 +160,7 @@ export async function finaliseIntake(intakeId: string, email: string, name: stri
   createTasksForAnimal(animal.animalId);
   seedPhotosFromIntake(animal.animalId, record.photos, record.createdByEmail, record.createdByName);
 
-  all[index] = { ...record, finalisedAt: now, updatedAt: now };
-  saveAll(all);
+  await patchIntakeRecord(intakeId, { finalisedAt: now, updatedAt: now });
 
   return { ok: true };
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -20,6 +20,7 @@ import { INTAKE_COMPLETENESS_CATEGORY } from "@/lib/intake-records/status";
 import {
   getFinaliseBlockers,
   isIntakeRecordComplete,
+  type IntakeRecord,
   type IntakeRecordFormInput,
 } from "@/lib/intake-records/types";
 import type { AnimalPhoto, Sex, Species } from "@/lib/animals/types";
@@ -110,47 +111,34 @@ function IntakeRecordFormContent({
   prefillTransferId?: string;
   onCreated: (id: string) => void;
 }) {
-  const [existing] = useState(() => (intakeId ? getIntakeRecord(intakeId) : undefined));
-  const notFound = Boolean(intakeId) && !existing;
-  const [finalisedAt, setFinalisedAt] = useState(existing?.finalisedAt);
+  const [existing, setExisting] = useState<IntakeRecord | null | undefined>(undefined);
+  const [allTransfers, setAllTransfers] = useState<CouncilTransferSubmission[]>([]);
+  const [linkedElsewhere, setLinkedElsewhere] = useState<Set<string>>(new Set());
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [finalisedAt, setFinalisedAt] = useState<string | undefined>(undefined);
   const isReadOnly = Boolean(finalisedAt);
 
   const intakeSourceOptions = getActiveValues("Intake Source");
-  const allTransfers = listAllTransfers();
-  const linkedElsewhere = listLinkedTransferIds(intakeId);
   const eligibleTransfers = allTransfers.filter(
     (t) =>
       !linkedElsewhere.has(t.id) &&
       (t.status === "Submitted" || t.id === existing?.councilTransferSubmissionId),
   );
 
-  const initialTransferId = existing?.councilTransferSubmissionId ?? prefillTransferId ?? "";
-  const prefillTransfer = allTransfers.find((t) => t.id === initialTransferId);
-
-  const [animalName, setAnimalName] = useState(existing?.animalName ?? "");
-  const [arrivalCircumstance, setArrivalCircumstance] = useState(
-    existing?.arrivalCircumstance ?? prefillTransfer?.arrivalCircumstance ?? "",
-  );
-  const [arrivalDateTime, setArrivalDateTime] = useState(
-    existing ? toDatetimeLocalValue(existing.arrivalDateTime) : toDatetimeLocalValue(new Date().toISOString()),
-  );
-  const [intakeSource, setIntakeSource] = useState(
-    existing?.intakeSource ?? (prefillTransfer ? "Council Transfer" : ""),
-  );
-  const [surrenderingPartyName, setSurrenderingPartyName] = useState(
-    existing?.surrenderingPartyName ?? "",
-  );
-  const [councilTransferSubmissionId, setCouncilTransferSubmissionId] = useState(
-    initialTransferId,
-  );
-  const [species, setSpecies] = useState<Species | "">(existing?.species ?? "");
-  const [hasKnownDob, setHasKnownDob] = useState(Boolean(existing?.dateOfBirth));
-  const [dateOfBirth, setDateOfBirth] = useState(existing?.dateOfBirth ?? "");
-  const [estimatedAge, setEstimatedAge] = useState(existing?.estimatedAge ?? "");
-  const [sex, setSex] = useState<Sex | "">(existing?.sex ?? "");
-  const [coatColour, setCoatColour] = useState(existing?.coatColour ?? "");
-  const [coatMarkings, setCoatMarkings] = useState(existing?.coatMarkings ?? "");
-  const [photos, setPhotos] = useState<AnimalPhoto[]>(existing?.photos ?? []);
+  const [animalName, setAnimalName] = useState("");
+  const [arrivalCircumstance, setArrivalCircumstance] = useState("");
+  const [arrivalDateTime, setArrivalDateTime] = useState("");
+  const [intakeSource, setIntakeSource] = useState("");
+  const [surrenderingPartyName, setSurrenderingPartyName] = useState("");
+  const [councilTransferSubmissionId, setCouncilTransferSubmissionId] = useState("");
+  const [species, setSpecies] = useState<Species | "">("");
+  const [hasKnownDob, setHasKnownDob] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [estimatedAge, setEstimatedAge] = useState("");
+  const [sex, setSex] = useState<Sex | "">("");
+  const [coatColour, setCoatColour] = useState("");
+  const [coatMarkings, setCoatMarkings] = useState("");
+  const [photos, setPhotos] = useState<AnimalPhoto[]>([]);
   const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
   const [photoInputKey, setPhotoInputKey] = useState(0);
 
@@ -158,7 +146,54 @@ function IntakeRecordFormContent({
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [isFinalising, setIsFinalising] = useState(false);
 
-  if (notFound) return <NotFound />;
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      intakeId ? getIntakeRecord(intakeId) : Promise.resolve(undefined),
+      listAllTransfers(),
+      listLinkedTransferIds(intakeId),
+    ]).then(([record, transfers, linked]) => {
+      if (cancelled) return;
+      setExisting(record ?? null);
+      setAllTransfers(transfers);
+      setLinkedElsewhere(linked);
+      setFinalisedAt(record?.finalisedAt);
+
+      const initialTransferId = record?.councilTransferSubmissionId ?? prefillTransferId ?? "";
+      const prefillTransfer = transfers.find((t) => t.id === initialTransferId);
+
+      setAnimalName(record?.animalName ?? "");
+      setArrivalCircumstance(record?.arrivalCircumstance ?? prefillTransfer?.arrivalCircumstance ?? "");
+      setArrivalDateTime(
+        record ? toDatetimeLocalValue(record.arrivalDateTime) : toDatetimeLocalValue(new Date().toISOString()),
+      );
+      setIntakeSource(record?.intakeSource ?? (prefillTransfer ? "Council Transfer" : ""));
+      setSurrenderingPartyName(record?.surrenderingPartyName ?? "");
+      setCouncilTransferSubmissionId(initialTransferId);
+      setSpecies(record?.species ?? "");
+      setHasKnownDob(Boolean(record?.dateOfBirth));
+      setDateOfBirth(record?.dateOfBirth ?? "");
+      setEstimatedAge(record?.estimatedAge ?? "");
+      setSex(record?.sex ?? "");
+      setCoatColour(record?.coatColour ?? "");
+      setCoatMarkings(record?.coatMarkings ?? "");
+      setPhotos(record?.photos ?? []);
+      setDataLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prefillTransferId is only used as the initial seed for a new record, not re-read on every change.
+  }, [intakeId]);
+
+  if (!dataLoaded) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
+  if (intakeId && !existing) return <NotFound />;
 
   const isCouncilSource = intakeSource === "Council Transfer";
   const linkedTransfer: CouncilTransferSubmission | undefined = isCouncilSource
@@ -208,13 +243,13 @@ function IntakeRecordFormContent({
 
     const input = buildInput();
     if (existing) {
-      updateIntakeRecord(existing.intakeId, input);
+      await updateIntakeRecord(existing.intakeId, input);
       setIsSaving(false);
       setSavedMessage("Intake record saved.");
       return;
     }
 
-    const id = createIntakeRecord(email, displayName, input);
+    const id = await createIntakeRecord(email, displayName, input);
     setIsSaving(false);
     onCreated(id);
   };
@@ -226,7 +261,7 @@ function IntakeRecordFormContent({
     await new Promise((resolve) => setTimeout(resolve, 250));
 
     // Persist the latest edits first so Finalise checks against current data.
-    updateIntakeRecord(existing.intakeId, buildInput());
+    await updateIntakeRecord(existing.intakeId, buildInput());
     const result = await finaliseIntake(existing.intakeId, email, displayName);
     setIsFinalising(false);
 
@@ -242,7 +277,7 @@ function IntakeRecordFormContent({
       return;
     }
 
-    const refreshed = getIntakeRecord(existing.intakeId);
+    const refreshed = await getIntakeRecord(existing.intakeId);
     setFinalisedAt(refreshed?.finalisedAt);
   };
 

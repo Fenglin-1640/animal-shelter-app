@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { TransferCard } from "@/components/council-transfers/transfer-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listMyTransfers } from "@/lib/council-transfers/store";
-import type { TransferStatus } from "@/lib/council-transfers/types";
+import type { CouncilTransferSubmission, TransferStatus } from "@/lib/council-transfers/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Council Animal Control Officer"];
@@ -73,7 +73,32 @@ function MyTransfersContent({ email }: { email: string }) {
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const allTransfers = useMemo(() => listMyTransfers(email), [email]);
+  const [allTransfers, setAllTransfers] = useState<CouncilTransferSubmission[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    listMyTransfers(email)
+      .then((result) => {
+        if (cancelled) return;
+        setAllTransfers(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load transfers. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [email, refreshKey]);
+
   const availableStatuses = useMemo(
     () => Array.from(new Set(allTransfers.map((t) => t.status))),
     [allTransfers],
@@ -151,7 +176,25 @@ function MyTransfersContent({ email }: { email: string }) {
           </Link>
         </div>
 
-        {allTransfers.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+            Loading transfers...
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+            <p className="text-sm font-semibold text-text">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setIsLoading(true);
+                setRefreshKey((k) => k + 1);
+              }}
+              className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+            >
+              Retry
+            </button>
+          </div>
+        ) : allTransfers.length === 0 ? (
           <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
             <p className="text-sm font-semibold text-text">
               You haven&apos;t created any Council Transfer submissions yet.

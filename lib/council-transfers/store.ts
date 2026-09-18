@@ -3,55 +3,55 @@ import type {
   TransferFormInput,
 } from "@/lib/council-transfers/types";
 
-// FR-INT-01: Council Transfer Submissions, persisted to localStorage
-// since there is no backend.
-const STORAGE_KEY = "asams-council-transfers";
+// FR-INT-01: CouncilTransferSubmission now lives in the database (see
+// prisma/contract.prisma) behind /api/council-transfers - see
+// prisma/README.md for this Prisma toolchain's quirks.
 
-function loadAll(): CouncilTransferSubmission[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as CouncilTransferSubmission[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAll(): Promise<CouncilTransferSubmission[]> {
+  const response = await fetch("/api/council-transfers");
+  const result = await response.json();
+  return result.items as CouncilTransferSubmission[];
 }
 
-function saveAll(all: CouncilTransferSubmission[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+async function patchTransfer(id: string, patch: Partial<CouncilTransferSubmission>): Promise<MutationResult> {
+  const response = await fetch(`/api/council-transfers/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  const result = await response.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
+  return { ok: true };
 }
 
-export function listMyTransfers(email: string): CouncilTransferSubmission[] {
+export async function listMyTransfers(email: string): Promise<CouncilTransferSubmission[]> {
   const normalized = email.trim().toLowerCase();
-  return loadAll().filter((t) => t.submittedByEmail.toLowerCase() === normalized);
+  return (await fetchAll()).filter((t) => t.submittedByEmail.toLowerCase() === normalized);
 }
 
-export function getTransfer(id: string): CouncilTransferSubmission | undefined {
-  return loadAll().find((t) => t.id === id);
+export async function getTransfer(id: string): Promise<CouncilTransferSubmission | undefined> {
+  return (await fetchAll()).find((t) => t.id === id);
 }
 
 // Staff/Administrator see all officers' submissions (PRD section 9:
 // Council Transfer "查看全部、接受"), not just their own.
-export function listAllTransfers(): CouncilTransferSubmission[] {
-  return loadAll();
+export async function listAllTransfers(): Promise<CouncilTransferSubmission[]> {
+  return fetchAll();
 }
 
-export function listSubmittedTransfers(): CouncilTransferSubmission[] {
-  return loadAll().filter((t) => t.status === "Submitted");
+export async function listSubmittedTransfers(): Promise<CouncilTransferSubmission[]> {
+  return (await fetchAll()).filter((t) => t.status === "Submitted");
 }
 
 function generateId(): string {
   return `CTS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-export function createDraft(
+export async function createDraft(
   email: string,
   name: string,
   input: TransferFormInput,
-): string {
+): Promise<string> {
   const id = generateId();
   const now = new Date().toISOString();
   const record: CouncilTransferSubmission = {
@@ -63,7 +63,11 @@ export function createDraft(
     createdAt: now,
     updatedAt: now,
   };
-  saveAll([...loadAll(), record]);
+  await fetch("/api/council-transfers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(record),
+  });
   return id;
 }
 
@@ -74,22 +78,17 @@ export type MutationResult =
   | { ok: false; reason: "missing_fields" }
   | { ok: false; reason: "missing_attachment" };
 
-export function updateDraft(id: string, input: TransferFormInput): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((t) => t.id === id);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  if (all[index].status !== "Draft") return { ok: false, reason: "not_editable" };
+export async function updateDraft(id: string, input: TransferFormInput): Promise<MutationResult> {
+  const record = await getTransfer(id);
+  if (!record) return { ok: false, reason: "not_found" };
+  if (record.status !== "Draft") return { ok: false, reason: "not_editable" };
 
-  all[index] = { ...all[index], ...input, updatedAt: new Date().toISOString() };
-  saveAll(all);
-  return { ok: true };
+  return patchTransfer(id, { ...input, updatedAt: new Date().toISOString() });
 }
 
-export function submitTransfer(id: string): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((t) => t.id === id);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  const record = all[index];
+export async function submitTransfer(id: string): Promise<MutationResult> {
+  const record = await getTransfer(id);
+  if (!record) return { ok: false, reason: "not_found" };
   if (record.status !== "Draft") return { ok: false, reason: "not_editable" };
 
   if (
@@ -105,9 +104,7 @@ export function submitTransfer(id: string): MutationResult {
   }
 
   const now = new Date().toISOString();
-  all[index] = { ...record, status: "Submitted", submissionDate: now, updatedAt: now };
-  saveAll(all);
-  return { ok: true };
+  return patchTransfer(id, { status: "Submitted", submissionDate: now, updatedAt: now });
 }
 
 // FR-INT-01 acceptance criterion 4: "Staff 接受转移后，相关资料链接到正式
@@ -115,13 +112,10 @@ export function submitTransfer(id: string): MutationResult {
 // Intake Record, so this is called as a side effect of that linkage
 // (lib/intake-records/store.ts), not from a separate "Accept" button.
 // A no-op if the transfer isn't currently Submitted (idempotent).
-export function acceptTransfer(id: string): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((t) => t.id === id);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  if (all[index].status !== "Submitted") return { ok: true };
+export async function acceptTransfer(id: string): Promise<MutationResult> {
+  const record = await getTransfer(id);
+  if (!record) return { ok: false, reason: "not_found" };
+  if (record.status !== "Submitted") return { ok: true };
 
-  all[index] = { ...all[index], status: "Accepted", updatedAt: new Date().toISOString() };
-  saveAll(all);
-  return { ok: true };
+  return patchTransfer(id, { status: "Accepted", updatedAt: new Date().toISOString() });
 }

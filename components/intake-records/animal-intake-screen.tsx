@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { IntakeRecordCard } from "@/components/intake-records/intake-record-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listSubmittedTransfers } from "@/lib/council-transfers/store";
+import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
 import { listIntakeRecords, listLinkedTransferIds } from "@/lib/intake-records/store";
 import { isIntakeRecordComplete } from "@/lib/intake-records/types";
+import type { IntakeRecord } from "@/lib/intake-records/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
@@ -22,12 +24,33 @@ function AnimalIntakeContent() {
   const [search, setSearch] = useState("");
   const [completenessFilter, setCompletenessFilter] = useState<CompletenessFilter>("");
 
-  const linkedTransferIds = useMemo(() => listLinkedTransferIds(), []);
-  const pendingTransfers = useMemo(
-    () => listSubmittedTransfers().filter((t) => !linkedTransferIds.has(t.id)),
-    [linkedTransferIds],
-  );
-  const intakeRecords = useMemo(() => listIntakeRecords(), []);
+  const [pendingTransfers, setPendingTransfers] = useState<CouncilTransferSubmission[]>([]);
+  const [intakeRecords, setIntakeRecords] = useState<IntakeRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([listLinkedTransferIds(), listSubmittedTransfers(), listIntakeRecords()])
+      .then(([linkedTransferIds, submittedTransfers, records]) => {
+        if (cancelled) return;
+        setPendingTransfers(submittedTransfers.filter((t) => !linkedTransferIds.has(t.id)));
+        setIntakeRecords(records);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load intake records. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   const filteredRecords = intakeRecords
     .filter((r) => {
@@ -62,6 +85,26 @@ function AnimalIntakeContent() {
           </Link>
         </div>
 
+        {isLoading ? (
+          <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+            Loading Animal Intake...
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+            <p className="text-sm font-semibold text-text">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setIsLoading(true);
+                setRefreshKey((k) => k + 1);
+              }}
+              className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+        <>
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-bold text-text">
             Pending Council Transfers ({pendingTransfers.length})
@@ -161,6 +204,8 @@ function AnimalIntakeContent() {
             </>
           )}
         </section>
+        </>
+        )}
       </div>
     </AppShell>
   );

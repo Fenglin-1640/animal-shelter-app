@@ -141,3 +141,20 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   AdoptionAgreement's isSigned. completedAt is a system-generated
   timestamp (set to `now` when the visit is completed), so it's
   DateTime. See lib/follow-up-visits/serialize.ts.
+- `CouncilTransferSubmission` - see lib/council-transfers/. Mirrored
+  from lib/council-transfers/types.ts; `attachments` (array of small
+  {id, documentType, fileName, fileSizeKB, uploadedAt} objects, always
+  read/written as a whole) is JSON-encoded, same reasoning as
+  AdoptionApplication.documents. `submissionDate` is a
+  system-generated timestamp (set to `now` when submitted), so it's
+  DateTime. See lib/council-transfers/serialize.ts.
+- `IntakeRecord` - see lib/intake-records/. Mirrored from
+  lib/intake-records/types.ts; `photos` is JSON-encoded, same
+  reasoning as CouncilTransferSubmission.attachments.
+  `registeredOwnerContact` is flattened into 3 columns, same "one
+  small object" reasoning as Animal.linkedPerson. `arrivalDateTime`
+  stays a plain String, not DateTime - it's a user-entered value from
+  a datetime-local input, same reasoning as MeetAndGreet.scheduledDate.
+  `finalisedAt` is a system-generated timestamp (set to `now` when
+  Finalise Intake runs), so it's DateTime. See
+  lib/intake-records/serialize.ts.

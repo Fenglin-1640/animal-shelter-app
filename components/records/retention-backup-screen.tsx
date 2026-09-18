@@ -35,8 +35,8 @@ function exportAuditLog() {
   );
 }
 
-function exportIntakeSummary() {
-  const records = listIntakeRecords();
+async function exportIntakeSummary() {
+  const records = await listIntakeRecords();
   downloadCsv(
     `intake-summary-${timestampForFilename()}.csv`,
     ["intakeId", "animalId", "animalName", "arrivalCircumstance", "arrivalDateTime", "intakeSource", "species", "sex", "finalisedAt"],

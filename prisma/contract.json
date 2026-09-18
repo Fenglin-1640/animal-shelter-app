@@ -24,6 +24,10 @@
       "model": "BehaviourProgram",
       "namespace": "__unbound__"
     },
+    "councilTransferSubmission": {
+      "model": "CouncilTransferSubmission",
+      "namespace": "__unbound__"
+    },
     "desexingSchedule": {
       "model": "DesexingSchedule",
       "namespace": "__unbound__"
@@ -34,6 +38,10 @@
     },
     "healthAssessment": {
       "model": "HealthAssessment",
+      "namespace": "__unbound__"
+    },
+    "intakeRecord": {
+      "model": "IntakeRecord",
       "namespace": "__unbound__"
     },
     "medicalClearance": {
@@ -972,6 +980,137 @@
               "table": "behaviourProgram"
             }
           },
+          "CouncilTransferSubmission": {
+            "fields": {
+              "animalDescription": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "arrivalCircumstance": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "attachments": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "foundLocation": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "source": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "submissionDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "submittedByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "submittedByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalDescription": {
+                  "column": "animalDescription"
+                },
+                "arrivalCircumstance": {
+                  "column": "arrivalCircumstance"
+                },
+                "attachments": {
+                  "column": "attachments"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "foundLocation": {
+                  "column": "foundLocation"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "source": {
+                  "column": "source"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "submissionDate": {
+                  "column": "submissionDate"
+                },
+                "submittedByEmail": {
+                  "column": "submittedByEmail"
+                },
+                "submittedByName": {
+                  "column": "submittedByName"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "councilTransferSubmission"
+            }
+          },
           "DesexingSchedule": {
             "fields": {
               "animalId": {
@@ -1453,6 +1592,247 @@
               },
               "namespaceId": "__unbound__",
               "table": "healthAssessment"
+            }
+          },
+          "IntakeRecord": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "arrivalCircumstance": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "arrivalDateTime": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "coatColour": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "coatMarkings": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "councilTransferSubmissionId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "dateOfBirth": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "estimatedAge": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "finalisedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "intakeId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "intakeSource": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "photos": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "registeredOwnerContactAddress": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "registeredOwnerContactName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "registeredOwnerContactPhone": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sex": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "species": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "surrenderingPartyName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "animalName": {
+                  "column": "animalName"
+                },
+                "arrivalCircumstance": {
+                  "column": "arrivalCircumstance"
+                },
+                "arrivalDateTime": {
+                  "column": "arrivalDateTime"
+                },
+                "coatColour": {
+                  "column": "coatColour"
+                },
+                "coatMarkings": {
+                  "column": "coatMarkings"
+                },
+                "councilTransferSubmissionId": {
+                  "column": "councilTransferSubmissionId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdByEmail": {
+                  "column": "createdByEmail"
+                },
+                "createdByName": {
+                  "column": "createdByName"
+                },
+                "dateOfBirth": {
+                  "column": "dateOfBirth"
+                },
+                "estimatedAge": {
+                  "column": "estimatedAge"
+                },
+                "finalisedAt": {
+                  "column": "finalisedAt"
+                },
+                "intakeId": {
+                  "column": "intakeId"
+                },
+                "intakeSource": {
+                  "column": "intakeSource"
+                },
+                "photos": {
+                  "column": "photos"
+                },
+                "registeredOwnerContactAddress": {
+                  "column": "registeredOwnerContactAddress"
+                },
+                "registeredOwnerContactName": {
+                  "column": "registeredOwnerContactName"
+                },
+                "registeredOwnerContactPhone": {
+                  "column": "registeredOwnerContactPhone"
+                },
+                "sex": {
+                  "column": "sex"
+                },
+                "species": {
+                  "column": "species"
+                },
+                "surrenderingPartyName": {
+                  "column": "surrenderingPartyName"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "intakeRecord"
             }
           },
           "MedicalClearance": {
@@ -3199,6 +3579,78 @@
               },
               "uniques": []
             },
+            "councilTransferSubmission": {
+              "columns": {
+                "animalDescription": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "arrivalCircumstance": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "attachments": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "foundLocation": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "source": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "submissionDate": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "submittedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "submittedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "desexingSchedule": {
               "columns": {
                 "animalId": {
@@ -3456,6 +3908,133 @@
               "primaryKey": {
                 "columns": [
                   "id"
+                ]
+              },
+              "uniques": []
+            },
+            "intakeRecord": {
+              "columns": {
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "arrivalCircumstance": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "arrivalDateTime": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "coatColour": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "coatMarkings": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "councilTransferSubmissionId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "dateOfBirth": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "estimatedAge": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "finalisedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "intakeId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "intakeSource": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "photos": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "registeredOwnerContactAddress": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "registeredOwnerContactName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "registeredOwnerContactPhone": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "sex": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "species": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "surrenderingPartyName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "intakeId"
                 ]
               },
               "uniques": []
@@ -4158,7 +4737,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "5507951e21eacb877b0a3c8e7b2b77ce092798d0e47e287e73ff126f4da5b51c"
+    "storageHash": "712db75d08344296d860bac20eb63663a200917bd293faa500edad1fb855e862"
   },
   "capabilities": {
     "sql": {

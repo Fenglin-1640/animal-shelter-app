@@ -123,7 +123,7 @@ export async function createHoldForOwnerMatch(
     { email, name },
     "Owner Match - Statutory Hold Created",
   );
-  linkRegisteredOwnerContact(animalId, ownerContact);
+  await linkRegisteredOwnerContact(animalId, ownerContact);
 
   return { ok: true, hold: result.item as StatutoryHold };
 }
