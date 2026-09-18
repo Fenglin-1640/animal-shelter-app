@@ -167,3 +167,22 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   (`db.orm.Photo.where({ id }).delete()`) - see
   app/api/photos/[id]/route.ts's DELETE handler. See
   lib/photos/serialize.ts.
+- `AdopterProfile` - see lib/adopter-profile/. Mirrored from
+  lib/adopter-profile/types.ts. Keyed by the account's email
+  (lowercased) rather than a generated id - there is exactly one
+  profile per Adopter. `preferredSpecies` is JSON-encoded, same
+  reasoning as AdoptionApplication.documents.
+  `landlordPermission`/`hasExistingPets`/`refereeConsent` are Int
+  (0/1), same reasoning as AdoptionAgreement's isSigned.
+  `refereeConsentAt` is a system-generated timestamp (set to `now` the
+  moment consent is first given), so it's DateTime, unlike every other
+  field here which is free-editable text from the Adopter's own form.
+  The demo Adopter's seed profile moved from a runtime
+  `SEED_PROFILES` fallback in lib/adopter-profile/store.ts into
+  prisma/seed.ts (`npm run db:seed`), matching how Users/Animals are
+  seeded - any other Adopter with no saved row yet still falls back to
+  `EMPTY_ADOPTER_PROFILE` at read time, since (unlike Users/Animals)
+  not every Adopter account has a profile row pre-provisioned. See
+  lib/adopter-profile/serialize.ts.
+- Last domain migrated off localStorage - every `lib/*/store.ts`
+  module in this project is now backed by Prisma/SQLite.

@@ -3,6 +3,33 @@
 import { db } from "../lib/db/client";
 import { DEMO_ACCOUNTS } from "../lib/auth/demo-accounts";
 import { MOCK_ANIMALS } from "../lib/animals/mock-animals";
+import type { AdopterProfile } from "../lib/adopter-profile/types";
+
+// The demo Adopter (Jordan Taylor) already has applications and an
+// upcoming Meet and Greet seeded elsewhere, so a completed profile here
+// continues that story. Any other Adopter starts from
+// EMPTY_ADOPTER_PROFILE (lib/adopter-profile/store.ts's runtime
+// fallback for a row that doesn't exist here).
+const DEMO_ADOPTER_PROFILE: AdopterProfile = {
+  residentialAddress: "12 Wattle Street, Brisbane QLD 4000",
+  householdType: "House",
+  homeOwnership: "Own",
+  landlordPermission: false,
+  adultsInHousehold: "2",
+  childrenInHousehold: "0",
+  hasExistingPets: true,
+  existingPetDetails: "One desexed male cat, aged 5, fully vaccinated.",
+  environmentDetails:
+    "Fully fenced backyard with secure gates; pets are kept indoors overnight.",
+  hoursAlone: "2-4 hours",
+  preferredSpecies: ["Cat", "Dog"],
+  refereeName: "Alex Morgan",
+  refereeRelationship: "Neighbour",
+  refereePhone: "+61 4 1234 5678",
+  refereeEmail: "alex.morgan@example.com",
+  refereeConsent: true,
+  refereeConsentAt: "2023-11-20T09:00:00.000Z",
+};
 
 // Recreates the PRD 4.2 demo accounts and PRD 12.1 seed animals in the
 // database. Run with `npm run db:seed`. Safe to re-run: existing rows are
@@ -71,6 +98,32 @@ async function main() {
     });
     console.log(`Seeded animal: ${animal.name} (${animal.animalId})`);
   }
+
+  const adopterProfileRow = {
+    email: "adopter@asams.demo",
+    residentialAddress: DEMO_ADOPTER_PROFILE.residentialAddress,
+    householdType: DEMO_ADOPTER_PROFILE.householdType,
+    homeOwnership: DEMO_ADOPTER_PROFILE.homeOwnership,
+    landlordPermission: DEMO_ADOPTER_PROFILE.landlordPermission ? 1 : 0,
+    adultsInHousehold: DEMO_ADOPTER_PROFILE.adultsInHousehold,
+    childrenInHousehold: DEMO_ADOPTER_PROFILE.childrenInHousehold,
+    hasExistingPets: DEMO_ADOPTER_PROFILE.hasExistingPets ? 1 : 0,
+    existingPetDetails: DEMO_ADOPTER_PROFILE.existingPetDetails,
+    environmentDetails: DEMO_ADOPTER_PROFILE.environmentDetails,
+    hoursAlone: DEMO_ADOPTER_PROFILE.hoursAlone,
+    preferredSpecies: JSON.stringify(DEMO_ADOPTER_PROFILE.preferredSpecies),
+    refereeName: DEMO_ADOPTER_PROFILE.refereeName,
+    refereeRelationship: DEMO_ADOPTER_PROFILE.refereeRelationship,
+    refereePhone: DEMO_ADOPTER_PROFILE.refereePhone,
+    refereeEmail: DEMO_ADOPTER_PROFILE.refereeEmail,
+    refereeConsent: DEMO_ADOPTER_PROFILE.refereeConsent ? 1 : 0,
+    refereeConsentAt: DEMO_ADOPTER_PROFILE.refereeConsentAt ? new Date(DEMO_ADOPTER_PROFILE.refereeConsentAt) : null,
+  };
+  await db.orm.AdopterProfile.upsert({
+    create: adopterProfileRow,
+    update: adopterProfileRow,
+  });
+  console.log(`Seeded adopter profile: ${adopterProfileRow.email}`);
 
   await db.close();
 }

@@ -8,7 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAdopterProfile } from "@/lib/adopter-profile/store";
-import { getAdopterProfileSubmissionBlockers } from "@/lib/adopter-profile/types";
+import { getAdopterProfileSubmissionBlockers, type AdopterProfile } from "@/lib/adopter-profile/types";
 import { getApplication, submitApplication, updateDraft } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication, ApplicationDocument } from "@/lib/applications/types";
@@ -60,6 +60,7 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
   const [fileInputKey, setFileInputKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitBlockers, setSubmitBlockers] = useState<string[] | null>(null);
+  const [profile, setProfile] = useState<AdopterProfile | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,10 +70,13 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
       setMotivation(result?.motivationStatement ?? "");
       setDocuments(result?.documents ?? []);
     });
+    getAdopterProfile(email).then((result) => {
+      if (!cancelled) setProfile(result);
+    });
     return () => {
       cancelled = true;
     };
-  }, [applicationId]);
+  }, [applicationId, email]);
 
   if (application === undefined) {
     return (
@@ -85,10 +89,9 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
   if (application.adopterEmail.toLowerCase() !== email.toLowerCase()) return <AccessDenied />;
 
   const isDraft = application.applicationStatus === "Draft";
-  const profile = getAdopterProfile(email);
   const liveBlockers = [
     ...(motivation.trim() ? [] : ["A motivation statement is required."]),
-    ...getAdopterProfileSubmissionBlockers(profile),
+    ...(profile ? getAdopterProfileSubmissionBlockers(profile) : []),
   ];
 
   const handleSaveDraft = async () => {

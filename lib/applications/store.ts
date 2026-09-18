@@ -133,7 +133,7 @@ export async function submitApplication(applicationId: string): Promise<SubmitRe
   if (!application.motivationStatement.trim()) {
     blockers.push("A motivation statement is required.");
   }
-  const profile = getAdopterProfile(application.adopterEmail);
+  const profile = await getAdopterProfile(application.adopterEmail);
   blockers.push(...getAdopterProfileSubmissionBlockers(profile));
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
 

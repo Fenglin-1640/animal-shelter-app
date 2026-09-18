@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'24587d23c46d8e1a9985e67a1dd3e75df761d478ee8bbffa56f6ec634617d87e'>;
+  StorageHashBase<'6dab6414c8ebf6cb821bba94240dbdc943ba055232e9ed3ae75917b2e6da3d68'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -128,6 +128,26 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly __unbound__: {
+    readonly AdopterProfile: {
+      readonly email: CodecTypes['sqlite/text@1']['output'];
+      readonly residentialAddress: CodecTypes['sqlite/text@1']['output'];
+      readonly householdType: CodecTypes['sqlite/text@1']['output'];
+      readonly homeOwnership: CodecTypes['sqlite/text@1']['output'];
+      readonly landlordPermission: CodecTypes['sqlite/integer@1']['output'];
+      readonly adultsInHousehold: CodecTypes['sqlite/text@1']['output'];
+      readonly childrenInHousehold: CodecTypes['sqlite/text@1']['output'];
+      readonly hasExistingPets: CodecTypes['sqlite/integer@1']['output'];
+      readonly existingPetDetails: CodecTypes['sqlite/text@1']['output'];
+      readonly environmentDetails: CodecTypes['sqlite/text@1']['output'];
+      readonly hoursAlone: CodecTypes['sqlite/text@1']['output'];
+      readonly preferredSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly refereeName: CodecTypes['sqlite/text@1']['output'];
+      readonly refereeRelationship: CodecTypes['sqlite/text@1']['output'];
+      readonly refereePhone: CodecTypes['sqlite/text@1']['output'];
+      readonly refereeEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly refereeConsent: CodecTypes['sqlite/integer@1']['output'];
+      readonly refereeConsentAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    };
     readonly AdoptionAgreement: {
       readonly agreementId: CodecTypes['sqlite/text@1']['output'];
       readonly applicationId: CodecTypes['sqlite/text@1']['output'];
@@ -461,6 +481,26 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly __unbound__: {
+    readonly AdopterProfile: {
+      readonly email: CodecTypes['sqlite/text@1']['input'];
+      readonly residentialAddress: CodecTypes['sqlite/text@1']['input'];
+      readonly householdType: CodecTypes['sqlite/text@1']['input'];
+      readonly homeOwnership: CodecTypes['sqlite/text@1']['input'];
+      readonly landlordPermission: CodecTypes['sqlite/integer@1']['input'];
+      readonly adultsInHousehold: CodecTypes['sqlite/text@1']['input'];
+      readonly childrenInHousehold: CodecTypes['sqlite/text@1']['input'];
+      readonly hasExistingPets: CodecTypes['sqlite/integer@1']['input'];
+      readonly existingPetDetails: CodecTypes['sqlite/text@1']['input'];
+      readonly environmentDetails: CodecTypes['sqlite/text@1']['input'];
+      readonly hoursAlone: CodecTypes['sqlite/text@1']['input'];
+      readonly preferredSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly refereeName: CodecTypes['sqlite/text@1']['input'];
+      readonly refereeRelationship: CodecTypes['sqlite/text@1']['input'];
+      readonly refereePhone: CodecTypes['sqlite/text@1']['input'];
+      readonly refereeEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly refereeConsent: CodecTypes['sqlite/integer@1']['input'];
+      readonly refereeConsentAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+    };
     readonly AdoptionAgreement: {
       readonly agreementId: CodecTypes['sqlite/text@1']['input'];
       readonly applicationId: CodecTypes['sqlite/text@1']['input'];
@@ -794,6 +834,26 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly __unbound__: {
+    readonly adopterProfile: {
+      readonly adultsInHousehold: CodecTypes['sqlite/text@1']['output'];
+      readonly childrenInHousehold: CodecTypes['sqlite/text@1']['output'];
+      readonly email: CodecTypes['sqlite/text@1']['output'];
+      readonly environmentDetails: CodecTypes['sqlite/text@1']['output'];
+      readonly existingPetDetails: CodecTypes['sqlite/text@1']['output'];
+      readonly hasExistingPets: CodecTypes['sqlite/integer@1']['output'];
+      readonly homeOwnership: CodecTypes['sqlite/text@1']['output'];
+      readonly hoursAlone: CodecTypes['sqlite/text@1']['output'];
+      readonly householdType: CodecTypes['sqlite/text@1']['output'];
+      readonly landlordPermission: CodecTypes['sqlite/integer@1']['output'];
+      readonly preferredSpecies: CodecTypes['sqlite/text@1']['output'];
+      readonly refereeConsent: CodecTypes['sqlite/integer@1']['output'];
+      readonly refereeConsentAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly refereeEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly refereeName: CodecTypes['sqlite/text@1']['output'];
+      readonly refereePhone: CodecTypes['sqlite/text@1']['output'];
+      readonly refereeRelationship: CodecTypes['sqlite/text@1']['output'];
+      readonly residentialAddress: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly adoptionAgreement: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
       readonly adopterName: CodecTypes['sqlite/text@1']['output'];
@@ -1127,6 +1187,26 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly __unbound__: {
+    readonly adopterProfile: {
+      readonly adultsInHousehold: CodecTypes['sqlite/text@1']['input'];
+      readonly childrenInHousehold: CodecTypes['sqlite/text@1']['input'];
+      readonly email: CodecTypes['sqlite/text@1']['input'];
+      readonly environmentDetails: CodecTypes['sqlite/text@1']['input'];
+      readonly existingPetDetails: CodecTypes['sqlite/text@1']['input'];
+      readonly hasExistingPets: CodecTypes['sqlite/integer@1']['input'];
+      readonly homeOwnership: CodecTypes['sqlite/text@1']['input'];
+      readonly hoursAlone: CodecTypes['sqlite/text@1']['input'];
+      readonly householdType: CodecTypes['sqlite/text@1']['input'];
+      readonly landlordPermission: CodecTypes['sqlite/integer@1']['input'];
+      readonly preferredSpecies: CodecTypes['sqlite/text@1']['input'];
+      readonly refereeConsent: CodecTypes['sqlite/integer@1']['input'];
+      readonly refereeConsentAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly refereeEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly refereeName: CodecTypes['sqlite/text@1']['input'];
+      readonly refereePhone: CodecTypes['sqlite/text@1']['input'];
+      readonly refereeRelationship: CodecTypes['sqlite/text@1']['input'];
+      readonly residentialAddress: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly adoptionAgreement: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
       readonly adopterName: CodecTypes['sqlite/text@1']['input'];
@@ -1809,6 +1889,27 @@ export namespace Models {
     uploadedAt: CodecTypes['sqlite/datetime@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type AdopterProfile = {
+    email: CodecTypes['sqlite/text@1']['output'];
+    residentialAddress: CodecTypes['sqlite/text@1']['output'];
+    householdType: CodecTypes['sqlite/text@1']['output'];
+    homeOwnership: CodecTypes['sqlite/text@1']['output'];
+    landlordPermission: CodecTypes['sqlite/integer@1']['output'];
+    adultsInHousehold: CodecTypes['sqlite/text@1']['output'];
+    childrenInHousehold: CodecTypes['sqlite/text@1']['output'];
+    hasExistingPets: CodecTypes['sqlite/integer@1']['output'];
+    existingPetDetails: CodecTypes['sqlite/text@1']['output'];
+    environmentDetails: CodecTypes['sqlite/text@1']['output'];
+    hoursAlone: CodecTypes['sqlite/text@1']['output'];
+    preferredSpecies: CodecTypes['sqlite/text@1']['output'];
+    refereeName: CodecTypes['sqlite/text@1']['output'];
+    refereeRelationship: CodecTypes['sqlite/text@1']['output'];
+    refereePhone: CodecTypes['sqlite/text@1']['output'];
+    refereeEmail: CodecTypes['sqlite/text@1']['output'];
+    refereeConsent: CodecTypes['sqlite/integer@1']['output'];
+    refereeConsentAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -1832,6 +1933,7 @@ export declare const models: {
   CouncilTransferSubmission: Models.CouncilTransferSubmission;
   IntakeRecord: Models.IntakeRecord;
   Photo: Models.Photo;
+  AdopterProfile: Models.AdopterProfile;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -1852,6 +1954,104 @@ type ContractBase = Omit<
         readonly kind: 'sqlite-namespace';
         readonly entries: {
           readonly table: {
+            readonly adopterProfile: {
+              columns: {
+                readonly email: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly residentialAddress: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly householdType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly homeOwnership: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly landlordPermission: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly adultsInHousehold: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly childrenInHousehold: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly hasExistingPets: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly existingPetDetails: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly environmentDetails: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly hoursAlone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly preferredSpecies: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly refereeName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly refereeRelationship: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly refereePhone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly refereeEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly refereeConsent: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly refereeConsentAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['email'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly adoptionAgreement: {
               columns: {
                 readonly agreementId: {
@@ -3543,11 +3743,116 @@ type ContractBase = Omit<
       readonly model: 'IntakeRecord';
     };
     readonly photo: { readonly namespace: '__unbound__' & NamespaceId; readonly model: 'Photo' };
+    readonly adopterProfile: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'AdopterProfile';
+    };
   };
   readonly domain: {
     readonly namespaces: {
       readonly __unbound__: {
         readonly models: {
+          readonly AdopterProfile: {
+            readonly fields: {
+              readonly email: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly residentialAddress: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly householdType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly homeOwnership: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly landlordPermission: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly adultsInHousehold: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly childrenInHousehold: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly hasExistingPets: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly existingPetDetails: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly environmentDetails: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly hoursAlone: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly preferredSpecies: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly refereeName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly refereeRelationship: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly refereePhone: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly refereeEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly refereeConsent: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly refereeConsentAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'adopterProfile';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly email: { readonly column: 'email' };
+                readonly residentialAddress: { readonly column: 'residentialAddress' };
+                readonly householdType: { readonly column: 'householdType' };
+                readonly homeOwnership: { readonly column: 'homeOwnership' };
+                readonly landlordPermission: { readonly column: 'landlordPermission' };
+                readonly adultsInHousehold: { readonly column: 'adultsInHousehold' };
+                readonly childrenInHousehold: { readonly column: 'childrenInHousehold' };
+                readonly hasExistingPets: { readonly column: 'hasExistingPets' };
+                readonly existingPetDetails: { readonly column: 'existingPetDetails' };
+                readonly environmentDetails: { readonly column: 'environmentDetails' };
+                readonly hoursAlone: { readonly column: 'hoursAlone' };
+                readonly preferredSpecies: { readonly column: 'preferredSpecies' };
+                readonly refereeName: { readonly column: 'refereeName' };
+                readonly refereeRelationship: { readonly column: 'refereeRelationship' };
+                readonly refereePhone: { readonly column: 'refereePhone' };
+                readonly refereeEmail: { readonly column: 'refereeEmail' };
+                readonly refereeConsent: { readonly column: 'refereeConsent' };
+                readonly refereeConsentAt: { readonly column: 'refereeConsentAt' };
+              };
+            };
+          };
           readonly AdoptionAgreement: {
             readonly fields: {
               readonly agreementId: {

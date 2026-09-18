@@ -4,6 +4,10 @@
   "target": "sqlite",
   "profileHash": "260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53",
   "roots": {
+    "adopterProfile": {
+      "model": "AdopterProfile",
+      "namespace": "__unbound__"
+    },
     "adoptionAgreement": {
       "model": "AdoptionAgreement",
       "namespace": "__unbound__"
@@ -89,6 +93,197 @@
     "namespaces": {
       "__unbound__": {
         "models": {
+          "AdopterProfile": {
+            "fields": {
+              "adultsInHousehold": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "childrenInHousehold": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "environmentDetails": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "existingPetDetails": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "hasExistingPets": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "homeOwnership": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "hoursAlone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "householdType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "landlordPermission": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "preferredSpecies": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "refereeConsent": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "refereeConsentAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "refereeEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "refereeName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "refereePhone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "refereeRelationship": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "residentialAddress": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "adultsInHousehold": {
+                  "column": "adultsInHousehold"
+                },
+                "childrenInHousehold": {
+                  "column": "childrenInHousehold"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "environmentDetails": {
+                  "column": "environmentDetails"
+                },
+                "existingPetDetails": {
+                  "column": "existingPetDetails"
+                },
+                "hasExistingPets": {
+                  "column": "hasExistingPets"
+                },
+                "homeOwnership": {
+                  "column": "homeOwnership"
+                },
+                "hoursAlone": {
+                  "column": "hoursAlone"
+                },
+                "householdType": {
+                  "column": "householdType"
+                },
+                "landlordPermission": {
+                  "column": "landlordPermission"
+                },
+                "preferredSpecies": {
+                  "column": "preferredSpecies"
+                },
+                "refereeConsent": {
+                  "column": "refereeConsent"
+                },
+                "refereeConsentAt": {
+                  "column": "refereeConsentAt"
+                },
+                "refereeEmail": {
+                  "column": "refereeEmail"
+                },
+                "refereeName": {
+                  "column": "refereeName"
+                },
+                "refereePhone": {
+                  "column": "refereePhone"
+                },
+                "refereeRelationship": {
+                  "column": "refereeRelationship"
+                },
+                "residentialAddress": {
+                  "column": "residentialAddress"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "adopterProfile"
+            }
+          },
           "AdoptionAgreement": {
             "fields": {
               "adopterEmail": {
@@ -3208,6 +3403,108 @@
       "__unbound__": {
         "entries": {
           "table": {
+            "adopterProfile": {
+              "columns": {
+                "adultsInHousehold": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "childrenInHousehold": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "email": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "environmentDetails": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "existingPetDetails": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "hasExistingPets": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "homeOwnership": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "hoursAlone": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "householdType": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "landlordPermission": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "preferredSpecies": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "refereeConsent": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "refereeConsentAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "refereeEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "refereeName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "refereePhone": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "refereeRelationship": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "residentialAddress": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "email"
+                ]
+              },
+              "uniques": []
+            },
             "adoptionAgreement": {
               "columns": {
                 "adopterEmail": {
@@ -4914,7 +5211,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "24587d23c46d8e1a9985e67a1dd3e75df761d478ee8bbffa56f6ec634617d87e"
+    "storageHash": "6dab6414c8ebf6cb821bba94240dbdc943ba055232e9ed3ae75917b2e6da3d68"
   },
   "capabilities": {
     "sql": {

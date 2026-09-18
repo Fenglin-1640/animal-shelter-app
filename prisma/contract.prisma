@@ -446,3 +446,34 @@ model Photo {
   altText              String
   uploadedAt            DateTime
 }
+
+// Mirrors lib/adopter-profile/types.ts (FR-ADP-01). Keyed by the
+// account's email (lowercased) rather than a generated id - there is
+// exactly one profile per Adopter, no separate identity of its own.
+// preferredSpecies (a small array of enum strings) is JSON-encoded,
+// same reasoning as AdoptionApplication.documents. landlordPermission/
+// hasExistingPets/refereeConsent are Int (0/1), same reasoning as
+// AdoptionAgreement's isSigned. refereeConsentAt is a system-generated
+// timestamp (set to `now` the moment consent is first given), so it's
+// DateTime, unlike every other field here which is free-editable text
+// from the Adopter's own form.
+model AdopterProfile {
+  email               String    @id
+  residentialAddress  String
+  householdType       String
+  homeOwnership       String
+  landlordPermission  Int
+  adultsInHousehold   String
+  childrenInHousehold String
+  hasExistingPets     Int
+  existingPetDetails  String
+  environmentDetails  String
+  hoursAlone          String
+  preferredSpecies    String
+  refereeName         String
+  refereeRelationship String
+  refereePhone        String
+  refereeEmail        String
+  refereeConsent      Int
+  refereeConsentAt    DateTime?
+}

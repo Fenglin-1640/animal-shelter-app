@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -62,10 +62,20 @@ function AlertIcon() {
 }
 
 function MyAdopterProfileContent({ email }: { email: string }) {
-  const [profile, setProfile] = useState<AdopterProfile>(() => getAdopterProfile(email));
+  const [profile, setProfile] = useState<AdopterProfile | undefined>(undefined);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAdopterProfile(email).then((result) => {
+      if (!cancelled) setProfile(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [email]);
 
   const addressRef = useRef<HTMLTextAreaElement>(null);
   const householdTypeRef = useRef<HTMLSelectElement>(null);
@@ -101,23 +111,29 @@ function MyAdopterProfileContent({ email }: { email: string }) {
     refereeConsent: refereeConsentRef,
   };
 
+  if (profile === undefined) {
+    return (
+      <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
+  }
+
   const focusField = (field: keyof FieldErrors) => {
     fieldRefs[field]?.current?.focus();
   };
 
-  function updateField<K extends keyof AdopterProfile>(key: K, value: AdopterProfile[K]) {
-    setProfile((prev) => ({ ...prev, [key]: value }));
-  }
+  const updateField = <K extends keyof AdopterProfile>(key: K, value: AdopterProfile[K]) => {
+    setProfile({ ...profile, [key]: value });
+  };
 
   const toggleSpecies = (species: Species) => {
-    setProfile((prev) => {
-      const has = prev.preferredSpecies.includes(species);
-      return {
-        ...prev,
-        preferredSpecies: has
-          ? prev.preferredSpecies.filter((s) => s !== species)
-          : [...prev.preferredSpecies, species],
-      };
+    const has = profile.preferredSpecies.includes(species);
+    setProfile({
+      ...profile,
+      preferredSpecies: has
+        ? profile.preferredSpecies.filter((s) => s !== species)
+        : [...profile.preferredSpecies, species],
     });
   };
 
@@ -217,7 +233,7 @@ function MyAdopterProfileContent({ email }: { email: string }) {
         ? (profile.refereeConsentAt ?? new Date().toISOString())
         : undefined,
     };
-    saveAdopterProfile(email, toSave);
+    await saveAdopterProfile(email, toSave);
     setProfile(toSave);
     setIsSubmitting(false);
     setSaved(true);

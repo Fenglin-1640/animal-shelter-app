@@ -1,62 +1,35 @@
 import { EMPTY_ADOPTER_PROFILE, type AdopterProfile } from "@/lib/adopter-profile/types";
 
-// Adopter's own maintained profile (FR-ADP-01), persisted to localStorage
-// since there is no backend. Keyed by the account's email.
-const STORAGE_KEY = "asams-adopter-profiles";
+// Adopter's own maintained profile (FR-ADP-01) now lives in the
+// database (see prisma/contract.prisma) behind /api/adopter-profiles -
+// see prisma/README.md for this Prisma toolchain's quirks. Keyed by the
+// account's email. The demo Adopter (Jordan Taylor)'s seed profile now
+// lives in prisma/seed.ts alongside the other PRD 4.2/12.1 seed data,
+// not as a runtime fallback here - any other Adopter with no saved row
+// yet still falls back to EMPTY_ADOPTER_PROFILE below.
 
-// The demo Adopter (Jordan Taylor) already has applications and an
-// upcoming Meet and Greet seeded elsewhere, so a completed profile here
-// continues that story. Any other Adopter starts from EMPTY_ADOPTER_PROFILE.
-const SEED_PROFILES: Record<string, AdopterProfile> = {
-  "adopter@asams.demo": {
-    residentialAddress: "12 Wattle Street, Brisbane QLD 4000",
-    householdType: "House",
-    homeOwnership: "Own",
-    landlordPermission: false,
-    adultsInHousehold: "2",
-    childrenInHousehold: "0",
-    hasExistingPets: true,
-    existingPetDetails: "One desexed male cat, aged 5, fully vaccinated.",
-    environmentDetails:
-      "Fully fenced backyard with secure gates; pets are kept indoors overnight.",
-    hoursAlone: "2-4 hours",
-    preferredSpecies: ["Cat", "Dog"],
-    refereeName: "Alex Morgan",
-    refereeRelationship: "Neighbour",
-    refereePhone: "+61 4 1234 5678",
-    refereeEmail: "alex.morgan@example.com",
-    refereeConsent: true,
-    refereeConsentAt: "2023-11-20T09:00:00.000Z",
-  },
-};
-
-function loadAll(): Record<string, AdopterProfile> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
+async function fetchAll(): Promise<Record<string, AdopterProfile>> {
+  const response = await fetch("/api/adopter-profiles");
+  const result = await response.json();
+  const items = result.items as (AdopterProfile & { email: string })[];
+  const map: Record<string, AdopterProfile> = {};
+  for (const { email, ...profile } of items) {
+    map[email] = profile;
   }
+  return map;
 }
 
-function saveAll(all: Record<string, AdopterProfile>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-}
-
-export function getAdopterProfile(email: string): AdopterProfile {
+export async function getAdopterProfile(email: string): Promise<AdopterProfile> {
   const normalized = email.trim().toLowerCase();
-  const stored = loadAll()[normalized];
-  if (stored) return stored;
-  return SEED_PROFILES[normalized] ?? EMPTY_ADOPTER_PROFILE;
+  const all = await fetchAll();
+  return all[normalized] ?? EMPTY_ADOPTER_PROFILE;
 }
 
-export function saveAdopterProfile(email: string, profile: AdopterProfile) {
+export async function saveAdopterProfile(email: string, profile: AdopterProfile): Promise<void> {
   const normalized = email.trim().toLowerCase();
-  const all = loadAll();
-  all[normalized] = profile;
-  saveAll(all);
+  await fetch("/api/adopter-profiles", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: normalized, ...profile }),
+  });
 }
