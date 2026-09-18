@@ -90,7 +90,7 @@ export async function createHoldForOwnerMatch(
   const existing = (await fetchAllHolds()).find((h) => h.animalId === animalId);
   if (existing) return { ok: true, hold: existing };
 
-  const holdingPeriodDays = getSystemSettings().holdingPeriodDays;
+  const holdingPeriodDays = (await getSystemSettings()).holdingPeriodDays;
   const holdStart = new Date(animal.enteredAt);
   const holdEnd = new Date(holdStart);
   holdEnd.setDate(holdEnd.getDate() + holdingPeriodDays);
@@ -192,7 +192,7 @@ export async function confirmCustodyTransfer(
 export async function listHoldsNeedingReminder(): Promise<StatutoryHold[]> {
   await resolveExpiredHolds();
   const now = new Date();
-  const reminderLeadDays = getSystemSettings().reminderLeadDays;
+  const reminderLeadDays = (await getSystemSettings()).reminderLeadDays;
   const all = await fetchAllHolds();
   return all.filter((h) => {
     if (h.status !== "Active") return false;

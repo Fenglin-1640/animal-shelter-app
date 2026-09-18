@@ -68,6 +68,7 @@ function StatutoryHoldContent({
 }) {
   const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
   const [hold, setHold] = useState<StatutoryHold | undefined>(undefined);
+  const [reminderLeadDays, setReminderLeadDays] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -80,6 +81,9 @@ function StatutoryHoldContent({
           if (!cancelled) setHold(h);
         });
       }
+    });
+    getSystemSettings().then((settings) => {
+      if (!cancelled) setReminderLeadDays(settings.reminderLeadDays);
     });
     return () => {
       cancelled = true;
@@ -190,7 +194,7 @@ function StatutoryHoldContent({
 
           {hold.status === "Active" && (
             <>
-              {daysUntil(hold.holdEndAt) <= getSystemSettings().reminderLeadDays && (
+              {daysUntil(hold.holdEndAt) <= reminderLeadDays && (
                 <p className="rounded-[12px] border border-gold bg-gold/10 px-3 py-2 text-sm text-text">
                   This hold is within the reminder window - it also appears on Notifications for
                   Shelter Staff Member and Administrator.

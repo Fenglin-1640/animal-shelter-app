@@ -38,8 +38,8 @@ function NotFound() {
 
 function PaymentSection({ agreement, email, displayName }: { agreement: AdoptionAgreement; email: string; displayName: string }) {
   const [payment, setPayment] = useState<AdoptionPayment | undefined>(undefined);
-  const [paymentMethod, setPaymentMethod] = useState(() => getActiveValues("Payment Method")[0] ?? "");
-  const methods = getActiveValues("Payment Method");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [methods, setMethods] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,6 +50,18 @@ function PaymentSection({ agreement, email, displayName }: { agreement: Adoption
       cancelled = true;
     };
   }, [agreement.agreementId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveValues("Payment Method").then((result) => {
+      if (cancelled) return;
+      setMethods(result);
+      setPaymentMethod((prev) => prev || result[0] || "");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const refresh = async () => setPayment(await getLatestPaymentForAgreement(agreement.agreementId));
 

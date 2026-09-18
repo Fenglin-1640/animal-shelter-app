@@ -39,7 +39,7 @@ export function OptionDetailDrawer({
   const [isSaving, setIsSaving] = useState(false);
   const [isRetiring, setIsRetiring] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setError(null);
     setMessage(null);
     if (!value.trim() || !description.trim() || (isBreed && !speciesId)) {
@@ -48,7 +48,7 @@ export function OptionDetailDrawer({
     }
 
     setIsSaving(true);
-    const result = updateOption(option.id, {
+    const result = await updateOption(option.id, {
       value,
       description,
       speciesId: isBreed && speciesId ? speciesId : undefined,
@@ -68,10 +68,10 @@ export function OptionDetailDrawer({
     onSaved();
   };
 
-  const handleToggleRetired = () => {
+  const handleToggleRetired = async () => {
     setError(null);
     setIsRetiring(true);
-    const result = setRetired(option.id, !option.isRetired);
+    const result = await setRetired(option.id, !option.isRetired);
     setIsRetiring(false);
 
     if (!result.ok) {

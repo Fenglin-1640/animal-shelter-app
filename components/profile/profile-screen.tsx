@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getActiveTitleOptions } from "@/lib/options/titles";
 
@@ -87,6 +87,17 @@ function ContactDetailsForm() {
   const [errors, setErrors] = useState<ContactErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [titleOptions, setTitleOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveTitleOptions().then((result) => {
+      if (!cancelled) setTitleOptions(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (!user) return null;
 
@@ -164,7 +175,7 @@ function ContactDetailsForm() {
               }`}
             >
               <option value="">Select</option>
-              {getActiveTitleOptions().map((option) => (
+              {titleOptions.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>

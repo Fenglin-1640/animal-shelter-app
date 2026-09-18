@@ -1,43 +1,41 @@
 import type { Species } from "@/lib/animals/types";
-import { buildSeedOptions } from "@/lib/system-administration/seed-options";
 import type { DropdownCategory, DropdownOption } from "@/lib/system-administration/types";
 
-// FR-SA-01: Administrator-maintained dropdown options, persisted to
-// localStorage since there is no backend. Soft-deleted (isRetired)
-// options are excluded from new-record pickers by default but remain
-// listable so historical records keep displaying their original value.
-const STORAGE_KEY = "asams-dropdown-options";
+// FR-SA-01: Administrator-maintained dropdown options now live in the
+// database (see prisma/contract.prisma) behind /api/dropdown-options -
+// see prisma/README.md for this Prisma toolchain's quirks. The ~85
+// PRD-seeded options (lib/system-administration/seed-options.ts) are
+// seeded via prisma/seed.ts now, not a runtime localStorage-empty
+// fallback. Soft-deleted (isRetired) options are excluded from new-
+// record pickers by default but remain listable so historical records
+// keep displaying their original value.
 
-function loadAll(): DropdownOption[] {
-  if (typeof window === "undefined") return buildSeedOptions();
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      const seeded = buildSeedOptions();
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-      return seeded;
-    }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as DropdownOption[]) : buildSeedOptions();
-  } catch {
-    return buildSeedOptions();
-  }
+async function fetchAll(): Promise<DropdownOption[]> {
+  const response = await fetch("/api/dropdown-options");
+  const result = await response.json();
+  return result.items as DropdownOption[];
 }
 
-function saveAll(options: DropdownOption[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(options));
+async function patchOption(id: string, patch: Partial<DropdownOption>): Promise<DropdownOption | undefined> {
+  const response = await fetch(`/api/dropdown-options/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  const result = await response.json();
+  if (!result.ok) return undefined;
+  return result.item as DropdownOption;
 }
 
-export function listAllOptions(): DropdownOption[] {
-  return loadAll();
+export async function listAllOptions(): Promise<DropdownOption[]> {
+  return fetchAll();
 }
 
-export function listOptions(
+export async function listOptions(
   category: DropdownCategory,
   opts?: { includeRetired?: boolean; speciesId?: Species },
-): DropdownOption[] {
-  let options = loadAll().filter((o) => o.category === category);
+): Promise<DropdownOption[]> {
+  let options = (await fetchAll()).filter((o) => o.category === category);
   if (!opts?.includeRetired) options = options.filter((o) => !o.isRetired);
   if (opts?.speciesId) options = options.filter((o) => o.speciesId === opts.speciesId);
   return options;
@@ -45,8 +43,8 @@ export function listOptions(
 
 // Convenience for consumers that just need the active value strings for a
 // picker (e.g. Sign Up's Title select, an Animal form's Breed select).
-export function getActiveValues(category: DropdownCategory, speciesId?: Species): string[] {
-  return listOptions(category, { speciesId }).map((o) => o.value);
+export async function getActiveValues(category: DropdownCategory, speciesId?: Species): Promise<string[]> {
+  return (await listOptions(category, { speciesId })).map((o) => o.value);
 }
 
 export interface CreateOptionInput {
@@ -79,15 +77,19 @@ function isDuplicate(
   );
 }
 
-export function createOption(input: CreateOptionInput): MutationResult {
-  const all = loadAll();
+function generateOptionId(category: DropdownCategory, value: string): string {
+  return `${category}:${value.trim()}:${Math.random().toString(36).slice(2, 6)}`;
+}
+
+export async function createOption(input: CreateOptionInput): Promise<MutationResult> {
+  const all = await fetchAll();
   if (isDuplicate(all, input.category, input.value, input.speciesId)) {
     return { ok: false, reason: "duplicate" };
   }
 
   const now = new Date().toISOString();
   const option: DropdownOption = {
-    id: `${input.category}:${input.value.trim()}:${Math.random().toString(36).slice(2, 6)}`,
+    id: generateOptionId(input.category, input.value),
     category: input.category,
     value: input.value.trim(),
     description: input.description.trim(),
@@ -97,7 +99,11 @@ export function createOption(input: CreateOptionInput): MutationResult {
     createdAt: now,
     updatedAt: now,
   };
-  saveAll([...all, option]);
+  await fetch("/api/dropdown-options", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(option),
+  });
   return { ok: true };
 }
 
@@ -107,34 +113,32 @@ export interface UpdateOptionInput {
   speciesId?: Species;
 }
 
-export function updateOption(id: string, patch: UpdateOptionInput): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((o) => o.id === id);
-  if (index === -1) return { ok: false, reason: "not_found" };
+export async function updateOption(id: string, patch: UpdateOptionInput): Promise<MutationResult> {
+  const all = await fetchAll();
+  const existing = all.find((o) => o.id === id);
+  if (!existing) return { ok: false, reason: "not_found" };
 
-  if (isDuplicate(all, all[index].category, patch.value, patch.speciesId, id)) {
+  if (isDuplicate(all, existing.category, patch.value, patch.speciesId, id)) {
     return { ok: false, reason: "duplicate" };
   }
 
-  const now = new Date().toISOString();
-  all[index] = {
-    ...all[index],
+  const updated = await patchOption(id, {
     value: patch.value.trim(),
     description: patch.description.trim(),
     speciesId: patch.speciesId,
-    updatedAt: now,
-  };
-  saveAll(all);
+    updatedAt: new Date().toISOString(),
+  });
+  if (!updated) return { ok: false, reason: "not_found" };
   return { ok: true };
 }
 
-export function setRetired(id: string, retired: boolean): MutationResult {
-  const all = loadAll();
-  const index = all.findIndex((o) => o.id === id);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  if (retired && all[index].systemLocked) return { ok: false, reason: "locked" };
+export async function setRetired(id: string, retired: boolean): Promise<MutationResult> {
+  const all = await fetchAll();
+  const existing = all.find((o) => o.id === id);
+  if (!existing) return { ok: false, reason: "not_found" };
+  if (retired && existing.systemLocked) return { ok: false, reason: "locked" };
 
-  all[index] = { ...all[index], isRetired: retired, updatedAt: new Date().toISOString() };
-  saveAll(all);
+  const updated = await patchOption(id, { isRetired: retired, updatedAt: new Date().toISOString() });
+  if (!updated) return { ok: false, reason: "not_found" };
   return { ok: true };
 }

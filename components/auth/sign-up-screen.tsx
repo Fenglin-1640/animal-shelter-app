@@ -77,8 +77,13 @@ export function SignUpScreen() {
     // etc.), so it can be server-rendered with real content. Start from
     // the deterministic seed list (matches server output) and correct to
     // the live, possibly-retired-aware list once mounted client-side.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only correction to avoid an SSR/localStorage hydration mismatch.
-    setTitleOptions(getActiveTitleOptions());
+    let cancelled = false;
+    getActiveTitleOptions().then((result) => {
+      if (!cancelled) setTitleOptions(result);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const [firstName, setFirstName] = useState("");

@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'315c91a60a12ae8a3f3af78cabf76a8a15f4c2d37f89d086c5d99a353da0732b'>;
+  StorageHashBase<'919e53eac0204f95e85c40b659f736cc7093143ad34f79f1df60b666dc43f158'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -280,6 +280,17 @@ export type FieldOutputTypes = {
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
+    readonly DropdownOption: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly category: CodecTypes['sqlite/text@1']['output'];
+      readonly value: CodecTypes['sqlite/text@1']['output'];
+      readonly description: CodecTypes['sqlite/text@1']['output'];
+      readonly speciesId: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly isRetired: CodecTypes['sqlite/integer@1']['output'];
+      readonly systemLocked: CodecTypes['sqlite/integer@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly FollowUpVisit: {
       readonly followUpVisitId: CodecTypes['sqlite/text@1']['output'];
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -426,6 +437,14 @@ export type FieldOutputTypes = {
       readonly conductedDate: CodecTypes['sqlite/text@1']['output'] | null;
       readonly completedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
       readonly completedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    };
+    readonly SystemSettings: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['output'];
+      readonly reminderLeadDays: CodecTypes['sqlite/integer@1']['output'];
+      readonly allowedAttachmentTypes: CodecTypes['sqlite/text@1']['output'];
+      readonly maxAttachmentSizeMB: CodecTypes['sqlite/integer@1']['output'];
+      readonly agreementTemplateVersion: CodecTypes['sqlite/text@1']['output'];
     };
     readonly TemperamentAssessment: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -645,6 +664,17 @@ export type FieldInputTypes = {
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
     };
+    readonly DropdownOption: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly category: CodecTypes['sqlite/text@1']['input'];
+      readonly value: CodecTypes['sqlite/text@1']['input'];
+      readonly description: CodecTypes['sqlite/text@1']['input'];
+      readonly speciesId: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly isRetired: CodecTypes['sqlite/integer@1']['input'];
+      readonly systemLocked: CodecTypes['sqlite/integer@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
     readonly FollowUpVisit: {
       readonly followUpVisitId: CodecTypes['sqlite/text@1']['input'];
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -791,6 +821,14 @@ export type FieldInputTypes = {
       readonly conductedDate: CodecTypes['sqlite/text@1']['input'] | null;
       readonly completedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
       readonly completedByName: CodecTypes['sqlite/text@1']['input'] | null;
+    };
+    readonly SystemSettings: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['input'];
+      readonly reminderLeadDays: CodecTypes['sqlite/integer@1']['input'];
+      readonly allowedAttachmentTypes: CodecTypes['sqlite/text@1']['input'];
+      readonly maxAttachmentSizeMB: CodecTypes['sqlite/integer@1']['input'];
+      readonly agreementTemplateVersion: CodecTypes['sqlite/text@1']['input'];
     };
     readonly TemperamentAssessment: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -1010,6 +1048,17 @@ export type StorageColumnTypes = {
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly dropdownOption: {
+      readonly category: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly description: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly isRetired: CodecTypes['sqlite/integer@1']['output'];
+      readonly speciesId: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly systemLocked: CodecTypes['sqlite/integer@1']['output'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly value: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly followUpVisit: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
       readonly adopterName: CodecTypes['sqlite/text@1']['output'];
@@ -1156,6 +1205,14 @@ export type StorageColumnTypes = {
       readonly completedByName: CodecTypes['sqlite/text@1']['output'] | null;
       readonly conductedDate: CodecTypes['sqlite/text@1']['output'] | null;
       readonly outcome: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly systemSettings: {
+      readonly agreementTemplateVersion: CodecTypes['sqlite/text@1']['output'];
+      readonly allowedAttachmentTypes: CodecTypes['sqlite/text@1']['output'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly maxAttachmentSizeMB: CodecTypes['sqlite/integer@1']['output'];
+      readonly reminderLeadDays: CodecTypes['sqlite/integer@1']['output'];
     };
     readonly temperamentAssessment: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -1375,6 +1432,17 @@ export type StorageColumnInputTypes = {
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
     };
+    readonly dropdownOption: {
+      readonly category: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly description: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly isRetired: CodecTypes['sqlite/integer@1']['input'];
+      readonly speciesId: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly systemLocked: CodecTypes['sqlite/integer@1']['input'];
+      readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly value: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly followUpVisit: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
       readonly adopterName: CodecTypes['sqlite/text@1']['input'];
@@ -1521,6 +1589,14 @@ export type StorageColumnInputTypes = {
       readonly completedByName: CodecTypes['sqlite/text@1']['input'] | null;
       readonly conductedDate: CodecTypes['sqlite/text@1']['input'] | null;
       readonly outcome: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly systemSettings: {
+      readonly agreementTemplateVersion: CodecTypes['sqlite/text@1']['input'];
+      readonly allowedAttachmentTypes: CodecTypes['sqlite/text@1']['input'];
+      readonly holdingPeriodDays: CodecTypes['sqlite/integer@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly maxAttachmentSizeMB: CodecTypes['sqlite/integer@1']['input'];
+      readonly reminderLeadDays: CodecTypes['sqlite/integer@1']['input'];
     };
     readonly temperamentAssessment: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -1971,6 +2047,27 @@ export namespace Models {
     result: CodecTypes['sqlite/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type DropdownOption = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    category: CodecTypes['sqlite/text@1']['output'];
+    value: CodecTypes['sqlite/text@1']['output'];
+    description: CodecTypes['sqlite/text@1']['output'];
+    speciesId: CodecTypes['sqlite/text@1']['output'] | null;
+    isRetired: CodecTypes['sqlite/integer@1']['output'];
+    systemLocked: CodecTypes['sqlite/integer@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type SystemSettings = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    holdingPeriodDays: CodecTypes['sqlite/integer@1']['output'];
+    reminderLeadDays: CodecTypes['sqlite/integer@1']['output'];
+    allowedAttachmentTypes: CodecTypes['sqlite/text@1']['output'];
+    maxAttachmentSizeMB: CodecTypes['sqlite/integer@1']['output'];
+    agreementTemplateVersion: CodecTypes['sqlite/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -1996,6 +2093,8 @@ export declare const models: {
   Photo: Models.Photo;
   AdopterProfile: Models.AdopterProfile;
   AuditLogEntry: Models.AuditLogEntry;
+  DropdownOption: Models.DropdownOption;
+  SystemSettings: Models.SystemSettings;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -2758,6 +2857,59 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly dropdownOption: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly category: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly value: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly description: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly speciesId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly isRetired: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly systemLocked: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly followUpVisit: {
               columns: {
                 readonly followUpVisitId: {
@@ -3475,6 +3627,44 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly systemSettings: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly holdingPeriodDays: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly reminderLeadDays: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly allowedAttachmentTypes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly maxAttachmentSizeMB: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly agreementTemplateVersion: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly temperamentAssessment: {
               columns: {
                 readonly id: {
@@ -3870,6 +4060,14 @@ type ContractBase = Omit<
     readonly auditLogEntry: {
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'AuditLogEntry';
+    };
+    readonly dropdownOption: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'DropdownOption';
+    };
+    readonly systemSettings: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'SystemSettings';
     };
   };
   readonly domain: {
@@ -4645,6 +4843,62 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly DropdownOption: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly category: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly value: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly description: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly speciesId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly isRetired: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly systemLocked: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'dropdownOption';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly category: { readonly column: 'category' };
+                readonly value: { readonly column: 'value' };
+                readonly description: { readonly column: 'description' };
+                readonly speciesId: { readonly column: 'speciesId' };
+                readonly isRetired: { readonly column: 'isRetired' };
+                readonly systemLocked: { readonly column: 'systemLocked' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly FollowUpVisit: {
             readonly fields: {
               readonly followUpVisitId: {
@@ -5396,6 +5650,47 @@ type ContractBase = Omit<
                 readonly conductedDate: { readonly column: 'conductedDate' };
                 readonly completedByEmail: { readonly column: 'completedByEmail' };
                 readonly completedByName: { readonly column: 'completedByName' };
+              };
+            };
+          };
+          readonly SystemSettings: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly holdingPeriodDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly reminderLeadDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly allowedAttachmentTypes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly maxAttachmentSizeMB: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly agreementTemplateVersion: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'systemSettings';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly holdingPeriodDays: { readonly column: 'holdingPeriodDays' };
+                readonly reminderLeadDays: { readonly column: 'reminderLeadDays' };
+                readonly allowedAttachmentTypes: { readonly column: 'allowedAttachmentTypes' };
+                readonly maxAttachmentSizeMB: { readonly column: 'maxAttachmentSizeMB' };
+                readonly agreementTemplateVersion: { readonly column: 'agreementTemplateVersion' };
               };
             };
           };

@@ -118,7 +118,7 @@ function IntakeRecordFormContent({
   const [finalisedAt, setFinalisedAt] = useState<string | undefined>(undefined);
   const isReadOnly = Boolean(finalisedAt);
 
-  const intakeSourceOptions = getActiveValues("Intake Source");
+  const [intakeSourceOptions, setIntakeSourceOptions] = useState<string[]>([]);
   const eligibleTransfers = allTransfers.filter(
     (t) =>
       !linkedElsewhere.has(t.id) &&
@@ -185,6 +185,16 @@ function IntakeRecordFormContent({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- prefillTransferId is only used as the initial seed for a new record, not re-read on every change.
   }, [intakeId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveValues("Intake Source").then((result) => {
+      if (!cancelled) setIntakeSourceOptions(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (!dataLoaded) {
     return (

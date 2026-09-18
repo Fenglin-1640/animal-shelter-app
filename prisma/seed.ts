@@ -4,6 +4,8 @@ import { db } from "../lib/db/client";
 import { DEMO_ACCOUNTS } from "../lib/auth/demo-accounts";
 import { MOCK_ANIMALS } from "../lib/animals/mock-animals";
 import type { AdopterProfile } from "../lib/adopter-profile/types";
+import { buildSeedOptions } from "../lib/system-administration/seed-options";
+import { DEFAULT_SYSTEM_SETTINGS } from "../lib/system-administration/settings-types";
 
 // The demo Adopter (Jordan Taylor) already has applications and an
 // upcoming Meet and Greet seeded elsewhere, so a completed profile here
@@ -124,6 +126,33 @@ async function main() {
     update: adopterProfileRow,
   });
   console.log(`Seeded adopter profile: ${adopterProfileRow.email}`);
+
+  for (const option of buildSeedOptions()) {
+    const row = {
+      id: option.id,
+      category: option.category,
+      value: option.value,
+      description: option.description,
+      speciesId: option.speciesId ?? null,
+      isRetired: option.isRetired ? 1 : 0,
+      systemLocked: option.systemLocked ? 1 : 0,
+      createdAt: new Date(option.createdAt),
+      updatedAt: new Date(option.updatedAt),
+    };
+    await db.orm.DropdownOption.upsert({ create: row, update: row });
+  }
+  console.log(`Seeded ${buildSeedOptions().length} dropdown options`);
+
+  const systemSettingsRow = {
+    id: "system-settings",
+    holdingPeriodDays: DEFAULT_SYSTEM_SETTINGS.holdingPeriodDays,
+    reminderLeadDays: DEFAULT_SYSTEM_SETTINGS.reminderLeadDays,
+    allowedAttachmentTypes: JSON.stringify(DEFAULT_SYSTEM_SETTINGS.allowedAttachmentTypes),
+    maxAttachmentSizeMB: DEFAULT_SYSTEM_SETTINGS.maxAttachmentSizeMB,
+    agreementTemplateVersion: DEFAULT_SYSTEM_SETTINGS.agreementTemplateVersion,
+  };
+  await db.orm.SystemSettings.upsert({ create: systemSettingsRow, update: systemSettingsRow });
+  console.log("Seeded default system settings");
 
   await db.close();
 }

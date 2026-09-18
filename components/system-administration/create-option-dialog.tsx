@@ -42,7 +42,7 @@ export function CreateOptionDialog({
     setErrors({});
     await new Promise((resolve) => setTimeout(resolve, 200));
 
-    const result = createOption({
+    const result = await createOption({
       category,
       value,
       description,

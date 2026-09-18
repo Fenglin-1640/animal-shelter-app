@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { getActiveTitleOptions } from "@/lib/options/titles";
 import { ROLES, type Role } from "@/lib/roles/roles";
 import { getActiveValues } from "@/lib/system-administration/store";
@@ -12,8 +12,8 @@ const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/;
 // Administrator is never creatable here (PRD 4.1: only reachable via
 // transferring from an existing Active user); other roles are excluded
 // if retired in System Administration's "User Role" category.
-function getCreatableRoles(): Exclude<Role, "Administrator">[] {
-  const active = new Set(getActiveValues("User Role"));
+async function getCreatableRoles(): Promise<Exclude<Role, "Administrator">[]> {
+  const active = new Set(await getActiveValues("User Role"));
   return ROLES.filter(
     (role): role is Exclude<Role, "Administrator"> =>
       role !== "Administrator" && active.has(role),
@@ -47,6 +47,21 @@ export function CreateUserDialog({
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [titleOptions, setTitleOptions] = useState<string[]>([]);
+  const [creatableRoles, setCreatableRoles] = useState<Exclude<Role, "Administrator">[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveTitleOptions().then((result) => {
+      if (!cancelled) setTitleOptions(result);
+    });
+    getCreatableRoles().then((result) => {
+      if (!cancelled) setCreatableRoles(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -130,7 +145,7 @@ export function CreateUserDialog({
                 className={`h-10 rounded-[12px] border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${errors.title ? "border-danger" : "border-border"}`}
               >
                 <option value="">Select</option>
-                {getActiveTitleOptions().map((option) => (
+                {titleOptions.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
@@ -204,7 +219,7 @@ export function CreateUserDialog({
                 onChange={(e) => setRole(e.target.value as Exclude<Role, "Administrator">)}
                 className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
-                {getCreatableRoles().map((r) => (
+                {creatableRoles.map((r) => (
                   <option key={r} value={r}>{r}</option>
                 ))}
               </select>

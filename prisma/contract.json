@@ -40,6 +40,10 @@
       "model": "DesexingSchedule",
       "namespace": "__unbound__"
     },
+    "dropdownOption": {
+      "model": "DropdownOption",
+      "namespace": "__unbound__"
+    },
     "followUpVisit": {
       "model": "FollowUpVisit",
       "namespace": "__unbound__"
@@ -74,6 +78,10 @@
     },
     "suitabilityCheck": {
       "model": "SuitabilityCheck",
+      "namespace": "__unbound__"
+    },
+    "systemSettings": {
+      "model": "SystemSettings",
       "namespace": "__unbound__"
     },
     "temperamentAssessment": {
@@ -1536,6 +1544,107 @@
               "table": "desexingSchedule"
             }
           },
+          "DropdownOption": {
+            "fields": {
+              "category": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isRetired": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "speciesId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "systemLocked": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "value": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "category": {
+                  "column": "category"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isRetired": {
+                  "column": "isRetired"
+                },
+                "speciesId": {
+                  "column": "speciesId"
+                },
+                "systemLocked": {
+                  "column": "systemLocked"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "value": {
+                  "column": "value"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "dropdownOption"
+            }
+          },
           "FollowUpVisit": {
             "fields": {
               "adopterEmail": {
@@ -2925,6 +3034,77 @@
               "table": "suitabilityCheck"
             }
           },
+          "SystemSettings": {
+            "fields": {
+              "agreementTemplateVersion": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "allowedAttachmentTypes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "holdingPeriodDays": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "maxAttachmentSizeMB": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "reminderLeadDays": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "agreementTemplateVersion": {
+                  "column": "agreementTemplateVersion"
+                },
+                "allowedAttachmentTypes": {
+                  "column": "allowedAttachmentTypes"
+                },
+                "holdingPeriodDays": {
+                  "column": "holdingPeriodDays"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "maxAttachmentSizeMB": {
+                  "column": "maxAttachmentSizeMB"
+                },
+                "reminderLeadDays": {
+                  "column": "reminderLeadDays"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "systemSettings"
+            }
+          },
           "TemperamentAssessment": {
             "fields": {
               "animalId": {
@@ -4302,6 +4482,63 @@
               },
               "uniques": []
             },
+            "dropdownOption": {
+              "columns": {
+                "category": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "isRetired": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "speciesId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "systemLocked": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "value": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "followUpVisit": {
               "columns": {
                 "adopterEmail": {
@@ -5055,6 +5292,48 @@
               },
               "uniques": []
             },
+            "systemSettings": {
+              "columns": {
+                "agreementTemplateVersion": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "allowedAttachmentTypes": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "holdingPeriodDays": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "maxAttachmentSizeMB": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "reminderLeadDays": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "temperamentAssessment": {
               "columns": {
                 "animalId": {
@@ -5388,7 +5667,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "315c91a60a12ae8a3f3af78cabf76a8a15f4c2d37f89d086c5d99a353da0732b"
+    "storageHash": "919e53eac0204f95e85c40b659f736cc7093143ad34f79f1df60b666dc43f158"
   },
   "capabilities": {
     "sql": {

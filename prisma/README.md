@@ -199,5 +199,35 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   storage-location decision the PRD never actually made - corrected
   once questioned, since a shared audit trail is precisely the kind of
   data this migration exists to centralize. See lib/audit/serialize.ts.
-- Last domain migrated off localStorage - every `lib/*/store.ts`
-  module in this project is now backed by Prisma/SQLite.
+- `DropdownOption` - see lib/system-administration/. Mirrored from
+  lib/system-administration/types.ts (FR-SA-01). Every field a plain
+  column - `speciesId` is a small enum-like string, not worth its own
+  JSON encoding or relation. `isRetired`/`systemLocked` are Int (0/1),
+  same reasoning as AdoptionAgreement's isSigned. The ~116 PRD-seeded
+  options (lib/system-administration/seed-options.ts) are seeded via
+  `npm run db:seed`, not a runtime localStorage-empty fallback - same
+  precedent as Users/Animals/AdopterProfile. See
+  lib/system-administration/serialize.ts.
+- `SystemSettings` - see lib/system-administration/settings-store.ts.
+  Mirrored from lib/system-administration/settings-types.ts (FR-SA-02).
+  A singleton row (`id` is always the literal `"system-settings"`,
+  matching the `entityId` every writeAuditLog call for this domain
+  already used) - there is exactly one rule-configuration record for
+  the whole shelter, unlike DropdownOption's many-rows-per-category
+  shape. `allowedAttachmentTypes` (a small array of strings) is
+  JSON-encoded, same reasoning as AdoptionApplication.documents.
+- Not the last domain, despite Adopter Profile once being called that:
+  `lib/adoption-fitness/store.ts` (AssessmentTask/FitnessReview) and
+  `lib/microchip/store.ts` (MicrochipLookup) still read/write
+  localStorage for real, confirmed by grepping for `localStorage.` (not
+  just a comment mentioning the word) directly before writing this
+  note - see the AdopterProfile/AuditLog entry above about not
+  repeating a "this is the last one" claim without checking.
+  `lib/notifications/read-state-store.ts` (per-user notification
+  read/unread flags) is the same shape as these two and a plausible
+  next candidate, but is arguably closer to a per-device UI
+  preference than shared domain data - worth a judgment call, not an
+  automatic migration. `lib/auth/auth-context.tsx` (session token) and
+  `lib/theme/theme-context.tsx` (light/dark preference) are genuinely
+  per-device/session state and out of scope on their own terms, not by
+  oversight.

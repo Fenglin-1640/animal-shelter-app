@@ -497,3 +497,38 @@ model AuditLogEntry {
   newValue   String
   result     String
 }
+
+// Mirrors lib/system-administration/types.ts (FR-SA-01). Every field a
+// plain column - speciesId is a small enum-like string, not worth its
+// own JSON encoding or relation. isRetired/systemLocked are Int (0/1),
+// same reasoning as AdoptionAgreement's isSigned. The ~85 PRD-seeded
+// options (lib/system-administration/seed-options.ts) now live in
+// prisma/seed.ts alongside the other seed data, not as a runtime
+// localStorage-empty fallback - see the AdopterProfile precedent.
+model DropdownOption {
+  id           String   @id
+  category     String
+  value        String
+  description  String
+  speciesId    String?
+  isRetired    Int
+  systemLocked Int
+  createdAt    DateTime
+  updatedAt    DateTime
+}
+
+// Mirrors lib/system-administration/settings-types.ts (FR-SA-02). A
+// singleton row (id is always the literal "system-settings", matching
+// the entityId every writeAuditLog call for this domain already used)
+// - there is exactly one rule-configuration record for the whole
+// shelter, unlike DropdownOption's many-rows-per-category shape.
+// allowedAttachmentTypes (a small array of strings) is JSON-encoded,
+// same reasoning as AdoptionApplication.documents.
+model SystemSettings {
+  id                       String @id
+  holdingPeriodDays        Int
+  reminderLeadDays         Int
+  allowedAttachmentTypes   String
+  maxAttachmentSizeMB      Int
+  agreementTemplateVersion String
+}

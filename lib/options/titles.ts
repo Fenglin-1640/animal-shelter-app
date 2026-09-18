@@ -4,7 +4,7 @@ import { buildSeedOptions } from "@/lib/system-administration/seed-options";
 // Sourced from the FR-SA-01 dropdown option store (category "Title") so
 // that retiring a Title there is reflected in Sign Up, My Profile and
 // User Administration's Add User form.
-export function getActiveTitleOptions(): string[] {
+export async function getActiveTitleOptions(): Promise<string[]> {
   return getActiveValues("Title");
 }
 

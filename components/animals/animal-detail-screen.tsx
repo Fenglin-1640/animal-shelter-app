@@ -120,7 +120,7 @@ function AnimalDetailContent({
   const [breedInput, setBreedInput] = useState("");
   const [descriptionInput, setDescriptionInput] = useState("");
   const [temperamentSelection, setTemperamentSelection] = useState<Set<string>>(new Set());
-  const temperamentOptions = getActiveValues("Temperament");
+  const [temperamentOptions, setTemperamentOptions] = useState<string[]>([]);
 
   const [fitForRelease, setFitForRelease] = useState(false);
   const [publishBlockers, setPublishBlockers] = useState<string[]>([]);
@@ -188,6 +188,16 @@ function AnimalDetailContent({
       cancelled = true;
     };
   }, [animal]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveValues("Temperament").then((result) => {
+      if (!cancelled) setTemperamentOptions(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleOpenEditAdoption = () => {
     setFeeInput(animal.adoptionFee?.toString() ?? "");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -23,14 +23,24 @@ function SystemAdministrationContent() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [options, setOptions] = useState<DropdownOption[]>([]);
+  const [loadedFor, setLoadedFor] = useState<{ category: DropdownCategory; refreshKey: number } | null>(null);
+  const isLoading = loadedFor === null || loadedFor.category !== category || loadedFor.refreshKey !== refreshKey;
 
-  // refreshKey is a deliberate cache-buster: listOptions() reads
-  // localStorage (mutable external state), not refreshKey itself.
-  const options = useMemo(
-    () => listOptions(category, { includeRetired: true }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [category, refreshKey],
-  );
+  // refreshKey is a deliberate cache-buster: listOptions() reads the
+  // database (mutable external state), not refreshKey itself.
+  useEffect(() => {
+    let cancelled = false;
+    listOptions(category, { includeRetired: true }).then((result) => {
+      if (!cancelled) {
+        setOptions(result);
+        setLoadedFor({ category, refreshKey });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [category, refreshKey]);
 
   useEffect(() => {
     if (!selectedOption) return;
@@ -38,7 +48,7 @@ function SystemAdministrationContent() {
     setSelectedOption(options.find((o) => o.id === selectedOption.id) ?? null);
     // Only when the underlying list actually changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey]);
+  }, [options]);
 
   const handleChanged = () => setRefreshKey((k) => k + 1);
   const isBreedCategory = category === "Breed and Description";
@@ -126,7 +136,11 @@ function SystemAdministrationContent() {
           </select>
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+            Loading options...
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
             <p className="text-sm font-semibold text-text">No options match your filters.</p>
             <p className="mt-1 text-sm text-text-muted">

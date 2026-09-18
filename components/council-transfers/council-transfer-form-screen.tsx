@@ -98,7 +98,17 @@ function CouncilTransferFormContent({
   const locationRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
-  const documentTypeOptions = getActiveValues("Document Type");
+  const [documentTypeOptions, setDocumentTypeOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveValues("Document Type").then((result) => {
+      if (!cancelled) setDocumentTypeOptions(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

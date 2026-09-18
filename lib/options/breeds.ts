@@ -11,18 +11,18 @@ export interface BreedOption {
   isRetired: boolean;
 }
 
-export function getBreedSpeciesList(): Species[] {
+export async function getBreedSpeciesList(): Promise<Species[]> {
   return Array.from(
     new Set(
-      listAllOptions()
+      (await listAllOptions())
         .filter((o) => o.category === "Breed and Description" && o.speciesId)
         .map((o) => o.speciesId as Species),
     ),
   );
 }
 
-export function getBreedsForSpecies(species: Species): BreedOption[] {
-  return listOptions("Breed and Description", { speciesId: species }).map((o) => ({
+export async function getBreedsForSpecies(species: Species): Promise<BreedOption[]> {
+  return (await listOptions("Breed and Description", { speciesId: species })).map((o) => ({
     species,
     name: o.value,
     description: o.description,

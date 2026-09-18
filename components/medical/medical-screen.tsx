@@ -437,7 +437,7 @@ function MedicalContent({
   const [showVaccinationForm, setShowVaccinationForm] = useState(false);
   const [scheduledDate, setScheduledDate] = useState(todayDate());
 
-  const medicationOptions = getActiveValues("Medication");
+  const [medicationOptions, setMedicationOptions] = useState<string[]>([]);
   const canAct = CAN_ACT_ROLES.includes(role);
 
   const [clearanceBlockers, setClearanceBlockers] = useState<string[]>([]);
@@ -474,6 +474,16 @@ function MedicalContent({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reloadMedical is recreated every render but only reads animalId, which is already a dependency.
   }, [animalId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveValues("Medication").then((result) => {
+      if (!cancelled) setMedicationOptions(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (animal === undefined) {
     return (

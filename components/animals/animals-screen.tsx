@@ -8,7 +8,7 @@ import { AnimalCard } from "@/components/animals/animal-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAllAnimals } from "@/lib/animals/animal-store";
 import type { Animal, CurrentStatus, Species } from "@/lib/animals/types";
-import { getBreedSpeciesList, getBreedsForSpecies } from "@/lib/options/breeds";
+import { getBreedSpeciesList, getBreedsForSpecies, type BreedOption } from "@/lib/options/breeds";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -40,6 +40,7 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
 
 function SpeciesBreedFilter({
   species,
+  breeds,
   count,
   isSelected,
   isExpanded,
@@ -50,6 +51,7 @@ function SpeciesBreedFilter({
   onToggleBreed,
 }: {
   species: Species;
+  breeds: BreedOption[];
   count: number;
   isSelected: boolean;
   isExpanded: boolean;
@@ -59,8 +61,6 @@ function SpeciesBreedFilter({
   onToggleExpand: (value: Species) => void;
   onToggleBreed: (value: string) => void;
 }) {
-  const breeds = getBreedsForSpecies(species);
-
   return (
     <div>
       <div className="flex items-center justify-between gap-2">
@@ -108,6 +108,8 @@ function SpeciesBreedFilter({
 
 function FiltersBody({
   availableStatuses,
+  speciesList,
+  breedsBySpecies,
   speciesSelection,
   breedSelection,
   statusSelection,
@@ -123,6 +125,8 @@ function FiltersBody({
   onClearAll,
 }: {
   availableStatuses: CurrentStatus[];
+  speciesList: Species[];
+  breedsBySpecies: Partial<Record<Species, BreedOption[]>>;
   speciesSelection: Set<Species>;
   breedSelection: Set<string>;
   statusSelection: Set<CurrentStatus>;
@@ -159,10 +163,11 @@ function FiltersBody({
     <FilterPanel activeChips={chips} onClearAll={onClearAll}>
       <FilterGroup heading="Species">
         <div className="flex flex-col gap-2">
-          {getBreedSpeciesList().map((species) => (
+          {speciesList.map((species) => (
             <SpeciesBreedFilter
               key={species}
               species={species}
+              breeds={breedsBySpecies[species] ?? []}
               count={speciesCounts.get(species) ?? 0}
               isSelected={speciesSelection.has(species)}
               isExpanded={expandedSpecies.has(species)}
@@ -218,6 +223,24 @@ function AnimalsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [speciesList, setSpeciesList] = useState<Species[]>([]);
+  const [breedsBySpecies, setBreedsBySpecies] = useState<Partial<Record<Species, BreedOption[]>>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    getBreedSpeciesList().then(async (list) => {
+      if (cancelled) return;
+      setSpeciesList(list);
+      const entries = await Promise.all(
+        list.map(async (species) => [species, await getBreedsForSpecies(species)] as const),
+      );
+      if (!cancelled) setBreedsBySpecies(Object.fromEntries(entries));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -353,6 +376,8 @@ function AnimalsContent() {
   const filtersBody = (
     <FiltersBody
       availableStatuses={availableStatuses}
+      speciesList={speciesList}
+      breedsBySpecies={breedsBySpecies}
       speciesSelection={speciesSelection}
       breedSelection={breedSelection}
       statusSelection={statusSelection}

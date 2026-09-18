@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getSystemSettings, updateSystemSettings } from "@/lib/system-administration/settings-store";
 import type { SystemSettings } from "@/lib/system-administration/settings-types";
@@ -23,11 +23,30 @@ function formatDateTime(iso: string): string {
 // theatre, so these two fields stay informational/for-reference.
 export function RuleConfigurationPanel() {
   const { user } = useAuth();
-  const [settings, setSettings] = useState<SystemSettings>(() => getSystemSettings());
+  const [settings, setSettings] = useState<SystemSettings | undefined>(undefined);
   const [savedAt, setSavedAt] = useState<string | undefined>(undefined);
-  const [attachmentTypesInput, setAttachmentTypesInput] = useState(() =>
-    getSystemSettings().allowedAttachmentTypes.join(", "),
-  );
+  const [attachmentTypesInput, setAttachmentTypesInput] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    getSystemSettings().then((result) => {
+      if (cancelled) return;
+      setSettings(result);
+      setAttachmentTypesInput(result.allowedAttachmentTypes.join(", "));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (settings === undefined) {
+    return (
+      <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+        <h2 className="text-lg font-bold text-text">Rule Configuration</h2>
+        <p className="mt-2 text-sm text-text-muted">Loading...</p>
+      </section>
+    );
+  }
 
   const handleSave = async () => {
     if (!user) return;

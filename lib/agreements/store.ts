@@ -100,7 +100,7 @@ export async function generateAgreement(applicationId: string, email: string, na
     adopterEmail: application.adopterEmail,
     adopterName: application.adopterName,
     agreementVersion: nextVersionLabel(existing),
-    templateVersion: getSystemSettings().agreementTemplateVersion,
+    templateVersion: (await getSystemSettings()).agreementTemplateVersion,
     adoptionConditions: STANDARD_CONDITIONS,
     returnPolicyPeriod: STANDARD_RETURN_POLICY,
     generatedAt: now,
