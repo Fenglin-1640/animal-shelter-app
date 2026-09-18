@@ -4,34 +4,24 @@ import { createHoldForOwnerMatch } from "@/lib/statutory-hold/store";
 import { queryNationalPetRegistry } from "@/lib/microchip/mock-registry";
 import type { MicrochipLookup } from "@/lib/microchip/types";
 
-// FR-MC-01: MicrochipLookup records, persisted to localStorage since
-// there is no backend. Records are never edited or deleted once created
-// ("不可删除") - performScan only ever appends.
-const STORAGE_KEY = "asams-microchip-lookups";
+// FR-MC-01: MicrochipLookup now lives in the database (see
+// prisma/contract.prisma) behind /api/microchip-lookups - see
+// prisma/README.md for this Prisma toolchain's quirks. Records are
+// never edited or deleted once created ("不可删除") - performScan only
+// ever appends.
 
-function loadAll(): MicrochipLookup[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as MicrochipLookup[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAll(lookups: MicrochipLookup[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lookups));
+async function fetchAll(): Promise<MicrochipLookup[]> {
+  const response = await fetch("/api/microchip-lookups");
+  const result = await response.json();
+  return result.items as MicrochipLookup[];
 }
 
 function generateLookupId(): string {
   return `ML-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-export function listLookupsForAnimal(animalId: string): MicrochipLookup[] {
-  return loadAll()
+export async function listLookupsForAnimal(animalId: string): Promise<MicrochipLookup[]> {
+  return (await fetchAll())
     .filter((l) => l.animalId === animalId)
     .sort((a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime());
 }
@@ -65,7 +55,11 @@ export async function performScan(
     performedByName: name,
     performedAt: new Date().toISOString(),
   };
-  saveAll([...loadAll(), lookup]);
+  await fetch("/api/microchip-lookups", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lookup),
+  });
 
   if (outcome.result === "Owner Match" || outcome.result === "No Match") {
     await updateAnimal(animalId, { microchipNumber: lookup.microchipNumber });

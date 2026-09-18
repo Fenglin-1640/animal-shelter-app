@@ -216,18 +216,23 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   the whole shelter, unlike DropdownOption's many-rows-per-category
   shape. `allowedAttachmentTypes` (a small array of strings) is
   JSON-encoded, same reasoning as AdoptionApplication.documents.
-- Not the last domain, despite Adopter Profile once being called that:
-  `lib/adoption-fitness/store.ts` (AssessmentTask/FitnessReview) and
-  `lib/microchip/store.ts` (MicrochipLookup) still read/write
-  localStorage for real, confirmed by grepping for `localStorage.` (not
-  just a comment mentioning the word) directly before writing this
-  note - see the AdopterProfile/AuditLog entry above about not
-  repeating a "this is the last one" claim without checking.
+- `MicrochipLookup` - see lib/microchip/. Mirrored from
+  lib/microchip/types.ts (FR-MC-01). Immutable ("不可删除" - never edited
+  or deleted once created) - no PATCH/DELETE route, no update/delete
+  export, same pattern as AuditLogEntry. `ownerContact` is flattened
+  into 3 columns, same reasoning as Animal.linkedPerson.
+  `performedAt` is a system-generated timestamp, so it's DateTime.
+- Still not the last domain: `lib/adoption-fitness/store.ts`
+  (AssessmentTask/FitnessReview) still reads/writes localStorage for
+  real (confirmed by grepping for `localStorage.`, not just a comment
+  mentioning the word, immediately before writing this note - see the
+  AdopterProfile/AuditLog entry above about not repeating a "this is
+  the last one" claim without checking each time).
   `lib/notifications/read-state-store.ts` (per-user notification
-  read/unread flags) is the same shape as these two and a plausible
-  next candidate, but is arguably closer to a per-device UI
-  preference than shared domain data - worth a judgment call, not an
-  automatic migration. `lib/auth/auth-context.tsx` (session token) and
+  read/unread flags) is the same shape and a plausible next candidate,
+  but is arguably closer to a per-device UI preference than shared
+  domain data - worth a judgment call, not an automatic migration.
+  `lib/auth/auth-context.tsx` (session token) and
   `lib/theme/theme-context.tsx` (light/dark preference) are genuinely
   per-device/session state and out of scope on their own terms, not by
   oversight.

@@ -88,10 +88,10 @@ function ScanMicrochipContent({
 
   useEffect(() => {
     let cancelled = false;
-    getAnimalById(animalId).then((result) => {
+    getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
-      if (result) setLookups(listLookupsForAnimal(animalId));
+      if (result) setLookups(await listLookupsForAnimal(animalId));
     });
     return () => {
       cancelled = true;
@@ -114,7 +114,7 @@ function ScanMicrochipContent({
     const result = await performScan(animalId, microchipNumber, email, displayName);
     setIsScanning(false);
     if (result.ok) {
-      setLookups(listLookupsForAnimal(animalId));
+      setLookups(await listLookupsForAnimal(animalId));
       setAnimal((await getAnimalById(animalId)) ?? null);
     }
   };

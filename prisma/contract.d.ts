@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'919e53eac0204f95e85c40b659f736cc7093143ad34f79f1df60b666dc43f158'>;
+  StorageHashBase<'192081b8ca802ff1400b398754e0e837f5a6582f17c0681c5a7b394d3dfc703d'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -384,6 +384,18 @@ export type FieldOutputTypes = {
       readonly createdByName: CodecTypes['sqlite/text@1']['output'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly MicrochipLookup: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['output'];
+      readonly result: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly performedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly performedByName: CodecTypes['sqlite/text@1']['output'];
+      readonly performedAt: CodecTypes['sqlite/datetime@1']['output'];
     };
     readonly Photo: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -769,6 +781,18 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
     };
+    readonly MicrochipLookup: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['input'];
+      readonly result: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly performedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly performedByName: CodecTypes['sqlite/text@1']['input'];
+      readonly performedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
     readonly Photo: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -1153,6 +1177,18 @@ export type StorageColumnTypes = {
       readonly status: CodecTypes['sqlite/text@1']['output'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
     };
+    readonly microchipLookup: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['output'];
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly performedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly performedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly performedByName: CodecTypes['sqlite/text@1']['output'];
+      readonly result: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly photo: {
       readonly altText: CodecTypes['sqlite/text@1']['output'];
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -1536,6 +1572,18 @@ export type StorageColumnInputTypes = {
       readonly staffNotes: CodecTypes['sqlite/text@1']['input'];
       readonly status: CodecTypes['sqlite/text@1']['input'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly microchipLookup: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly microchipNumber: CodecTypes['sqlite/text@1']['input'];
+      readonly ownerContactAddress: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly ownerContactName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly ownerContactPhone: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly performedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly performedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly performedByName: CodecTypes['sqlite/text@1']['input'];
+      readonly result: CodecTypes['sqlite/text@1']['input'];
     };
     readonly photo: {
       readonly altText: CodecTypes['sqlite/text@1']['input'];
@@ -2068,6 +2116,19 @@ export namespace Models {
     agreementTemplateVersion: CodecTypes['sqlite/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type MicrochipLookup = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    microchipNumber: CodecTypes['sqlite/text@1']['output'];
+    result: CodecTypes['sqlite/text@1']['output'];
+    ownerContactName: CodecTypes['sqlite/text@1']['output'] | null;
+    ownerContactPhone: CodecTypes['sqlite/text@1']['output'] | null;
+    ownerContactAddress: CodecTypes['sqlite/text@1']['output'] | null;
+    performedByEmail: CodecTypes['sqlite/text@1']['output'];
+    performedByName: CodecTypes['sqlite/text@1']['output'];
+    performedAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -2095,6 +2156,7 @@ export declare const models: {
   AuditLogEntry: Models.AuditLogEntry;
   DropdownOption: Models.DropdownOption;
   SystemSettings: Models.SystemSettings;
+  MicrochipLookup: Models.MicrochipLookup;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -3370,6 +3432,64 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly microchipLookup: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly microchipNumber: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly result: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly ownerContactName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly ownerContactPhone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly ownerContactAddress: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly performedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly performedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly performedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly photo: {
               columns: {
                 readonly id: {
@@ -4068,6 +4188,10 @@ type ContractBase = Omit<
     readonly systemSettings: {
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'SystemSettings';
+    };
+    readonly microchipLookup: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'MicrochipLookup';
     };
   };
   readonly domain: {
@@ -5379,6 +5503,67 @@ type ContractBase = Omit<
                 readonly createdByName: { readonly column: 'createdByName' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly MicrochipLookup: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly microchipNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly result: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly ownerContactName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly ownerContactPhone: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly ownerContactAddress: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly performedByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly performedByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly performedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'microchipLookup';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly microchipNumber: { readonly column: 'microchipNumber' };
+                readonly result: { readonly column: 'result' };
+                readonly ownerContactName: { readonly column: 'ownerContactName' };
+                readonly ownerContactPhone: { readonly column: 'ownerContactPhone' };
+                readonly ownerContactAddress: { readonly column: 'ownerContactAddress' };
+                readonly performedByEmail: { readonly column: 'performedByEmail' };
+                readonly performedByName: { readonly column: 'performedByName' };
+                readonly performedAt: { readonly column: 'performedAt' };
               };
             };
           };

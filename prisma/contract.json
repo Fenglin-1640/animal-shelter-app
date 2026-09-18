@@ -64,6 +64,10 @@
       "model": "MeetAndGreet",
       "namespace": "__unbound__"
     },
+    "microchipLookup": {
+      "model": "MicrochipLookup",
+      "namespace": "__unbound__"
+    },
     "photo": {
       "model": "Photo",
       "namespace": "__unbound__"
@@ -2538,6 +2542,117 @@
               },
               "namespaceId": "__unbound__",
               "table": "meetAndGreet"
+            }
+          },
+          "MicrochipLookup": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "microchipNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ownerContactAddress": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ownerContactName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ownerContactPhone": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "performedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "performedByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "performedByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "result": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "microchipNumber": {
+                  "column": "microchipNumber"
+                },
+                "ownerContactAddress": {
+                  "column": "ownerContactAddress"
+                },
+                "ownerContactName": {
+                  "column": "ownerContactName"
+                },
+                "ownerContactPhone": {
+                  "column": "ownerContactPhone"
+                },
+                "performedAt": {
+                  "column": "performedAt"
+                },
+                "performedByEmail": {
+                  "column": "performedByEmail"
+                },
+                "performedByName": {
+                  "column": "performedByName"
+                },
+                "result": {
+                  "column": "result"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "microchipLookup"
             }
           },
           "Photo": {
@@ -5019,6 +5134,68 @@
               },
               "uniques": []
             },
+            "microchipLookup": {
+              "columns": {
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "microchipNumber": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "ownerContactAddress": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "ownerContactName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "ownerContactPhone": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "performedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "performedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "performedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "result": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "photo": {
               "columns": {
                 "altText": {
@@ -5667,7 +5844,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "919e53eac0204f95e85c40b659f736cc7093143ad34f79f1df60b666dc43f158"
+    "storageHash": "192081b8ca802ff1400b398754e0e837f5a6582f17c0681c5a7b394d3dfc703d"
   },
   "capabilities": {
     "sql": {

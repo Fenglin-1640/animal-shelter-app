@@ -532,3 +532,21 @@ model SystemSettings {
   maxAttachmentSizeMB      Int
   agreementTemplateVersion String
 }
+
+// Mirrors lib/microchip/types.ts (FR-MC-01). Immutable - "不可删除" means
+// performScan only ever appends, same shape as AuditLogEntry (no
+// PATCH/DELETE route, no update/delete export). ownerContact is
+// flattened into 3 columns, same reasoning as Animal.linkedPerson.
+// performedAt is a system-generated timestamp, so it's DateTime.
+model MicrochipLookup {
+  id                  String   @id
+  animalId            String
+  microchipNumber     String
+  result              String
+  ownerContactName    String?
+  ownerContactPhone   String?
+  ownerContactAddress String?
+  performedByEmail    String
+  performedByName     String
+  performedAt         DateTime
+}
