@@ -158,7 +158,7 @@ export async function finaliseIntake(intakeId: string, email: string, name: stri
   };
   await addAnimal(animal, { email, name });
   createTasksForAnimal(animal.animalId);
-  seedPhotosFromIntake(animal.animalId, record.photos, record.createdByEmail, record.createdByName);
+  await seedPhotosFromIntake(animal.animalId, record.photos, record.createdByEmail, record.createdByName);
 
   await patchIntakeRecord(intakeId, { finalisedAt: now, updatedAt: now });
 

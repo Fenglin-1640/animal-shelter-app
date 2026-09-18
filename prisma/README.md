@@ -158,3 +158,12 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   `finalisedAt` is a system-generated timestamp (set to `now` when
   Finalise Intake runs), so it's DateTime. See
   lib/intake-records/serialize.ts.
+- `Photo` - see lib/photos/. Mirrored from lib/photos/types.ts.
+  `dateTaken` stays a plain String, not DateTime - it's a user-entered
+  value from a date-picker input, same reasoning as Medical/
+  Behaviour's user-entered date fields. `useOnAdoptionListing` is Int
+  (0/1), same reasoning as AdoptionAgreement's isSigned. First model
+  in this migration whose store needs a real delete
+  (`db.orm.Photo.where({ id }).delete()`) - see
+  app/api/photos/[id]/route.ts's DELETE handler. See
+  lib/photos/serialize.ts.

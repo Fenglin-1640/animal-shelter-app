@@ -68,10 +68,10 @@ function PhotosContent({
 
   useEffect(() => {
     let cancelled = false;
-    getAnimalById(animalId).then((result) => {
+    getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
-      if (result) setPhotos(listPhotosForAnimal(animalId));
+      if (result) setPhotos(await listPhotosForAnimal(animalId));
     });
     return () => {
       cancelled = true;
@@ -97,11 +97,11 @@ function PhotosContent({
   }
   if (!animal) return <NotFound />;
 
-  const refresh = () => setPhotos(listPhotosForAnimal(animalId));
+  const refresh = async () => setPhotos(await listPhotosForAnimal(animalId));
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!pendingFile) return;
-    addPhoto(
+    await addPhoto(
       animalId,
       {
         fileName: pendingFile.name,
@@ -113,25 +113,25 @@ function PhotosContent({
     );
     setPendingFile(null);
     setFileInputKey((k) => k + 1);
-    refresh();
+    await refresh();
   };
 
-  const handleConfirmPrimary = (photoId: string) => {
-    const result = setPrimaryPhoto(photoId, altTextDraft);
+  const handleConfirmPrimary = async (photoId: string) => {
+    const result = await setPrimaryPhoto(photoId, altTextDraft);
     if (result.ok) {
       setSettingPrimaryId(null);
       setAltTextDraft("");
       setMessage(null);
-      refresh();
+      await refresh();
     } else if (result.reason === "alt_text_required") {
       setMessage("Alt text is required to select a public photo.");
     }
   };
 
-  const handleRemove = (photoId: string) => {
-    const result = removePhoto(photoId);
+  const handleRemove = async (photoId: string) => {
+    const result = await removePhoto(photoId);
     if (result.ok) {
-      refresh();
+      await refresh();
     } else if (result.reason === "is_primary") {
       setMessage("This is the public listing photo - select a different one first, or unpublish this animal.");
     }

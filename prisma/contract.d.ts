@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'712db75d08344296d860bac20eb63663a200917bd293faa500edad1fb855e862'>;
+  StorageHashBase<'24587d23c46d8e1a9985e67a1dd3e75df761d478ee8bbffa56f6ec634617d87e'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -342,6 +342,18 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
     };
+    readonly Photo: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly fileName: CodecTypes['sqlite/text@1']['output'];
+      readonly fileSizeKB: CodecTypes['sqlite/integer@1']['output'];
+      readonly dateTaken: CodecTypes['sqlite/text@1']['output'];
+      readonly takenByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly takenByName: CodecTypes['sqlite/text@1']['output'];
+      readonly useOnAdoptionListing: CodecTypes['sqlite/integer@1']['output'];
+      readonly altText: CodecTypes['sqlite/text@1']['output'];
+      readonly uploadedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly PreReleaseCheck: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -662,6 +674,18 @@ export type FieldInputTypes = {
       readonly createdByName: CodecTypes['sqlite/text@1']['input'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly Photo: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly fileName: CodecTypes['sqlite/text@1']['input'];
+      readonly fileSizeKB: CodecTypes['sqlite/integer@1']['input'];
+      readonly dateTaken: CodecTypes['sqlite/text@1']['input'];
+      readonly takenByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly takenByName: CodecTypes['sqlite/text@1']['input'];
+      readonly useOnAdoptionListing: CodecTypes['sqlite/integer@1']['input'];
+      readonly altText: CodecTypes['sqlite/text@1']['input'];
+      readonly uploadedAt: CodecTypes['sqlite/datetime@1']['input'];
     };
     readonly PreReleaseCheck: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -984,6 +1008,18 @@ export type StorageColumnTypes = {
       readonly status: CodecTypes['sqlite/text@1']['output'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
     };
+    readonly photo: {
+      readonly altText: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly dateTaken: CodecTypes['sqlite/text@1']['output'];
+      readonly fileName: CodecTypes['sqlite/text@1']['output'];
+      readonly fileSizeKB: CodecTypes['sqlite/integer@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly takenByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly takenByName: CodecTypes['sqlite/text@1']['output'];
+      readonly uploadedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly useOnAdoptionListing: CodecTypes['sqlite/integer@1']['output'];
+    };
     readonly preReleaseCheck: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
       readonly careInstructions: CodecTypes['sqlite/text@1']['output'];
@@ -1304,6 +1340,18 @@ export type StorageColumnInputTypes = {
       readonly staffNotes: CodecTypes['sqlite/text@1']['input'];
       readonly status: CodecTypes['sqlite/text@1']['input'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly photo: {
+      readonly altText: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly dateTaken: CodecTypes['sqlite/text@1']['input'];
+      readonly fileName: CodecTypes['sqlite/text@1']['input'];
+      readonly fileSizeKB: CodecTypes['sqlite/integer@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly takenByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly takenByName: CodecTypes['sqlite/text@1']['input'];
+      readonly uploadedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly useOnAdoptionListing: CodecTypes['sqlite/integer@1']['input'];
     };
     readonly preReleaseCheck: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -1748,6 +1796,19 @@ export namespace Models {
     registeredOwnerContactAddress: CodecTypes['sqlite/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type Photo = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    fileName: CodecTypes['sqlite/text@1']['output'];
+    fileSizeKB: CodecTypes['sqlite/integer@1']['output'];
+    dateTaken: CodecTypes['sqlite/text@1']['output'];
+    takenByEmail: CodecTypes['sqlite/text@1']['output'];
+    takenByName: CodecTypes['sqlite/text@1']['output'];
+    useOnAdoptionListing: CodecTypes['sqlite/integer@1']['output'];
+    altText: CodecTypes['sqlite/text@1']['output'];
+    uploadedAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -1770,6 +1831,7 @@ export declare const models: {
   FollowUpVisit: Models.FollowUpVisit;
   CouncilTransferSubmission: Models.CouncilTransferSubmission;
   IntakeRecord: Models.IntakeRecord;
+  Photo: Models.Photo;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -2836,6 +2898,64 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly photo: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly fileName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly fileSizeKB: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly dateTaken: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly takenByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly takenByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly useOnAdoptionListing: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly altText: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly uploadedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly preReleaseCheck: {
               columns: {
                 readonly id: {
@@ -3422,6 +3542,7 @@ type ContractBase = Omit<
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'IntakeRecord';
     };
+    readonly photo: { readonly namespace: '__unbound__' & NamespaceId; readonly model: 'Photo' };
   };
   readonly domain: {
     readonly namespaces: {
@@ -4514,6 +4635,67 @@ type ContractBase = Omit<
                 readonly createdByName: { readonly column: 'createdByName' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly Photo: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly fileName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly fileSizeKB: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly dateTaken: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly takenByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly takenByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly useOnAdoptionListing: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly altText: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly uploadedAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'photo';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly fileName: { readonly column: 'fileName' };
+                readonly fileSizeKB: { readonly column: 'fileSizeKB' };
+                readonly dateTaken: { readonly column: 'dateTaken' };
+                readonly takenByEmail: { readonly column: 'takenByEmail' };
+                readonly takenByName: { readonly column: 'takenByName' };
+                readonly useOnAdoptionListing: { readonly column: 'useOnAdoptionListing' };
+                readonly altText: { readonly column: 'altText' };
+                readonly uploadedAt: { readonly column: 'uploadedAt' };
               };
             };
           };

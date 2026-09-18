@@ -1,39 +1,39 @@
 import type { AnimalPhoto } from "@/lib/animals/types";
 import type { Photo } from "@/lib/photos/types";
 
-// FR-AN-02: Photo records, persisted to localStorage since there is no
-// backend.
-const STORAGE_KEY = "asams-photos";
+// FR-AN-02: Photo now lives in the database (see prisma/contract.prisma)
+// behind /api/photos - see prisma/README.md for this Prisma toolchain's
+// quirks.
 
-function loadAll(): Photo[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as Photo[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAll(): Promise<Photo[]> {
+  const response = await fetch("/api/photos");
+  const result = await response.json();
+  return result.items as Photo[];
 }
 
-function saveAll(photos: Photo[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+async function patchPhoto(photoId: string, patch: Partial<Photo>): Promise<Photo | undefined> {
+  const response = await fetch(`/api/photos/${photoId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  const result = await response.json();
+  if (!result.ok) return undefined;
+  return result.item as Photo;
 }
 
 function generateId(): string {
   return `PH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-export function listPhotosForAnimal(animalId: string): Photo[] {
-  return loadAll()
+export async function listPhotosForAnimal(animalId: string): Promise<Photo[]> {
+  return (await fetchAll())
     .filter((p) => p.animalId === animalId)
     .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
 }
 
-export function getPrimaryPhoto(animalId: string): Photo | undefined {
-  return listPhotosForAnimal(animalId).find((p) => p.useOnAdoptionListing);
+export async function getPrimaryPhoto(animalId: string): Promise<Photo | undefined> {
+  return (await listPhotosForAnimal(animalId)).find((p) => p.useOnAdoptionListing);
 }
 
 export interface PhotoInput {
@@ -42,13 +42,13 @@ export interface PhotoInput {
   dateTaken: string;
 }
 
-export function addPhoto(
+export async function addPhoto(
   animalId: string,
   input: PhotoInput,
   email: string,
   name: string,
   uploadedAt: string = new Date().toISOString(),
-): Photo {
+): Promise<Photo> {
   const photo: Photo = {
     id: generateId(),
     animalId,
@@ -59,7 +59,11 @@ export function addPhoto(
     altText: "",
     uploadedAt,
   };
-  saveAll([...loadAll(), photo]);
+  await fetch("/api/photos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(photo),
+  });
   return photo;
 }
 
@@ -67,55 +71,58 @@ export function addPhoto(
 // "at least one photo uploaded" gate (lib/intake-records). Once the
 // Animal is created, those become real Photo records here so FR-AN-02's
 // full feature (primary selection, altText) has something to act on.
-export function seedPhotosFromIntake(
+export async function seedPhotosFromIntake(
   animalId: string,
   photos: AnimalPhoto[],
   email: string,
   name: string,
-) {
+): Promise<void> {
   for (const p of photos) {
-    addPhoto(animalId, { fileName: p.fileName, fileSizeKB: p.fileSizeKB, dateTaken: p.uploadedAt }, email, name, p.uploadedAt);
+    await addPhoto(animalId, { fileName: p.fileName, fileSizeKB: p.fileSizeKB, dateTaken: p.uploadedAt }, email, name, p.uploadedAt);
   }
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: string };
 
-export function removePhoto(photoId: string): MutationResult {
-  const all = loadAll();
+export async function removePhoto(photoId: string): Promise<MutationResult> {
+  const all = await fetchAll();
   const photo = all.find((p) => p.id === photoId);
   if (!photo) return { ok: false, reason: "not_found" };
   if (photo.useOnAdoptionListing) {
     return { ok: false, reason: "is_primary" };
   }
-  saveAll(all.filter((p) => p.id !== photoId));
+  const deleteResponse = await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
+  const result = await deleteResponse.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
   return { ok: true };
 }
 
 // PRD: the public photo selection must carry altText.
-export function setPrimaryPhoto(
+export async function setPrimaryPhoto(
   photoId: string,
   altText: string,
-): MutationResult {
+): Promise<MutationResult> {
   if (!altText.trim()) return { ok: false, reason: "alt_text_required" };
 
-  const all = loadAll();
-  const index = all.findIndex((p) => p.id === photoId);
-  if (index === -1) return { ok: false, reason: "not_found" };
+  const all = await fetchAll();
+  const target = all.find((p) => p.id === photoId);
+  if (!target) return { ok: false, reason: "not_found" };
 
-  const animalId = all[index].animalId;
-  for (let i = 0; i < all.length; i++) {
-    if (all[i].animalId === animalId && all[i].useOnAdoptionListing) {
-      all[i] = { ...all[i], useOnAdoptionListing: false };
+  for (const p of all) {
+    if (p.animalId === target.animalId && p.useOnAdoptionListing && p.id !== photoId) {
+      await patchPhoto(p.id, { useOnAdoptionListing: false });
     }
   }
-  all[index] = { ...all[index], useOnAdoptionListing: true, altText: altText.trim() };
-  saveAll(all);
+  const updated = await patchPhoto(photoId, { useOnAdoptionListing: true, altText: altText.trim() });
+  if (!updated) return { ok: false, reason: "not_found" };
   return { ok: true };
 }
 
-export function clearPrimaryPhoto(animalId: string) {
-  const all = loadAll();
-  saveAll(
-    all.map((p) => (p.animalId === animalId && p.useOnAdoptionListing ? { ...p, useOnAdoptionListing: false } : p)),
-  );
+export async function clearPrimaryPhoto(animalId: string): Promise<void> {
+  const all = await fetchAll();
+  for (const p of all) {
+    if (p.animalId === animalId && p.useOnAdoptionListing) {
+      await patchPhoto(p.id, { useOnAdoptionListing: false });
+    }
+  }
 }

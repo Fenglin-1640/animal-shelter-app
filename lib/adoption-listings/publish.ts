@@ -30,7 +30,7 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
   }
   if (!animal.sex) blockers.push("Sex must be filled in.");
   if (animal.temperaments.length === 0) blockers.push("At least one Temperament must be filled in.");
-  if (!getPrimaryPhoto(animalId)) blockers.push("A public photo with alt text must be selected.");
+  if (!(await getPrimaryPhoto(animalId))) blockers.push("A public photo with alt text must be selected.");
 
   return blockers;
 }

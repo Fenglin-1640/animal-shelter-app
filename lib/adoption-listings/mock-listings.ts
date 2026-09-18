@@ -8,8 +8,9 @@ import type { PublicListing } from "@/lib/adoption-listings/types";
 // an Application In Progress animal stays listed but stops accepting them.
 export async function getPublicListings(): Promise<PublicListing[]> {
   const animals = await getAllAnimals();
-  return animals.filter((animal) => animal.listingStatus === "Current").map(
-    (animal) => ({
+  const listed = animals.filter((animal) => animal.listingStatus === "Current");
+  return Promise.all(
+    listed.map(async (animal) => ({
       animalId: animal.animalId,
       shelterId: animal.shelterId,
       name: animal.name,
@@ -21,7 +22,7 @@ export async function getPublicListings(): Promise<PublicListing[]> {
       adoptionFee: animal.adoptionFee,
       generalDescription: animal.generalDescription,
       acceptingApplications: animal.currentStatus === "Available For Adoption",
-      photoAltText: getPrimaryPhoto(animal.animalId)?.altText,
-    }),
+      photoAltText: (await getPrimaryPhoto(animal.animalId))?.altText,
+    })),
   );
 }

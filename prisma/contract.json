@@ -52,6 +52,10 @@
       "model": "MeetAndGreet",
       "namespace": "__unbound__"
     },
+    "photo": {
+      "model": "Photo",
+      "namespace": "__unbound__"
+    },
     "preReleaseCheck": {
       "model": "PreReleaseCheck",
       "namespace": "__unbound__"
@@ -2115,6 +2119,117 @@
               },
               "namespaceId": "__unbound__",
               "table": "meetAndGreet"
+            }
+          },
+          "Photo": {
+            "fields": {
+              "altText": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "dateTaken": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "fileName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "fileSizeKB": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "takenByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "takenByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "uploadedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "useOnAdoptionListing": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "altText": {
+                  "column": "altText"
+                },
+                "animalId": {
+                  "column": "animalId"
+                },
+                "dateTaken": {
+                  "column": "dateTaken"
+                },
+                "fileName": {
+                  "column": "fileName"
+                },
+                "fileSizeKB": {
+                  "column": "fileSizeKB"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "takenByEmail": {
+                  "column": "takenByEmail"
+                },
+                "takenByName": {
+                  "column": "takenByName"
+                },
+                "uploadedAt": {
+                  "column": "uploadedAt"
+                },
+                "useOnAdoptionListing": {
+                  "column": "useOnAdoptionListing"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "photo"
             }
           },
           "PreReleaseCheck": {
@@ -4193,6 +4308,68 @@
               },
               "uniques": []
             },
+            "photo": {
+              "columns": {
+                "altText": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "dateTaken": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "fileName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "fileSizeKB": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "takenByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "takenByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "uploadedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "useOnAdoptionListing": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "preReleaseCheck": {
               "columns": {
                 "animalId": {
@@ -4737,7 +4914,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "712db75d08344296d860bac20eb63663a200917bd293faa500edad1fb855e862"
+    "storageHash": "24587d23c46d8e1a9985e67a1dd3e75df761d478ee8bbffa56f6ec634617d87e"
   },
   "capabilities": {
     "sql": {

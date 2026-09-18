@@ -46,6 +46,7 @@ import type {
 } from "@/lib/medical/types";
 import { getPublishBlockers, publishAdoptionProfile, unpublishAdoptionProfile } from "@/lib/adoption-listings/publish";
 import { getPrimaryPhoto, listPhotosForAnimal } from "@/lib/photos/store";
+import type { Photo } from "@/lib/photos/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -133,6 +134,8 @@ function AnimalDetailContent({
   const [proposedApplications, setProposedApplications] = useState<AdoptionApplication[]>([]);
   const [checksByApplication, setChecksByApplication] = useState<Record<string, SuitabilityCheck[]>>({});
   const [followUpVisit, setFollowUpVisit] = useState<FollowUpVisit | undefined>(undefined);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [primaryPhoto, setPrimaryPhoto] = useState<Photo | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -175,6 +178,12 @@ function AnimalDetailContent({
     getLatestFollowUpVisitForAnimal(animal.animalId).then((result) => {
       if (!cancelled) setFollowUpVisit(result);
     });
+    listPhotosForAnimal(animal.animalId).then((result) => {
+      if (!cancelled) setPhotos(result);
+    });
+    getPrimaryPhoto(animal.animalId).then((result) => {
+      if (!cancelled) setPrimaryPhoto(result);
+    });
     return () => {
       cancelled = true;
     };
@@ -214,9 +223,6 @@ function AnimalDetailContent({
     const result = await unpublishAdoptionProfile(animal.animalId, email, displayName);
     if (result.ok) setAnimal((await getAnimalById(animal.animalId)) ?? animal);
   };
-
-  const photos = listPhotosForAnimal(animal.animalId);
-  const primaryPhoto = getPrimaryPhoto(animal.animalId);
 
   return (
     <div className="flex flex-col gap-6">
