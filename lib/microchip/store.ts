@@ -65,7 +65,7 @@ export async function performScan(
     await updateAnimal(animalId, { microchipNumber: lookup.microchipNumber });
   }
   if (outcome.result !== "Timeout") {
-    completeTaskByType(animalId, "Microchip Check", email, name);
+    await completeTaskByType(animalId, "Microchip Check", email, name);
   }
   // FR-MC-02: Owner Match automatically links the owner and starts a
   // Statutory Hold - a direct system consequence of the lookup result,

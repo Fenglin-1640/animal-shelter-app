@@ -127,7 +127,7 @@ export async function recordTemperamentAssessment(
         "Behaviour Program - Suitable After Program",
       );
     }
-    completeTaskByType(animalId, "Temperament Assessment", email, name);
+    await completeTaskByType(animalId, "Temperament Assessment", email, name);
   } else if (activeProgram && input.outcome === "Unsuitable for Public Adoption") {
     await resolveProgram(activeProgram.id, "Completed - Permanently Unsuitable", now);
     await changeAnimalStatus(

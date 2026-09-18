@@ -79,12 +79,12 @@ function AdoptionFitnessContent({
 
   useEffect(() => {
     let cancelled = false;
-    getAnimalById(animalId).then((result) => {
+    getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
       if (result) {
-        setTasks(listTasksForAnimal(animalId));
-        setReview(getFitnessReview(animalId));
+        setTasks(await listTasksForAnimal(animalId));
+        setReview(await getFitnessReview(animalId));
       }
     });
     return () => {
@@ -106,12 +106,12 @@ function AdoptionFitnessContent({
 
   const handleConfirmStaff = async () => {
     const result = await confirmAsStaff(animalId, email, displayName);
-    if (result.ok) setReview(getFitnessReview(animalId));
+    if (result.ok) setReview(await getFitnessReview(animalId));
   };
 
   const handleConfirmVet = async () => {
     const result = await confirmAsVet(animalId, email, displayName);
-    if (result.ok) setReview(getFitnessReview(animalId));
+    if (result.ok) setReview(await getFitnessReview(animalId));
   };
 
   return (

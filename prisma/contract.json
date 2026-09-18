@@ -24,6 +24,10 @@
       "model": "Animal",
       "namespace": "__unbound__"
     },
+    "assessmentTask": {
+      "model": "AssessmentTask",
+      "namespace": "__unbound__"
+    },
     "auditLogEntry": {
       "model": "AuditLogEntry",
       "namespace": "__unbound__"
@@ -42,6 +46,10 @@
     },
     "dropdownOption": {
       "model": "DropdownOption",
+      "namespace": "__unbound__"
+    },
+    "fitnessReview": {
+      "model": "FitnessReview",
       "namespace": "__unbound__"
     },
     "followUpVisit": {
@@ -1124,6 +1132,87 @@
               "table": "animal"
             }
           },
+          "AssessmentTask": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "markedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "markedByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "markedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "taskType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "markedAt": {
+                  "column": "markedAt"
+                },
+                "markedByEmail": {
+                  "column": "markedByEmail"
+                },
+                "markedByName": {
+                  "column": "markedByName"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "taskType": {
+                  "column": "taskType"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "assessmentTask"
+            }
+          },
           "AuditLogEntry": {
             "fields": {
               "action": {
@@ -1647,6 +1736,87 @@
               },
               "namespaceId": "__unbound__",
               "table": "dropdownOption"
+            }
+          },
+          "FitnessReview": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "staffConfirmedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "staffConfirmedByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "staffConfirmedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "vetConfirmedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "vetConfirmedByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "vetConfirmedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "staffConfirmedAt": {
+                  "column": "staffConfirmedAt"
+                },
+                "staffConfirmedByEmail": {
+                  "column": "staffConfirmedByEmail"
+                },
+                "staffConfirmedByName": {
+                  "column": "staffConfirmedByName"
+                },
+                "vetConfirmedAt": {
+                  "column": "vetConfirmedAt"
+                },
+                "vetConfirmedByEmail": {
+                  "column": "vetConfirmedByEmail"
+                },
+                "vetConfirmedByName": {
+                  "column": "vetConfirmedByName"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "fitnessReview"
             }
           },
           "FollowUpVisit": {
@@ -4359,6 +4529,53 @@
                 }
               ]
             },
+            "assessmentTask": {
+              "columns": {
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "markedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "markedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "markedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "taskType": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "auditLogEntry": {
               "columns": {
                 "action": {
@@ -4650,6 +4867,53 @@
               "primaryKey": {
                 "columns": [
                   "id"
+                ]
+              },
+              "uniques": []
+            },
+            "fitnessReview": {
+              "columns": {
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "staffConfirmedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "staffConfirmedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "staffConfirmedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "vetConfirmedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "vetConfirmedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "vetConfirmedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "animalId"
                 ]
               },
               "uniques": []
@@ -5844,7 +6108,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "192081b8ca802ff1400b398754e0e837f5a6582f17c0681c5a7b394d3dfc703d"
+    "storageHash": "e3cf2241012797ff6aab190f32d139c406b72a9ca95c8210f42df60a0fc0acc4"
   },
   "capabilities": {
     "sql": {

@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'192081b8ca802ff1400b398754e0e837f5a6582f17c0681c5a7b394d3dfc703d'>;
+  StorageHashBase<'e3cf2241012797ff6aab190f32d139c406b72a9ca95c8210f42df60a0fc0acc4'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -234,6 +234,15 @@ export type FieldOutputTypes = {
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['output'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
     };
+    readonly AssessmentTask: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly taskType: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly markedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly markedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly markedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    };
     readonly AuditLogEntry: {
       readonly auditId: CodecTypes['sqlite/text@1']['output'];
       readonly userId: CodecTypes['sqlite/text@1']['output'];
@@ -290,6 +299,15 @@ export type FieldOutputTypes = {
       readonly systemLocked: CodecTypes['sqlite/integer@1']['output'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly FitnessReview: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly staffConfirmedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly staffConfirmedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly staffConfirmedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly vetConfirmedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly vetConfirmedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly vetConfirmedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
     };
     readonly FollowUpVisit: {
       readonly followUpVisitId: CodecTypes['sqlite/text@1']['output'];
@@ -630,6 +648,15 @@ export type FieldInputTypes = {
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['input'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['input'] | null;
     };
+    readonly AssessmentTask: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly taskType: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly markedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly markedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly markedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+    };
     readonly AuditLogEntry: {
       readonly auditId: CodecTypes['sqlite/text@1']['input'];
       readonly userId: CodecTypes['sqlite/text@1']['input'];
@@ -686,6 +713,15 @@ export type FieldInputTypes = {
       readonly systemLocked: CodecTypes['sqlite/integer@1']['input'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly FitnessReview: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly staffConfirmedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly staffConfirmedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly staffConfirmedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly vetConfirmedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly vetConfirmedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly vetConfirmedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
     };
     readonly FollowUpVisit: {
       readonly followUpVisitId: CodecTypes['sqlite/text@1']['input'];
@@ -1026,6 +1062,15 @@ export type StorageColumnTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly temperaments: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly assessmentTask: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly markedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly markedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly markedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly taskType: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly auditLogEntry: {
       readonly action: CodecTypes['sqlite/text@1']['output'];
       readonly auditId: CodecTypes['sqlite/text@1']['output'];
@@ -1082,6 +1127,15 @@ export type StorageColumnTypes = {
       readonly systemLocked: CodecTypes['sqlite/integer@1']['output'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly value: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly fitnessReview: {
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly staffConfirmedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly staffConfirmedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly staffConfirmedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly vetConfirmedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly vetConfirmedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly vetConfirmedByName: CodecTypes['sqlite/text@1']['output'] | null;
     };
     readonly followUpVisit: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
@@ -1422,6 +1476,15 @@ export type StorageColumnInputTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly temperaments: CodecTypes['sqlite/text@1']['input'];
     };
+    readonly assessmentTask: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly markedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly markedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly markedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly taskType: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly auditLogEntry: {
       readonly action: CodecTypes['sqlite/text@1']['input'];
       readonly auditId: CodecTypes['sqlite/text@1']['input'];
@@ -1478,6 +1541,15 @@ export type StorageColumnInputTypes = {
       readonly systemLocked: CodecTypes['sqlite/integer@1']['input'];
       readonly updatedAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly value: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly fitnessReview: {
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly staffConfirmedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly staffConfirmedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly staffConfirmedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly vetConfirmedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly vetConfirmedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly vetConfirmedByName: CodecTypes['sqlite/text@1']['input'] | null;
     };
     readonly followUpVisit: {
       readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
@@ -2129,6 +2201,26 @@ export namespace Models {
     performedAt: CodecTypes['sqlite/datetime@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type AssessmentTask = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    taskType: CodecTypes['sqlite/text@1']['output'];
+    status: CodecTypes['sqlite/text@1']['output'];
+    markedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    markedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    markedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
+  export type FitnessReview = {
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    staffConfirmedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    staffConfirmedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    staffConfirmedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    vetConfirmedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    vetConfirmedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    vetConfirmedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -2157,6 +2249,8 @@ export declare const models: {
   DropdownOption: Models.DropdownOption;
   SystemSettings: Models.SystemSettings;
   MicrochipLookup: Models.MicrochipLookup;
+  AssessmentTask: Models.AssessmentTask;
+  FitnessReview: Models.FitnessReview;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -2697,6 +2791,49 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly assessmentTask: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly taskType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly markedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly markedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly markedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly auditLogEntry: {
               columns: {
                 readonly auditId: {
@@ -2968,6 +3105,49 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly fitnessReview: {
+              columns: {
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly staffConfirmedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly staffConfirmedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly staffConfirmedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly vetConfirmedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly vetConfirmedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly vetConfirmedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['animalId'] };
               uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
@@ -4193,6 +4373,14 @@ type ContractBase = Omit<
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'MicrochipLookup';
     };
+    readonly assessmentTask: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'AssessmentTask';
+    };
+    readonly fitnessReview: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'FitnessReview';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -4733,6 +4921,52 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly AssessmentTask: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly taskType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly markedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly markedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly markedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'assessmentTask';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly taskType: { readonly column: 'taskType' };
+                readonly status: { readonly column: 'status' };
+                readonly markedByEmail: { readonly column: 'markedByEmail' };
+                readonly markedByName: { readonly column: 'markedByName' };
+                readonly markedAt: { readonly column: 'markedAt' };
+              };
+            };
+          };
           readonly AuditLogEntry: {
             readonly fields: {
               readonly auditId: {
@@ -5020,6 +5254,52 @@ type ContractBase = Omit<
                 readonly systemLocked: { readonly column: 'systemLocked' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly FitnessReview: {
+            readonly fields: {
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly staffConfirmedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly staffConfirmedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly staffConfirmedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly vetConfirmedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly vetConfirmedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly vetConfirmedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'fitnessReview';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly animalId: { readonly column: 'animalId' };
+                readonly staffConfirmedByEmail: { readonly column: 'staffConfirmedByEmail' };
+                readonly staffConfirmedByName: { readonly column: 'staffConfirmedByName' };
+                readonly staffConfirmedAt: { readonly column: 'staffConfirmedAt' };
+                readonly vetConfirmedByEmail: { readonly column: 'vetConfirmedByEmail' };
+                readonly vetConfirmedByName: { readonly column: 'vetConfirmedByName' };
+                readonly vetConfirmedAt: { readonly column: 'vetConfirmedAt' };
               };
             };
           };

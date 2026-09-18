@@ -550,3 +550,31 @@ model MicrochipLookup {
   performedByName     String
   performedAt         DateTime
 }
+
+// Mirrors lib/adoption-fitness/types.ts (FR-INT-04). markedAt is a
+// system-generated timestamp, so it's DateTime.
+model AssessmentTask {
+  id            String    @id
+  animalId      String
+  taskType      String
+  status        String
+  markedByEmail String?
+  markedByName  String?
+  markedAt      DateTime?
+}
+
+// Keyed by animalId - there is exactly one joint Fitness Review per
+// Animal, no separate identity of its own, same "singleton keyed by the
+// owning record" shape as AdopterProfile (keyed by email). Every field
+// maps directly onto the domain type - no flattening or JSON-encoding
+// needed. staffConfirmedAt/vetConfirmedAt are system-generated
+// timestamps, so both are DateTime.
+model FitnessReview {
+  animalId              String    @id
+  staffConfirmedByEmail String?
+  staffConfirmedByName  String?
+  staffConfirmedAt      DateTime?
+  vetConfirmedByEmail   String?
+  vetConfirmedByName    String?
+  vetConfirmedAt        DateTime?
+}

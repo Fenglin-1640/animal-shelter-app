@@ -9,43 +9,21 @@ import {
 } from "@/lib/adoption-fitness/types";
 import type { Role } from "@/lib/roles/roles";
 
-// FR-INT-04: parallel assessment tasks and the joint Fitness Review
-// confirmation, persisted to localStorage since there is no backend.
-const TASKS_KEY = "asams-assessment-tasks";
-const REVIEWS_KEY = "asams-fitness-reviews";
+// FR-INT-04: AssessmentTask and the joint FitnessReview confirmation
+// now live in the database (see prisma/contract.prisma) behind
+// /api/assessment-tasks and /api/fitness-reviews - see
+// prisma/README.md for this Prisma toolchain's quirks.
 
-function loadAllTasks(): AssessmentTask[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(TASKS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as AssessmentTask[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchAllTasks(): Promise<AssessmentTask[]> {
+  const response = await fetch("/api/assessment-tasks");
+  const result = await response.json();
+  return result.items as AssessmentTask[];
 }
 
-function saveAllTasks(tasks: AssessmentTask[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
-}
-
-function loadAllReviews(): FitnessReview[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(REVIEWS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as FitnessReview[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAllReviews(reviews: FitnessReview[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+async function fetchAllReviews(): Promise<FitnessReview[]> {
+  const response = await fetch("/api/fitness-reviews");
+  const result = await response.json();
+  return result.items as FitnessReview[];
 }
 
 function generateTaskId(): string {
@@ -54,76 +32,79 @@ function generateTaskId(): string {
 
 // Called as a side effect of Finalise Intake (FR-INT-03). A no-op if
 // tasks already exist for this animal.
-export function createTasksForAnimal(animalId: string) {
-  const all = loadAllTasks();
+export async function createTasksForAnimal(animalId: string): Promise<void> {
+  const all = await fetchAllTasks();
   if (all.some((t) => t.animalId === animalId)) return;
-  const created: AssessmentTask[] = TASK_TYPES.map((taskType) => ({
-    id: generateTaskId(),
-    animalId,
-    taskType,
-    status: "Pending",
-  }));
-  saveAllTasks([...all, ...created]);
+  for (const taskType of TASK_TYPES) {
+    const task: AssessmentTask = {
+      id: generateTaskId(),
+      animalId,
+      taskType,
+      status: "Pending",
+    };
+    await fetch("/api/assessment-tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
+    });
+  }
 }
 
 // The 10 PRD 12.1 seed animals predate this workflow and have no tasks
 // of their own - lazily create them on first view so every animal
 // reaching Under Assessment has the 3 tasks BR-016 describes.
-export function listTasksForAnimal(animalId: string): AssessmentTask[] {
-  createTasksForAnimal(animalId);
-  return loadAllTasks().filter((t) => t.animalId === animalId);
+export async function listTasksForAnimal(animalId: string): Promise<AssessmentTask[]> {
+  await createTasksForAnimal(animalId);
+  return (await fetchAllTasks()).filter((t) => t.animalId === animalId);
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: "not_found" | "blocked" };
 
-export function markTaskContinuable(
+export async function markTaskContinuable(
   taskId: string,
   email: string,
   name: string,
-): MutationResult {
-  const all = loadAllTasks();
-  const index = all.findIndex((t) => t.id === taskId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-
-  all[index] = {
-    ...all[index],
-    status: "Continuable",
-    markedByEmail: email,
-    markedByName: name,
-    markedAt: new Date().toISOString(),
-  };
-  saveAllTasks(all);
+): Promise<MutationResult> {
+  const response = await fetch(`/api/assessment-tasks/${taskId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      status: "Continuable",
+      markedByEmail: email,
+      markedByName: name,
+      markedAt: new Date().toISOString(),
+    }),
+  });
+  const result = await response.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
   return { ok: true };
 }
 
 // Used by a task's real, dedicated feature (e.g. Scan Microchip, FR-MC-01)
 // once it reaches a definitive outcome, superseding the generic "Mark
 // Continuable" stand-in for that specific task type.
-export function completeTaskByType(
+export async function completeTaskByType(
   animalId: string,
   taskType: TaskType,
   email: string,
   name: string,
-): MutationResult {
-  const tasks = listTasksForAnimal(animalId);
+): Promise<MutationResult> {
+  const tasks = await listTasksForAnimal(animalId);
   const task = tasks.find((t) => t.taskType === taskType);
   if (!task) return { ok: false, reason: "not_found" };
   return markTaskContinuable(task.id, email, name);
 }
 
-export function getFitnessReview(animalId: string): FitnessReview | undefined {
-  return loadAllReviews().find((r) => r.animalId === animalId);
+export async function getFitnessReview(animalId: string): Promise<FitnessReview | undefined> {
+  return (await fetchAllReviews()).find((r) => r.animalId === animalId);
 }
 
-function upsertReview(review: FitnessReview) {
-  const all = loadAllReviews();
-  const index = all.findIndex((r) => r.animalId === review.animalId);
-  if (index === -1) {
-    saveAllReviews([...all, review]);
-  } else {
-    all[index] = review;
-    saveAllReviews(all);
-  }
+async function upsertReview(review: FitnessReview): Promise<void> {
+  await fetch("/api/fitness-reviews", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(review),
+  });
 }
 
 async function confirm(
@@ -135,17 +116,17 @@ async function confirm(
   const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
-  const tasks = listTasksForAnimal(animalId);
+  const tasks = await listTasksForAnimal(animalId);
   if (getFitnessBlockers(animal, tasks).length > 0) return { ok: false, reason: "blocked" };
 
-  const existing = getFitnessReview(animalId) ?? { animalId };
+  const existing = (await getFitnessReview(animalId)) ?? { animalId };
   const now = new Date().toISOString();
   const updated: FitnessReview =
     side === "staff"
       ? { ...existing, staffConfirmedByEmail: email, staffConfirmedByName: name, staffConfirmedAt: now }
       : { ...existing, vetConfirmedByEmail: email, vetConfirmedByName: name, vetConfirmedAt: now };
 
-  upsertReview(updated);
+  await upsertReview(updated);
 
   await writeAuditLog({
     userId: email,

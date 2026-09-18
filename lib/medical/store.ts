@@ -114,7 +114,7 @@ export async function recordHealthAssessment(
       "Health Assessment - Urgent Treatment Required",
     );
   } else {
-    completeTaskByType(animalId, "Health Assessment", email, name);
+    await completeTaskByType(animalId, "Health Assessment", email, name);
   }
 
   return { ok: true };
@@ -167,7 +167,7 @@ export async function addTreatmentEvent(
       { email, name },
       "Treatment Recovery Complete",
     );
-    if (pathway === "intake") completeTaskByType(animalId, "Health Assessment", email, name);
+    if (pathway === "intake") await completeTaskByType(animalId, "Health Assessment", email, name);
   }
 
   return { ok: true };

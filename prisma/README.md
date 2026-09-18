@@ -222,16 +222,23 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   export, same pattern as AuditLogEntry. `ownerContact` is flattened
   into 3 columns, same reasoning as Animal.linkedPerson.
   `performedAt` is a system-generated timestamp, so it's DateTime.
-- Still not the last domain: `lib/adoption-fitness/store.ts`
-  (AssessmentTask/FitnessReview) still reads/writes localStorage for
-  real (confirmed by grepping for `localStorage.`, not just a comment
-  mentioning the word, immediately before writing this note - see the
-  AdopterProfile/AuditLog entry above about not repeating a "this is
-  the last one" claim without checking each time).
-  `lib/notifications/read-state-store.ts` (per-user notification
-  read/unread flags) is the same shape and a plausible next candidate,
-  but is arguably closer to a per-device UI preference than shared
-  domain data - worth a judgment call, not an automatic migration.
+- `AssessmentTask` - see lib/adoption-fitness/. Mirrored from
+  lib/adoption-fitness/types.ts (FR-INT-04). `markedAt` is a
+  system-generated timestamp, so it's DateTime.
+- `FitnessReview` - see lib/adoption-fitness/. Keyed by `animalId` -
+  there is exactly one joint Fitness Review per Animal, no separate
+  identity of its own, same "singleton keyed by the owning record"
+  shape as AdopterProfile (keyed by email). Every field maps directly
+  onto the domain type, no flattening or JSON-encoding needed.
+  `staffConfirmedAt`/`vetConfirmedAt` are system-generated timestamps,
+  so both are DateTime. See lib/adoption-fitness/serialize.ts.
+- Still not the last domain: `lib/notifications/read-state-store.ts`
+  (per-user notification read/unread flags) is a plausible next
+  candidate, but is arguably closer to a per-device UI preference than
+  shared domain data - worth a judgment call, not an automatic
+  migration (re-confirmed by grepping for real `localStorage.` calls
+  immediately before writing this note, not relying on a past
+  session's summary - see the AdopterProfile/AuditLog entry above).
   `lib/auth/auth-context.tsx` (session token) and
   `lib/theme/theme-context.tsx` (light/dark preference) are genuinely
   per-device/session state and out of scope on their own terms, not by
