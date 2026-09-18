@@ -27,6 +27,7 @@ import { listChecksForApplication } from "@/lib/checks/store";
 import type { CheckOutcome, SuitabilityCheck } from "@/lib/checks/types";
 import { getLatestFollowUpVisitForAnimal } from "@/lib/follow-up-visits/store";
 import { FOLLOW_UP_VISIT_STATUS_CATEGORY } from "@/lib/follow-up-visits/status";
+import type { FollowUpVisit } from "@/lib/follow-up-visits/types";
 import {
   getDesexingSchedule,
   getLatestPreReleaseCheck,
@@ -131,6 +132,7 @@ function AnimalDetailContent({
   const [activeProgram, setActiveProgram] = useState<BehaviourProgram | undefined>(undefined);
   const [proposedApplications, setProposedApplications] = useState<AdoptionApplication[]>([]);
   const [checksByApplication, setChecksByApplication] = useState<Record<string, SuitabilityCheck[]>>({});
+  const [followUpVisit, setFollowUpVisit] = useState<FollowUpVisit | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,6 +171,9 @@ function AnimalDetailContent({
         proposed.map(async (a) => [a.applicationId, await listChecksForApplication(a.applicationId)] as const),
       );
       if (!cancelled) setChecksByApplication(Object.fromEntries(checksEntries));
+    });
+    getLatestFollowUpVisitForAnimal(animal.animalId).then((result) => {
+      if (!cancelled) setFollowUpVisit(result);
     });
     return () => {
       cancelled = true;
@@ -211,7 +216,6 @@ function AnimalDetailContent({
   };
 
   const photos = listPhotosForAnimal(animal.animalId);
-  const followUpVisit = getLatestFollowUpVisitForAnimal(animal.animalId);
   const primaryPhoto = getPrimaryPhoto(animal.animalId);
 
   return (

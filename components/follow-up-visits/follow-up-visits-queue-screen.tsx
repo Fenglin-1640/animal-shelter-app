@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listActiveFollowUpVisits } from "@/lib/follow-up-visits/store";
 import { FOLLOW_UP_VISIT_STATUS_CATEGORY } from "@/lib/follow-up-visits/status";
+import type { FollowUpVisit } from "@/lib/follow-up-visits/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -18,8 +19,31 @@ function formatDate(iso: string): string {
 
 function FollowUpVisitsContent() {
   const [search, setSearch] = useState("");
+  const [rows, setRows] = useState<FollowUpVisit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const rows = useMemo(() => listActiveFollowUpVisits(), []);
+  useEffect(() => {
+    let cancelled = false;
+    listActiveFollowUpVisits()
+      .then((result) => {
+        if (cancelled) return;
+        setRows(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load Follow-Up Visits. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   const filtered = rows.filter((row) => {
     const query = search.trim().toLowerCase();
@@ -50,7 +74,25 @@ function FollowUpVisitsContent() {
         />
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+          Loading Follow-Up Visits...
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+          <p className="text-sm font-semibold text-text">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsLoading(true);
+              setRefreshKey((k) => k + 1);
+            }}
+            className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+          >
+            Retry
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
           <p className="text-sm font-semibold text-text">No Follow-Up Visits are currently scheduled.</p>
           <p className="mt-1 text-sm text-text-muted">

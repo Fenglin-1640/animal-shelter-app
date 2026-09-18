@@ -28,6 +28,10 @@
       "model": "DesexingSchedule",
       "namespace": "__unbound__"
     },
+    "followUpVisit": {
+      "model": "FollowUpVisit",
+      "namespace": "__unbound__"
+    },
     "healthAssessment": {
       "model": "HealthAssessment",
       "namespace": "__unbound__"
@@ -1077,6 +1081,237 @@
               },
               "namespaceId": "__unbound__",
               "table": "desexingSchedule"
+            }
+          },
+          "FollowUpVisit": {
+            "fields": {
+              "adopterEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "adopterName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "animalName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "applicationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "assignedStaffEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "assignedStaffName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "careInstructionsProvided": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "followUpType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "followUpVisitId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcome": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcomeNotes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "receivingAdopter": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "releaseDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "releasedByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "releasedByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "targetDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "adopterEmail": {
+                  "column": "adopterEmail"
+                },
+                "adopterName": {
+                  "column": "adopterName"
+                },
+                "animalId": {
+                  "column": "animalId"
+                },
+                "animalName": {
+                  "column": "animalName"
+                },
+                "applicationId": {
+                  "column": "applicationId"
+                },
+                "assignedStaffEmail": {
+                  "column": "assignedStaffEmail"
+                },
+                "assignedStaffName": {
+                  "column": "assignedStaffName"
+                },
+                "careInstructionsProvided": {
+                  "column": "careInstructionsProvided"
+                },
+                "completedAt": {
+                  "column": "completedAt"
+                },
+                "completedByEmail": {
+                  "column": "completedByEmail"
+                },
+                "completedByName": {
+                  "column": "completedByName"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "followUpType": {
+                  "column": "followUpType"
+                },
+                "followUpVisitId": {
+                  "column": "followUpVisitId"
+                },
+                "outcome": {
+                  "column": "outcome"
+                },
+                "outcomeNotes": {
+                  "column": "outcomeNotes"
+                },
+                "receivingAdopter": {
+                  "column": "receivingAdopter"
+                },
+                "releaseDate": {
+                  "column": "releaseDate"
+                },
+                "releasedByEmail": {
+                  "column": "releasedByEmail"
+                },
+                "releasedByName": {
+                  "column": "releasedByName"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "targetDate": {
+                  "column": "targetDate"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "followUpVisit"
             }
           },
           "HealthAssessment": {
@@ -3026,6 +3261,128 @@
               },
               "uniques": []
             },
+            "followUpVisit": {
+              "columns": {
+                "adopterEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "adopterName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "animalName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "applicationId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "assignedStaffEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "assignedStaffName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "careInstructionsProvided": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "completedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "completedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "completedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "followUpType": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "followUpVisitId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "outcome": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "outcomeNotes": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "receivingAdopter": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "releaseDate": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "releasedByEmail": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "releasedByName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "targetDate": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "followUpVisitId"
+                ]
+              },
+              "uniques": []
+            },
             "healthAssessment": {
               "columns": {
                 "animalId": {
@@ -3801,7 +4158,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "50978424e2f11e55a67b0fef9b2933723ba740ac694331820832313fda46327c"
+    "storageHash": "5507951e21eacb877b0a3c8e7b2b77ce092798d0e47e287e73ff126f4da5b51c"
   },
   "capabilities": {
     "sql": {

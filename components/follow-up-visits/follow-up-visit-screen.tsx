@@ -103,7 +103,8 @@ function CompleteVisitForm({
 
 function FollowUpVisitContent({ animalId, email, displayName, role }: { animalId: string; email: string; displayName: string; role: Role }) {
   const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
-  const [visit, setVisit] = useState<FollowUpVisit | undefined>(() => getLatestFollowUpVisitForAnimal(animalId));
+  const [visit, setVisit] = useState<FollowUpVisit | undefined>(undefined);
+  const [visitLoaded, setVisitLoaded] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const canAct = CAN_ACT_ROLES.includes(role);
@@ -113,12 +114,17 @@ function FollowUpVisitContent({ animalId, email, displayName, role }: { animalId
     getAnimalById(animalId).then((result) => {
       if (!cancelled) setAnimal(result ?? null);
     });
+    getLatestFollowUpVisitForAnimal(animalId).then((result) => {
+      if (cancelled) return;
+      setVisit(result);
+      setVisitLoaded(true);
+    });
     return () => {
       cancelled = true;
     };
   }, [animalId]);
 
-  if (animal === undefined) {
+  if (animal === undefined || !visitLoaded) {
     return (
       <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
         Loading...
@@ -129,7 +135,7 @@ function FollowUpVisitContent({ animalId, email, displayName, role }: { animalId
 
   const refresh = async () => {
     setAnimal((await getAnimalById(animalId)) ?? null);
-    setVisit(getLatestFollowUpVisitForAnimal(animalId));
+    setVisit(await getLatestFollowUpVisitForAnimal(animalId));
   };
 
   return (

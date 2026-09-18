@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'50978424e2f11e55a67b0fef9b2933723ba740ac694331820832313fda46327c'>;
+  StorageHashBase<'5507951e21eacb877b0a3c8e7b2b77ce092798d0e47e287e73ff126f4da5b51c'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -232,6 +232,30 @@ export type FieldOutputTypes = {
       readonly completedByName: CodecTypes['sqlite/text@1']['output'] | null;
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly FollowUpVisit: {
+      readonly followUpVisitId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly careInstructionsProvided: CodecTypes['sqlite/integer@1']['output'];
+      readonly releaseDate: CodecTypes['sqlite/text@1']['output'];
+      readonly receivingAdopter: CodecTypes['sqlite/text@1']['output'];
+      readonly releasedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly releasedByName: CodecTypes['sqlite/text@1']['output'];
+      readonly targetDate: CodecTypes['sqlite/text@1']['output'];
+      readonly followUpType: CodecTypes['sqlite/text@1']['output'];
+      readonly assignedStaffEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly assignedStaffName: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly outcome: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly outcomeNotes: CodecTypes['sqlite/text@1']['output'];
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
     readonly HealthAssessment: {
@@ -492,6 +516,30 @@ export type FieldInputTypes = {
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
     };
+    readonly FollowUpVisit: {
+      readonly followUpVisitId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly careInstructionsProvided: CodecTypes['sqlite/integer@1']['input'];
+      readonly releaseDate: CodecTypes['sqlite/text@1']['input'];
+      readonly receivingAdopter: CodecTypes['sqlite/text@1']['input'];
+      readonly releasedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly releasedByName: CodecTypes['sqlite/text@1']['input'];
+      readonly targetDate: CodecTypes['sqlite/text@1']['input'];
+      readonly followUpType: CodecTypes['sqlite/text@1']['input'];
+      readonly assignedStaffEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly assignedStaffName: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly outcome: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly outcomeNotes: CodecTypes['sqlite/text@1']['input'];
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
     readonly HealthAssessment: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -750,6 +798,30 @@ export type StorageColumnTypes = {
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly followUpVisit: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['output'];
+      readonly animalId: CodecTypes['sqlite/text@1']['output'];
+      readonly animalName: CodecTypes['sqlite/text@1']['output'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['output'];
+      readonly assignedStaffEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly assignedStaffName: CodecTypes['sqlite/text@1']['output'];
+      readonly careInstructionsProvided: CodecTypes['sqlite/integer@1']['output'];
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly followUpType: CodecTypes['sqlite/text@1']['output'];
+      readonly followUpVisitId: CodecTypes['sqlite/text@1']['output'];
+      readonly outcome: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly outcomeNotes: CodecTypes['sqlite/text@1']['output'];
+      readonly receivingAdopter: CodecTypes['sqlite/text@1']['output'];
+      readonly releaseDate: CodecTypes['sqlite/text@1']['output'];
+      readonly releasedByEmail: CodecTypes['sqlite/text@1']['output'];
+      readonly releasedByName: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly targetDate: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly healthAssessment: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
       readonly assessmentDate: CodecTypes['sqlite/text@1']['output'];
@@ -1007,6 +1079,30 @@ export type StorageColumnInputTypes = {
       readonly status: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly followUpVisit: {
+      readonly adopterEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly adopterName: CodecTypes['sqlite/text@1']['input'];
+      readonly animalId: CodecTypes['sqlite/text@1']['input'];
+      readonly animalName: CodecTypes['sqlite/text@1']['input'];
+      readonly applicationId: CodecTypes['sqlite/text@1']['input'];
+      readonly assignedStaffEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly assignedStaffName: CodecTypes['sqlite/text@1']['input'];
+      readonly careInstructionsProvided: CodecTypes['sqlite/integer@1']['input'];
+      readonly completedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly completedByEmail: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly completedByName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly followUpType: CodecTypes['sqlite/text@1']['input'];
+      readonly followUpVisitId: CodecTypes['sqlite/text@1']['input'];
+      readonly outcome: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly outcomeNotes: CodecTypes['sqlite/text@1']['input'];
+      readonly receivingAdopter: CodecTypes['sqlite/text@1']['input'];
+      readonly releaseDate: CodecTypes['sqlite/text@1']['input'];
+      readonly releasedByEmail: CodecTypes['sqlite/text@1']['input'];
+      readonly releasedByName: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly targetDate: CodecTypes['sqlite/text@1']['input'];
     };
     readonly healthAssessment: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -1430,6 +1526,31 @@ export namespace Models {
     updatedAt: CodecTypes['sqlite/datetime@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type FollowUpVisit = {
+    followUpVisitId: CodecTypes['sqlite/text@1']['output'];
+    animalId: CodecTypes['sqlite/text@1']['output'];
+    animalName: CodecTypes['sqlite/text@1']['output'];
+    applicationId: CodecTypes['sqlite/text@1']['output'];
+    adopterEmail: CodecTypes['sqlite/text@1']['output'];
+    adopterName: CodecTypes['sqlite/text@1']['output'];
+    careInstructionsProvided: CodecTypes['sqlite/integer@1']['output'];
+    releaseDate: CodecTypes['sqlite/text@1']['output'];
+    receivingAdopter: CodecTypes['sqlite/text@1']['output'];
+    releasedByEmail: CodecTypes['sqlite/text@1']['output'];
+    releasedByName: CodecTypes['sqlite/text@1']['output'];
+    targetDate: CodecTypes['sqlite/text@1']['output'];
+    followUpType: CodecTypes['sqlite/text@1']['output'];
+    assignedStaffEmail: CodecTypes['sqlite/text@1']['output'];
+    assignedStaffName: CodecTypes['sqlite/text@1']['output'];
+    status: CodecTypes['sqlite/text@1']['output'];
+    outcome: CodecTypes['sqlite/text@1']['output'] | null;
+    outcomeNotes: CodecTypes['sqlite/text@1']['output'];
+    completedByEmail: CodecTypes['sqlite/text@1']['output'] | null;
+    completedByName: CodecTypes['sqlite/text@1']['output'] | null;
+    completedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -1449,6 +1570,7 @@ export declare const models: {
   AdoptionAgreement: Models.AdoptionAgreement;
   AdoptionPayment: Models.AdoptionPayment;
   MeetAndGreet: Models.MeetAndGreet;
+  FollowUpVisit: Models.FollowUpVisit;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -1983,6 +2105,124 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly followUpVisit: {
+              columns: {
+                readonly followUpVisitId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly applicationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly adopterName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly careInstructionsProvided: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly releaseDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly receivingAdopter: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly releasedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly releasedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly targetDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly followUpType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly assignedStaffEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly assignedStaffName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly outcome: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly outcomeNotes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly completedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly completedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly completedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['followUpVisitId'] };
               uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
@@ -2780,6 +3020,10 @@ type ContractBase = Omit<
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'MeetAndGreet';
     };
+    readonly followUpVisit: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'FollowUpVisit';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -3317,6 +3561,127 @@ type ContractBase = Omit<
                 readonly completedByName: { readonly column: 'completedByName' };
                 readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
                 readonly veterinarianName: { readonly column: 'veterinarianName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
+          readonly FollowUpVisit: {
+            readonly fields: {
+              readonly followUpVisitId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly animalName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly applicationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly adopterName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly careInstructionsProvided: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly releaseDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly receivingAdopter: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly releasedByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly releasedByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly targetDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly followUpType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly assignedStaffEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly assignedStaffName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly outcome: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly outcomeNotes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly completedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly completedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'followUpVisit';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly followUpVisitId: { readonly column: 'followUpVisitId' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly animalName: { readonly column: 'animalName' };
+                readonly applicationId: { readonly column: 'applicationId' };
+                readonly adopterEmail: { readonly column: 'adopterEmail' };
+                readonly adopterName: { readonly column: 'adopterName' };
+                readonly careInstructionsProvided: { readonly column: 'careInstructionsProvided' };
+                readonly releaseDate: { readonly column: 'releaseDate' };
+                readonly receivingAdopter: { readonly column: 'receivingAdopter' };
+                readonly releasedByEmail: { readonly column: 'releasedByEmail' };
+                readonly releasedByName: { readonly column: 'releasedByName' };
+                readonly targetDate: { readonly column: 'targetDate' };
+                readonly followUpType: { readonly column: 'followUpType' };
+                readonly assignedStaffEmail: { readonly column: 'assignedStaffEmail' };
+                readonly assignedStaffName: { readonly column: 'assignedStaffName' };
+                readonly status: { readonly column: 'status' };
+                readonly outcome: { readonly column: 'outcome' };
+                readonly outcomeNotes: { readonly column: 'outcomeNotes' };
+                readonly completedByEmail: { readonly column: 'completedByEmail' };
+                readonly completedByName: { readonly column: 'completedByName' };
+                readonly completedAt: { readonly column: 'completedAt' };
                 readonly createdAt: { readonly column: 'createdAt' };
               };
             };

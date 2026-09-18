@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listMyFollowUpVisits } from "@/lib/follow-up-visits/store";
 import { FOLLOW_UP_VISIT_STATUS_CATEGORY, WELFARE_OUTCOME_CATEGORY } from "@/lib/follow-up-visits/status";
+import type { FollowUpVisit } from "@/lib/follow-up-visits/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Adopter"];
@@ -20,7 +22,31 @@ function formatDate(iso: string): string {
 // one Follow-Up Visit ever exists per animal (a one-directional, terminal
 // state transition), so this rarely holds more than a couple of records.
 function MyFollowUpVisitsContent({ email }: { email: string }) {
-  const visits = listMyFollowUpVisits(email);
+  const [visits, setVisits] = useState<FollowUpVisit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    listMyFollowUpVisits(email)
+      .then((result) => {
+        if (cancelled) return;
+        setVisits(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load Follow-Up Visits. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [email, refreshKey]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -31,7 +57,25 @@ function MyFollowUpVisitsContent({ email }: { email: string }) {
         </p>
       </div>
 
-      {visits.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+          Loading Follow-Up Visits...
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+          <p className="text-sm font-semibold text-text">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsLoading(true);
+              setRefreshKey((k) => k + 1);
+            }}
+            className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+          >
+            Retry
+          </button>
+        </div>
+      ) : visits.length === 0 ? (
         <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
           <p className="text-sm font-semibold text-text">You don&apos;t have any Follow-Up Visits yet.</p>
           <p className="mt-1 text-sm text-text-muted">

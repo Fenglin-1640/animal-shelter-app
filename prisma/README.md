@@ -131,3 +131,13 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   system-generated timestamps (set to `now` when the action happens),
   so all are DateTime. See lib/agreements/serialize.ts and
   lib/payments/serialize.ts.
+- `FollowUpVisit` - see lib/follow-up-visits/. Mirrored from
+  lib/follow-up-visits/types.ts; no nested objects/arrays, same
+  "every field a plain column" shape as AdoptionAgreement/
+  AdoptionPayment. releaseDate/targetDate stay plain Strings - both
+  are user-entered values from a date-picker input, same reasoning as
+  Medical/Behaviour's user-entered date fields.
+  careInstructionsProvided is Int (0/1), same reasoning as
+  AdoptionAgreement's isSigned. completedAt is a system-generated
+  timestamp (set to `now` when the visit is completed), so it's
+  DateTime. See lib/follow-up-visits/serialize.ts.

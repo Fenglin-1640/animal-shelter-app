@@ -214,8 +214,8 @@ async function getPreReleaseCheckNotifications(): Promise<NotificationItem[]> {
 }
 
 // FR-NOT-01 "Follow Up Visit due".
-function getFollowUpVisitNotifications(): NotificationItem[] {
-  return listActiveFollowUpVisits().flatMap((visit) => {
+async function getFollowUpVisitNotifications(): Promise<NotificationItem[]> {
+  return (await listActiveFollowUpVisits()).flatMap((visit) => {
     if (daysUntil(visit.targetDate) > REMINDER_LEAD_DAYS) return [];
     const item: NotificationItem = {
       id: `follow-up-${visit.followUpVisitId}`,
@@ -240,6 +240,7 @@ export async function getAllNotifications(): Promise<NotificationItem[]> {
     preReleaseCheck,
     applicationDecision,
     meetAndGreet,
+    followUpVisit,
   ] = await Promise.all([
     getStatutoryHoldNotifications(),
     getBehaviourReassessmentNotifications(),
@@ -248,6 +249,7 @@ export async function getAllNotifications(): Promise<NotificationItem[]> {
     getPreReleaseCheckNotifications(),
     getApplicationDecisionNotifications(),
     getMeetAndGreetNotifications(),
+    getFollowUpVisitNotifications(),
   ]);
   return [
     ...statutoryHold,
@@ -257,7 +259,7 @@ export async function getAllNotifications(): Promise<NotificationItem[]> {
     ...applicationDecision,
     ...meetAndGreet,
     ...preReleaseCheck,
-    ...getFollowUpVisitNotifications(),
+    ...followUpVisit,
     ...getMockNotifications(),
   ];
 }

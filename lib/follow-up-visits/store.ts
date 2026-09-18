@@ -6,33 +6,22 @@ import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { isFitForRelease } from "@/lib/medical/store";
 import type { FollowUpType, FollowUpVisit, WelfareOutcome } from "@/lib/follow-up-visits/types";
 
-// FR-REL-02: FollowUpVisit records, persisted to localStorage since
-// there is no backend.
-const STORAGE_KEY = "asams-follow-up-visits";
+// FR-REL-02: FollowUpVisit now lives in the database (see
+// prisma/contract.prisma) behind /api/follow-up-visits - see
+// prisma/README.md for this Prisma toolchain's quirks.
 
-function loadAll(): FollowUpVisit[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as FollowUpVisit[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAll(all: FollowUpVisit[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+async function fetchAll(): Promise<FollowUpVisit[]> {
+  const response = await fetch("/api/follow-up-visits");
+  const result = await response.json();
+  return result.items as FollowUpVisit[];
 }
 
 function generateId(): string {
   return `FUV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-export function listFollowUpVisitsForAnimal(animalId: string): FollowUpVisit[] {
-  return loadAll()
+export async function listFollowUpVisitsForAnimal(animalId: string): Promise<FollowUpVisit[]> {
+  return (await fetchAll())
     .filter((v) => v.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -41,23 +30,23 @@ export function listFollowUpVisitsForAnimal(animalId: string): FollowUpVisit[] {
 // named final state) means an Animal can only ever go through this once,
 // so there is at most one FollowUpVisit per animal - but read the latest
 // defensively rather than assuming exactly one.
-export function getLatestFollowUpVisitForAnimal(animalId: string): FollowUpVisit | undefined {
-  return listFollowUpVisitsForAnimal(animalId)[0];
+export async function getLatestFollowUpVisitForAnimal(animalId: string): Promise<FollowUpVisit | undefined> {
+  return (await listFollowUpVisitsForAnimal(animalId))[0];
 }
 
-export function getFollowUpVisit(followUpVisitId: string): FollowUpVisit | undefined {
-  return loadAll().find((v) => v.followUpVisitId === followUpVisitId);
+export async function getFollowUpVisit(followUpVisitId: string): Promise<FollowUpVisit | undefined> {
+  return (await fetchAll()).find((v) => v.followUpVisitId === followUpVisitId);
 }
 
-export function listActiveFollowUpVisits(): FollowUpVisit[] {
-  return loadAll()
+export async function listActiveFollowUpVisits(): Promise<FollowUpVisit[]> {
+  return (await fetchAll())
     .filter((v) => v.status === "Scheduled")
     .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime());
 }
 
-export function listMyFollowUpVisits(email: string): FollowUpVisit[] {
+export async function listMyFollowUpVisits(email: string): Promise<FollowUpVisit[]> {
   const normalized = email.trim().toLowerCase();
-  return loadAll()
+  return (await fetchAll())
     .filter((v) => v.adopterEmail.toLowerCase() === normalized)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -144,7 +133,11 @@ export async function releaseAnimal(
     outcomeNotes: "",
     createdAt: now,
   };
-  saveAll([...loadAll(), visit]);
+  await fetch("/api/follow-up-visits", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(visit),
+  });
 
   const result = await changeAnimalStatus(
     animalId,
@@ -179,31 +172,33 @@ export async function completeFollowUpVisit(
   actorEmail: string,
   actorName: string,
 ): Promise<MutationResult> {
-  const all = loadAll();
-  const index = all.findIndex((v) => v.followUpVisitId === followUpVisitId);
-  if (index === -1) return { ok: false, reason: "not_found" };
-  const visit = all[index];
+  const visit = await getFollowUpVisit(followUpVisitId);
+  if (!visit) return { ok: false, reason: "not_found" };
   if (visit.status !== "Scheduled") return { ok: false, reason: "already_completed" };
 
   const now = new Date().toISOString();
-  all[index] = {
-    ...visit,
-    status: "Completed",
-    outcome,
-    outcomeNotes,
-    completedByEmail: actorEmail,
-    completedByName: actorName,
-    completedAt: now,
-  };
-  saveAll(all);
+  const response = await fetch(`/api/follow-up-visits/${followUpVisitId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      status: "Completed",
+      outcome,
+      outcomeNotes,
+      completedByEmail: actorEmail,
+      completedByName: actorName,
+      completedAt: now,
+    }),
+  });
+  const result = await response.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
 
-  const result = await changeAnimalStatus(
+  const statusResult = await changeAnimalStatus(
     visit.animalId,
     { currentStatus: "Rehomed", statusUpdatedAt: now },
     { email: actorEmail, name: actorName },
     "Complete Follow Up Visit",
   );
-  if (!result.ok) return { ok: false, reason: result.reason };
+  if (!statusResult.ok) return { ok: false, reason: statusResult.reason };
 
   writeAuditLog({
     userId: actorEmail,

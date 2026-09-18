@@ -336,3 +336,38 @@ model MeetAndGreet {
   createdAt           DateTime
   updatedAt           DateTime
 }
+
+// Mirrors lib/follow-up-visits/types.ts (FR-REL-02). No nested
+// objects/arrays here, same "every field a plain column" shape as
+// AdoptionAgreement/AdoptionPayment. releaseDate/targetDate stay plain
+// Strings - both are user-entered values from a date-picker input (see
+// components/medical/pre-release-check-screen.tsx's ReleaseForm), same
+// reasoning as Medical/Behaviour's user-entered date fields.
+// careInstructionsProvided is Int (0/1), same reasoning as
+// AdoptionAgreement's isSigned. completedAt is a system-generated
+// timestamp (set to `now` when the visit is completed), so it's
+// DateTime, unlike releaseDate/targetDate above it.
+model FollowUpVisit {
+  followUpVisitId          String    @id
+  animalId                 String
+  animalName               String
+  applicationId             String
+  adopterEmail              String
+  adopterName               String
+  careInstructionsProvided  Int
+  releaseDate               String
+  receivingAdopter          String
+  releasedByEmail           String
+  releasedByName            String
+  targetDate                String
+  followUpType              String
+  assignedStaffEmail        String
+  assignedStaffName         String
+  status                    String
+  outcome                   String?
+  outcomeNotes              String
+  completedByEmail          String?
+  completedByName           String?
+  completedAt               DateTime?
+  createdAt                 DateTime
+}
