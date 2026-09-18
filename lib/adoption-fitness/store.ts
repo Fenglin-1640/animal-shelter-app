@@ -147,7 +147,7 @@ async function confirm(
 
   upsertReview(updated);
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: side === "staff" ? "Review Adoption Fitness - Staff Confirmation" : "Review Adoption Fitness - Veterinarian Confirmation",

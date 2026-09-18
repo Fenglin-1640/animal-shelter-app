@@ -116,7 +116,7 @@ export async function generateAgreement(applicationId: string, email: string, na
     body: JSON.stringify(agreement),
   });
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: existing ? "Generate New Adoption Agreement Version" : "Generate Adoption Agreement",
@@ -147,7 +147,7 @@ export async function signAgreement(agreementId: string, email: string, name: st
   const result = await response.json();
   if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Sign Adoption Agreement",

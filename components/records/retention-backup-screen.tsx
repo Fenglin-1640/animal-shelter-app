@@ -26,8 +26,8 @@ function timestampForFilename(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function exportAuditLog() {
-  const entries = listAuditLog();
+async function exportAuditLog() {
+  const entries = await listAuditLog();
   downloadCsv(
     `audit-log-${timestampForFilename()}.csv`,
     ["auditId", "timestamp", "action", "entityType", "entityId", "oldValue", "newValue", "result", "userName", "userId"],

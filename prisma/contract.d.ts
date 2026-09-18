@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'6dab6414c8ebf6cb821bba94240dbdc943ba055232e9ed3ae75917b2e6da3d68'>;
+  StorageHashBase<'315c91a60a12ae8a3f3af78cabf76a8a15f4c2d37f89d086c5d99a353da0732b'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -233,6 +233,18 @@ export type FieldOutputTypes = {
       readonly intakeSource: CodecTypes['sqlite/text@1']['output'];
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['output'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['output'] | null;
+    };
+    readonly AuditLogEntry: {
+      readonly auditId: CodecTypes['sqlite/text@1']['output'];
+      readonly userId: CodecTypes['sqlite/text@1']['output'];
+      readonly userName: CodecTypes['sqlite/text@1']['output'];
+      readonly timestamp: CodecTypes['sqlite/datetime@1']['output'];
+      readonly action: CodecTypes['sqlite/text@1']['output'];
+      readonly entityType: CodecTypes['sqlite/text@1']['output'];
+      readonly entityId: CodecTypes['sqlite/text@1']['output'];
+      readonly oldValue: CodecTypes['sqlite/text@1']['output'];
+      readonly newValue: CodecTypes['sqlite/text@1']['output'];
+      readonly result: CodecTypes['sqlite/text@1']['output'];
     };
     readonly BehaviourProgram: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -587,6 +599,18 @@ export type FieldInputTypes = {
       readonly linkedPersonRole: CodecTypes['sqlite/text@1']['input'] | null;
       readonly linkedPersonName: CodecTypes['sqlite/text@1']['input'] | null;
     };
+    readonly AuditLogEntry: {
+      readonly auditId: CodecTypes['sqlite/text@1']['input'];
+      readonly userId: CodecTypes['sqlite/text@1']['input'];
+      readonly userName: CodecTypes['sqlite/text@1']['input'];
+      readonly timestamp: CodecTypes['sqlite/datetime@1']['input'];
+      readonly action: CodecTypes['sqlite/text@1']['input'];
+      readonly entityType: CodecTypes['sqlite/text@1']['input'];
+      readonly entityId: CodecTypes['sqlite/text@1']['input'];
+      readonly oldValue: CodecTypes['sqlite/text@1']['input'];
+      readonly newValue: CodecTypes['sqlite/text@1']['input'];
+      readonly result: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly BehaviourProgram: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -940,6 +964,18 @@ export type StorageColumnTypes = {
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly temperaments: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly auditLogEntry: {
+      readonly action: CodecTypes['sqlite/text@1']['output'];
+      readonly auditId: CodecTypes['sqlite/text@1']['output'];
+      readonly entityId: CodecTypes['sqlite/text@1']['output'];
+      readonly entityType: CodecTypes['sqlite/text@1']['output'];
+      readonly newValue: CodecTypes['sqlite/text@1']['output'];
+      readonly oldValue: CodecTypes['sqlite/text@1']['output'];
+      readonly result: CodecTypes['sqlite/text@1']['output'];
+      readonly timestamp: CodecTypes['sqlite/datetime@1']['output'];
+      readonly userId: CodecTypes['sqlite/text@1']['output'];
+      readonly userName: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly behaviourProgram: {
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
@@ -1292,6 +1328,18 @@ export type StorageColumnInputTypes = {
       readonly species: CodecTypes['sqlite/text@1']['input'];
       readonly statusUpdatedAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly temperaments: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly auditLogEntry: {
+      readonly action: CodecTypes['sqlite/text@1']['input'];
+      readonly auditId: CodecTypes['sqlite/text@1']['input'];
+      readonly entityId: CodecTypes['sqlite/text@1']['input'];
+      readonly entityType: CodecTypes['sqlite/text@1']['input'];
+      readonly newValue: CodecTypes['sqlite/text@1']['input'];
+      readonly oldValue: CodecTypes['sqlite/text@1']['input'];
+      readonly result: CodecTypes['sqlite/text@1']['input'];
+      readonly timestamp: CodecTypes['sqlite/datetime@1']['input'];
+      readonly userId: CodecTypes['sqlite/text@1']['input'];
+      readonly userName: CodecTypes['sqlite/text@1']['input'];
     };
     readonly behaviourProgram: {
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -1910,6 +1958,19 @@ export namespace Models {
     refereeConsentAt: CodecTypes['sqlite/datetime@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type AuditLogEntry = {
+    auditId: CodecTypes['sqlite/text@1']['output'];
+    userId: CodecTypes['sqlite/text@1']['output'];
+    userName: CodecTypes['sqlite/text@1']['output'];
+    timestamp: CodecTypes['sqlite/datetime@1']['output'];
+    action: CodecTypes['sqlite/text@1']['output'];
+    entityType: CodecTypes['sqlite/text@1']['output'];
+    entityId: CodecTypes['sqlite/text@1']['output'];
+    oldValue: CodecTypes['sqlite/text@1']['output'];
+    newValue: CodecTypes['sqlite/text@1']['output'];
+    result: CodecTypes['sqlite/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -1934,6 +1995,7 @@ export declare const models: {
   IntakeRecord: Models.IntakeRecord;
   Photo: Models.Photo;
   AdopterProfile: Models.AdopterProfile;
+  AuditLogEntry: Models.AuditLogEntry;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -2471,6 +2533,64 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['animalId'] };
               uniques: readonly [{ readonly columns: readonly ['shelterId'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly auditLogEntry: {
+              columns: {
+                readonly auditId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly userId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly userName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly timestamp: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly action: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly entityType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly entityId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly oldValue: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly newValue: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly result: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['auditId'] };
+              uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
             };
@@ -3747,6 +3867,10 @@ type ContractBase = Omit<
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'AdopterProfile';
     };
+    readonly auditLogEntry: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'AuditLogEntry';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -4284,6 +4408,67 @@ type ContractBase = Omit<
                 readonly intakeSource: { readonly column: 'intakeSource' };
                 readonly linkedPersonRole: { readonly column: 'linkedPersonRole' };
                 readonly linkedPersonName: { readonly column: 'linkedPersonName' };
+              };
+            };
+          };
+          readonly AuditLogEntry: {
+            readonly fields: {
+              readonly auditId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly userName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly timestamp: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly action: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly entityType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly entityId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly oldValue: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly newValue: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly result: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'auditLogEntry';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly auditId: { readonly column: 'auditId' };
+                readonly userId: { readonly column: 'userId' };
+                readonly userName: { readonly column: 'userName' };
+                readonly timestamp: { readonly column: 'timestamp' };
+                readonly action: { readonly column: 'action' };
+                readonly entityType: { readonly column: 'entityType' };
+                readonly entityId: { readonly column: 'entityId' };
+                readonly oldValue: { readonly column: 'oldValue' };
+                readonly newValue: { readonly column: 'newValue' };
+                readonly result: { readonly column: 'result' };
               };
             };
           };

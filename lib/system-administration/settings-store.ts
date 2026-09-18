@@ -24,11 +24,11 @@ function formatSettings(settings: SystemSettings): string {
 }
 
 // PRD: "所有配置变化写入 AuditLog."
-export function updateSystemSettings(next: SystemSettings, email: string, name: string): void {
+export async function updateSystemSettings(next: SystemSettings, email: string, name: string): Promise<void> {
   const previous = getSystemSettings();
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Update System Rule Configuration",

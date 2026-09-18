@@ -29,7 +29,7 @@ export function RuleConfigurationPanel() {
     getSystemSettings().allowedAttachmentTypes.join(", "),
   );
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) return;
     const next: SystemSettings = {
       ...settings,
@@ -38,7 +38,7 @@ export function RuleConfigurationPanel() {
         .map((t) => t.trim().toUpperCase())
         .filter(Boolean),
     };
-    updateSystemSettings(next, user.email, user.displayName);
+    await updateSystemSettings(next, user.email, user.displayName);
     setSettings(next);
     setSavedAt(new Date().toISOString());
   };

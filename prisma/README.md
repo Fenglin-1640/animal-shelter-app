@@ -184,5 +184,20 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   `EMPTY_ADOPTER_PROFILE` at read time, since (unlike Users/Animals)
   not every Adopter account has a profile row pre-provisioned. See
   lib/adopter-profile/serialize.ts.
+- `AuditLogEntry` - see lib/audit/. Mirrored from lib/audit/types.ts.
+  Every field a plain column, same shape as AdoptionAgreement/
+  AdoptionPayment. `timestamp` is a system-generated timestamp (set to
+  `now` the moment the entry is written), so it's DateTime.
+  Immutability (BR-013's "应用界面不提供修改或删除 AuditLog 的功能") is enforced
+  the same way it always was, before or after this migration:
+  `app/api/audit-log/route.ts` has no PATCH/DELETE handler, and
+  `lib/audit/store.ts` exposes only a write and two read functions -
+  nothing in the database layer itself is what makes this table
+  append-only, the API surface is. Initially left off this migration
+  under a mistaken "stays local by design" label, conflating
+  BR-013's immutability requirement (no edit/delete exposed) with a
+  storage-location decision the PRD never actually made - corrected
+  once questioned, since a shared audit trail is precisely the kind of
+  data this migration exists to centralize. See lib/audit/serialize.ts.
 - Last domain migrated off localStorage - every `lib/*/store.ts`
   module in this project is now backed by Prisma/SQLite.

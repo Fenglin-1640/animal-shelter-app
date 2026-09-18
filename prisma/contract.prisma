@@ -477,3 +477,23 @@ model AdopterProfile {
   refereeConsent      Int
   refereeConsentAt    DateTime?
 }
+
+// Mirrors lib/audit/types.ts (FR-AUD-01/BR-013). Every field a plain
+// column, same shape as AdoptionAgreement/AdoptionPayment. Immutability
+// ("应用界面不提供修改或删除 AuditLog 的功能") is enforced the same way it always
+// was - lib/audit/store.ts exposes only a write and two read functions,
+// never an update or delete - not by anything the database layer itself
+// restricts. timestamp is a system-generated timestamp (set to `now`
+// the moment the entry is written), so it's DateTime.
+model AuditLogEntry {
+  auditId    String   @id
+  userId     String
+  userName   String
+  timestamp  DateTime
+  action     String
+  entityType String
+  entityId   String
+  oldValue   String
+  newValue   String
+  result     String
+}

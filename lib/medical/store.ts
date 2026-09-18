@@ -321,7 +321,7 @@ export async function issueMedicalClearance(
   // evaluatePreListingEligibility() call from the UI layer, see
   // lib/adoption-listings/pre-listing.ts), but PRD BR-014 still wants
   // this significant action in the AuditLog.
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Issue Medical Clearance",
@@ -412,7 +412,7 @@ export async function recordPreReleaseCheck(
     );
   }
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Conduct Pre-Release Check",

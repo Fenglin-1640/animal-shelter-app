@@ -24,6 +24,10 @@
       "model": "Animal",
       "namespace": "__unbound__"
     },
+    "auditLogEntry": {
+      "model": "AuditLogEntry",
+      "namespace": "__unbound__"
+    },
     "behaviourProgram": {
       "model": "BehaviourProgram",
       "namespace": "__unbound__"
@@ -1106,6 +1110,117 @@
               },
               "namespaceId": "__unbound__",
               "table": "animal"
+            }
+          },
+          "AuditLogEntry": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "auditId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entityId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entityType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "newValue": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "oldValue": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "result": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "timestamp": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "auditId": {
+                  "column": "auditId"
+                },
+                "entityId": {
+                  "column": "entityId"
+                },
+                "entityType": {
+                  "column": "entityType"
+                },
+                "newValue": {
+                  "column": "newValue"
+                },
+                "oldValue": {
+                  "column": "oldValue"
+                },
+                "result": {
+                  "column": "result"
+                },
+                "timestamp": {
+                  "column": "timestamp"
+                },
+                "userId": {
+                  "column": "userId"
+                },
+                "userName": {
+                  "column": "userName"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "auditLogEntry"
             }
           },
           "BehaviourProgram": {
@@ -3949,6 +4064,68 @@
                 }
               ]
             },
+            "auditLogEntry": {
+              "columns": {
+                "action": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "auditId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "entityId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "entityType": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "newValue": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "oldValue": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "result": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "timestamp": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "userName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "auditId"
+                ]
+              },
+              "uniques": []
+            },
             "behaviourProgram": {
               "columns": {
                 "animalId": {
@@ -5211,7 +5388,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "6dab6414c8ebf6cb821bba94240dbdc943ba055232e9ed3ae75917b2e6da3d68"
+    "storageHash": "315c91a60a12ae8a3f3af78cabf76a8a15f4c2d37f89d086c5d99a353da0732b"
   },
   "capabilities": {
     "sql": {

@@ -7,9 +7,9 @@ import { writeAuditLog } from "@/lib/audit/store";
 // PRD 12.1 seed animals as a static import, plus a "created animals" and
 // a field-level "overrides" array); the seed animals now come from
 // prisma/seed.ts and everything is one real Animal row, so every export
-// here is async now. AuditLog stays a client-side/localStorage prototype
-// feature for this pilot slice, so it's still written here, after a
-// successful API call, the same as before.
+// here is async now. AuditLog is also database-backed now
+// (lib/audit/store.ts) and written here after a successful API call,
+// the same as before.
 
 export interface StatusActor {
   email: string;
@@ -26,7 +26,7 @@ export async function addAnimal(animal: Animal, actor?: StatusActor): Promise<vo
   // AuditLog. Creation is the first entry for this Animal - oldValue is
   // empty since nothing existed before it.
   if (actor) {
-    writeAuditLog({
+    await writeAuditLog({
       userId: actor.email,
       userName: actor.name,
       action: "Create Animal (Finalise Intake)",
@@ -78,7 +78,7 @@ export async function changeAnimalStatus(
     return result;
   }
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: actor.email,
     userName: actor.name,
     action,

@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listAuditLog } from "@/lib/audit/store";
-import type { AuditEntityType } from "@/lib/audit/types";
+import type { AuditEntityType, AuditLogEntry } from "@/lib/audit/types";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator"];
@@ -24,9 +24,33 @@ function formatDateTime(iso: string): string {
 }
 
 function AuditLogContent() {
-  const [entries] = useState(() => listAuditLog());
+  const [entries, setEntries] = useState<AuditLogEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [search, setSearch] = useState("");
   const [entityType, setEntityType] = useState<AuditEntityType | "">("");
+
+  useEffect(() => {
+    let cancelled = false;
+    listAuditLog()
+      .then((result) => {
+        if (cancelled) return;
+        setEntries(result);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadError("Unable to load the Audit Log. Try again.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -82,7 +106,25 @@ function AuditLogContent() {
         </select>
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-[12px] border border-border bg-surface p-6 text-center text-sm text-text-muted">
+          Loading Audit Log...
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="rounded-[12px] border border-danger bg-danger/10 p-6 text-center">
+          <p className="text-sm font-semibold text-text">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setIsLoading(true);
+              setRefreshKey((k) => k + 1);
+            }}
+            className="mt-2 h-9 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+          >
+            Retry
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[12px] border border-border bg-surface p-6 text-center">
           <p className="text-sm font-semibold text-text">
             {entries.length === 0

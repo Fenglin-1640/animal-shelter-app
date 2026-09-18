@@ -3,11 +3,9 @@ import type { Role } from "@/lib/roles/roles";
 import type { DirectoryUser } from "@/lib/user-administration/types";
 
 // User Administration (FR-UA-01/02) against the database-backed
-// /api/users routes - see prisma/contract.prisma. AuditLog stays a
-// client-side/localStorage prototype feature for this pilot slice
-// (lib/audit/store.ts is one of the ~20 other store.ts modules not being
-// converted), so this module still writes to it directly after a
-// successful API call, same as before.
+// /api/users routes - see prisma/contract.prisma. AuditLog is also
+// database-backed now (lib/audit/store.ts), written here directly
+// after a successful API call, same as before.
 
 export async function listDirectoryUsers(): Promise<DirectoryUser[]> {
   const response = await fetch("/api/users");
@@ -78,7 +76,7 @@ export async function updateUserRoleStatus(input: UpdateRoleStatusInput): Promis
   }
 
   if (result.demoted) {
-    writeAuditLog({
+    await writeAuditLog({
       userId: input.actingAdminEmail,
       userName: input.actingAdminDisplayName,
       action: "Role Transfer - Auto-demote Outgoing Administrator",
@@ -91,7 +89,7 @@ export async function updateUserRoleStatus(input: UpdateRoleStatusInput): Promis
   }
 
   if (result.changed) {
-    writeAuditLog({
+    await writeAuditLog({
       userId: input.actingAdminEmail,
       userName: input.actingAdminDisplayName,
       action: "User Role/Status Change",

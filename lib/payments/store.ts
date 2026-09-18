@@ -90,7 +90,7 @@ export async function initiatePayment(
     body: JSON.stringify(payment),
   });
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Initiate Simulated Adoption Payment",
@@ -134,7 +134,7 @@ export async function verifyPayment(
   const result = await response.json();
   if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Verify Adoption Payment",

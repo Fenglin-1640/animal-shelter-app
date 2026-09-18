@@ -147,7 +147,7 @@ export async function releaseAnimal(
   );
   if (!result.ok) return { ok: false, reason: result.reason };
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: actorEmail,
     userName: actorName,
     action: "Release Animal to Adopter",
@@ -200,7 +200,7 @@ export async function completeFollowUpVisit(
   );
   if (!statusResult.ok) return { ok: false, reason: statusResult.reason };
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: actorEmail,
     userName: actorName,
     action: "Complete Follow Up Visit",

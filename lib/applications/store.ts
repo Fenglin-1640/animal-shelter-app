@@ -145,7 +145,7 @@ export async function submitApplication(applicationId: string): Promise<SubmitRe
     updatedAt: now,
   });
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: application.adopterEmail,
     userName: application.adopterName,
     action: "Submit Adoption Application",
@@ -201,7 +201,7 @@ export async function approveApplication(
   // it has no reason to mention applicationId - add a dedicated entry so
   // this decision is searchable/traceable by applicationId too, the same
   // as rejectApplication() below.
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Approve Adoption Application",
@@ -246,7 +246,7 @@ export async function rejectApplication(
     rejectionReason: reason.trim(),
   });
 
-  writeAuditLog({
+  await writeAuditLog({
     userId: email,
     userName: name,
     action: "Reject Adoption Application",
