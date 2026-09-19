@@ -1,36 +1,28 @@
-// Per-account "mark as read" state for the mock Notification list.
-// Persisted to localStorage, keyed by the signed-in account's email.
-const STORAGE_KEY = "asams-notification-read-overrides";
+// Per-account "mark as read" state for the Notification list.
+import type { NotificationReadOverride } from "@/lib/notifications/serialize";
 
-function loadAll(): Record<string, Record<string, boolean>> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveAll(all: Record<string, Record<string, boolean>>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-}
-
-export function loadReadOverrides(
+export async function loadReadOverrides(
   normalizedEmail: string,
-): Record<string, boolean> {
-  return loadAll()[normalizedEmail] ?? {};
+): Promise<Record<string, boolean>> {
+  const response = await fetch("/api/notification-read-overrides");
+  const { items } = (await response.json()) as { items: NotificationReadOverride[] };
+  const overrides: Record<string, boolean> = {};
+  for (const item of items) {
+    if (item.email === normalizedEmail) {
+      overrides[item.notificationId] = item.isRead;
+    }
+  }
+  return overrides;
 }
 
-export function setReadOverride(
+export async function setReadOverride(
   normalizedEmail: string,
   notificationId: string,
   isRead: boolean,
 ) {
-  const all = loadAll();
-  all[normalizedEmail] = { ...all[normalizedEmail], [notificationId]: isRead };
-  saveAll(all);
+  await fetch("/api/notification-read-overrides", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: normalizedEmail, notificationId, isRead }),
+  });
 }

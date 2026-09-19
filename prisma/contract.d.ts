@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e3cf2241012797ff6aab190f32d139c406b72a9ca95c8210f42df60a0fc0acc4'>;
+  StorageHashBase<'bd67249b4939ac40a15856e63c76e51a1134e3901240950d8326dd47d73d5333'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -414,6 +414,12 @@ export type FieldOutputTypes = {
       readonly performedByEmail: CodecTypes['sqlite/text@1']['output'];
       readonly performedByName: CodecTypes['sqlite/text@1']['output'];
       readonly performedAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly NotificationReadOverride: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly email: CodecTypes['sqlite/text@1']['output'];
+      readonly notificationId: CodecTypes['sqlite/text@1']['output'];
+      readonly isRead: CodecTypes['sqlite/integer@1']['output'];
     };
     readonly Photo: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -829,6 +835,12 @@ export type FieldInputTypes = {
       readonly performedByName: CodecTypes['sqlite/text@1']['input'];
       readonly performedAt: CodecTypes['sqlite/datetime@1']['input'];
     };
+    readonly NotificationReadOverride: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly email: CodecTypes['sqlite/text@1']['input'];
+      readonly notificationId: CodecTypes['sqlite/text@1']['input'];
+      readonly isRead: CodecTypes['sqlite/integer@1']['input'];
+    };
     readonly Photo: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly animalId: CodecTypes['sqlite/text@1']['input'];
@@ -1243,6 +1255,12 @@ export type StorageColumnTypes = {
       readonly performedByName: CodecTypes['sqlite/text@1']['output'];
       readonly result: CodecTypes['sqlite/text@1']['output'];
     };
+    readonly notificationReadOverride: {
+      readonly email: CodecTypes['sqlite/text@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly isRead: CodecTypes['sqlite/integer@1']['output'];
+      readonly notificationId: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly photo: {
       readonly altText: CodecTypes['sqlite/text@1']['output'];
       readonly animalId: CodecTypes['sqlite/text@1']['output'];
@@ -1656,6 +1674,12 @@ export type StorageColumnInputTypes = {
       readonly performedByEmail: CodecTypes['sqlite/text@1']['input'];
       readonly performedByName: CodecTypes['sqlite/text@1']['input'];
       readonly result: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly notificationReadOverride: {
+      readonly email: CodecTypes['sqlite/text@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly isRead: CodecTypes['sqlite/integer@1']['input'];
+      readonly notificationId: CodecTypes['sqlite/text@1']['input'];
     };
     readonly photo: {
       readonly altText: CodecTypes['sqlite/text@1']['input'];
@@ -2221,6 +2245,13 @@ export namespace Models {
     vetConfirmedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type NotificationReadOverride = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    email: CodecTypes['sqlite/text@1']['output'];
+    notificationId: CodecTypes['sqlite/text@1']['output'];
+    isRead: CodecTypes['sqlite/integer@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -2251,6 +2282,7 @@ export declare const models: {
   MicrochipLookup: Models.MicrochipLookup;
   AssessmentTask: Models.AssessmentTask;
   FitnessReview: Models.FitnessReview;
+  NotificationReadOverride: Models.NotificationReadOverride;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -3670,6 +3702,34 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly notificationReadOverride: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly email: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly notificationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly isRead: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly photo: {
               columns: {
                 readonly id: {
@@ -4380,6 +4440,10 @@ type ContractBase = Omit<
     readonly fitnessReview: {
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'FitnessReview';
+    };
+    readonly notificationReadOverride: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'NotificationReadOverride';
     };
   };
   readonly domain: {
@@ -5844,6 +5908,37 @@ type ContractBase = Omit<
                 readonly performedByEmail: { readonly column: 'performedByEmail' };
                 readonly performedByName: { readonly column: 'performedByName' };
                 readonly performedAt: { readonly column: 'performedAt' };
+              };
+            };
+          };
+          readonly NotificationReadOverride: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly email: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly notificationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly isRead: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'notificationReadOverride';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly email: { readonly column: 'email' };
+                readonly notificationId: { readonly column: 'notificationId' };
+                readonly isRead: { readonly column: 'isRead' };
               };
             };
           };

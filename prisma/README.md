@@ -232,14 +232,23 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   onto the domain type, no flattening or JSON-encoding needed.
   `staffConfirmedAt`/`vetConfirmedAt` are system-generated timestamps,
   so both are DateTime. See lib/adoption-fitness/serialize.ts.
-- Still not the last domain: `lib/notifications/read-state-store.ts`
-  (per-user notification read/unread flags) is a plausible next
-  candidate, but is arguably closer to a per-device UI preference than
-  shared domain data - worth a judgment call, not an automatic
-  migration (re-confirmed by grepping for real `localStorage.` calls
-  immediately before writing this note, not relying on a past
-  session's summary - see the AdopterProfile/AuditLog entry above).
+- `NotificationReadOverride` - see lib/notifications/read-state-store.ts.
+  Per-account "mark as read" overrides for the Notifications screen
+  (FR-NOT-01); each `NotificationItem` already carries its own
+  `defaultRead`, so only accounts that have flipped a given
+  notification get a row here. `id` is the synthetic
+  `${email}:${notificationId}`, same "natural string id, upsert
+  instead of a separate create/update split" shape as DropdownOption's
+  ids. `isRead` is Int (0/1), same reasoning as AdoptionAgreement's
+  isSigned. Decided as a judgment call rather than an oversight - this
+  is closer to a per-device UI flag than shared domain data, but since
+  it does need to be shared across whichever device/browser an account
+  signs in from (not just the one that flipped it), it belongs here
+  rather than in localStorage. See lib/notifications/serialize.ts.
+  Re-grepped for real `localStorage.`/`sessionStorage.` calls
+  immediately before writing this note (not relying on a past
+  session's summary - see the AdopterProfile/AuditLog entries above):
+  this was genuinely the last real domain-data store.
   `lib/auth/auth-context.tsx` (session token) and
-  `lib/theme/theme-context.tsx` (light/dark preference) are genuinely
-  per-device/session state and out of scope on their own terms, not by
-  oversight.
+  `lib/theme/theme-context.tsx` (light/dark preference) remain
+  correctly out of scope, as genuinely per-device/session state.

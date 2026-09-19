@@ -578,3 +578,15 @@ model FitnessReview {
   vetConfirmedByName    String?
   vetConfirmedAt        DateTime?
 }
+
+// Per-account "mark as read" overrides for the Notifications screen
+// (each NotificationItem already carries its own defaultRead - this only
+// stores the accounts that have flipped it). id is `${email}:${notificationId}`
+// so a repeat toggle is a plain upsert, same shape as DropdownOption's
+// synthetic ids.
+model NotificationReadOverride {
+  id             String @id
+  email          String
+  notificationId String
+  isRead         Int
+}

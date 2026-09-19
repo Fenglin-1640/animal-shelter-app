@@ -76,6 +76,10 @@
       "model": "MicrochipLookup",
       "namespace": "__unbound__"
     },
+    "notificationReadOverride": {
+      "model": "NotificationReadOverride",
+      "namespace": "__unbound__"
+    },
     "photo": {
       "model": "Photo",
       "namespace": "__unbound__"
@@ -2825,6 +2829,57 @@
               "table": "microchipLookup"
             }
           },
+          "NotificationReadOverride": {
+            "fields": {
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isRead": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "notificationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isRead": {
+                  "column": "isRead"
+                },
+                "notificationId": {
+                  "column": "notificationId"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "notificationReadOverride"
+            }
+          },
           "Photo": {
             "fields": {
               "altText": {
@@ -5460,6 +5515,38 @@
               },
               "uniques": []
             },
+            "notificationReadOverride": {
+              "columns": {
+                "email": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "isRead": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "notificationId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "photo": {
               "columns": {
                 "altText": {
@@ -6108,7 +6195,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "e3cf2241012797ff6aab190f32d139c406b72a9ca95c8210f42df60a0fc0acc4"
+    "storageHash": "bd67249b4939ac40a15856e63c76e51a1134e3901240950d8326dd47d73d5333"
   },
   "capabilities": {
     "sql": {

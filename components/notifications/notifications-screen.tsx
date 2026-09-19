@@ -111,17 +111,20 @@ export function NotificationsScreen() {
   const role = user?.role;
   const email = user?.email.toLowerCase() ?? "";
 
-  const [readOverrides, setReadOverrides] = useState<Record<string, boolean>>(
-    () => loadReadOverrides(email),
-  );
+  const [readOverrides, setReadOverrides] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     // `email` is "" on the render before AuthProvider finishes hydrating
-    // the session, so the lazy initializer above can miss the real
-    // overrides. Re-sync once the real email is known.
+    // the session - wait for the real email before fetching overrides.
     if (!email) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- resyncing localStorage-backed state once the account email becomes known.
-    setReadOverrides(loadReadOverrides(email));
+    let cancelled = false;
+    loadReadOverrides(email).then((result) => {
+      if (cancelled) return;
+      setReadOverrides(result);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [email]);
 
   const [rawItems, setRawItems] = useState<NotificationItem[]>([]);
@@ -158,10 +161,10 @@ export function NotificationsScreen() {
   const isRead = (id: string, defaultRead: boolean) =>
     readOverrides[id] ?? defaultRead;
 
-  const toggleRead = (id: string, defaultRead: boolean) => {
+  const toggleRead = async (id: string, defaultRead: boolean) => {
     const next = !isRead(id, defaultRead);
-    setReadOverride(email, id, next);
     setReadOverrides((prev) => ({ ...prev, [id]: next }));
+    await setReadOverride(email, id, next);
   };
 
   const toggleStatus = (value: StatusFilter) => {
