@@ -6,6 +6,25 @@ Platform" CLI, built around a *contract* instead of a schema, and it has
 no `prisma generate` / `prisma migrate dev` commands at all - see
 `prisma --help`.
 
+## Migration status: complete
+
+The localStorage -> Prisma/SQLite migration is done. Every domain-data
+store listed under Models below now lives in the database; there is no
+remaining feature data still read from or written to localStorage.
+`lib/auth/auth-context.tsx` (sessionStorage session token) and
+`lib/theme/theme-context.tsx` (localStorage theme preference) are the
+only `localStorage`/`sessionStorage` usages left in the codebase, and
+both are genuinely per-device/session state rather than shared domain
+data, so they are correctly out of scope, not oversights.
+
+Verified with a final full-app regression pass across all 5 roles
+(Administrator, Shelter Staff Member, Veterinarian, Council Animal
+Control Officer, Adopter) and every route in the app: `tsc --noEmit`
+and `eslint .` clean, zero server errors and zero 404s. The one issue
+that pass turned up - stale "localStorage data" copy on the Retention
+and Backup Status export screen, left over from before the migration -
+has been fixed.
+
 ## What's different here
 
 - **No `datasource`/`generator` blocks.** `prisma/contract.prisma` is just
