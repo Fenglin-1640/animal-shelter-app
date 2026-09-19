@@ -104,7 +104,7 @@ function RetentionBackupContent() {
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Export Records</h2>
         <p className="mt-1 text-sm text-text-muted">
-          Downloads a CSV file built from this prototype&apos;s current localStorage data.
+          Downloads a CSV file built from the current database records.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
