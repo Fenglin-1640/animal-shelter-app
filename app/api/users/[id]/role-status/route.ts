@@ -5,10 +5,10 @@ import { db } from "@/lib/db/client";
 // (auto-demoting the outgoing one to Shelter Staff Member as part of a
 // transfer, PRD 4.1), and blocking the current Administrator from
 // deactivating themselves. Audit log entries are written by the caller
-// (lib/user-administration/directory-store.ts) since AuditLog stays a
-// client-side/localStorage prototype feature for this pilot slice - this
-// route returns enough detail (oldValue/newValue, any auto-demoted admin)
-// for the caller to record them.
+// (lib/user-administration/directory-store.ts) against the database-
+// backed AuditLog (see /api/audit-log) - this route returns enough
+// detail (oldValue/newValue, any auto-demoted admin) for the caller to
+// record them.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },

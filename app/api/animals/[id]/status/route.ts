@@ -12,7 +12,7 @@ type StatusPatch = Partial<
 // (BR-014), same role this endpoint's caller - changeAnimalStatus() in
 // lib/animals/animal-store.ts - played before the database existed.
 // Validates the transition against the PRD 7.1 state table; the caller
-// writes the AuditLog entry (client-side/localStorage, unchanged) using
+// writes the AuditLog entry (database-backed, see /api/audit-log) using
 // the oldValue/newValue this returns.
 export async function POST(
   request: Request,
