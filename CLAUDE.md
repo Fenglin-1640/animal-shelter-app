@@ -1,3 +1,4 @@
 @AGENTS.md
 Business requirements are documented in docs/PRD.md. Read this file before starting any development work.
 All UI copy, labels, button text, placeholder text, error messages, and code comments must be written in English only. Do not use Chinese anywhere in the codebase, even though the PRD or prompts discussing the project may be in Chinese.
+The localStorage-to-Prisma/SQLite migration is complete - every domain-data store now lives in the database. See prisma/README.md's "Migration status" section for details. The only remaining localStorage/sessionStorage usages (auth session token, theme preference) are per-device/session state and intentionally out of scope, not oversights.
