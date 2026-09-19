@@ -27,12 +27,13 @@ export interface LinkedPerson {
   name: string;
 }
 
-// Metadata only (no file content stored - no backend in this prototype,
-// consistent with Council Transfer attachments). Used only by the Intake
-// Record form's simple "at least one photo uploaded" Finalise Intake
-// gate (FR-INT-03) - once the Animal exists, lib/photos/store.ts's
-// seedPhotosFromIntake() converts these into full Photo records (FR-AN-02:
-// altText, selecting the public listing photo, dateTaken/takenBy).
+// Metadata only (no file content stored - there is no file/blob storage
+// in this prototype, consistent with Council Transfer attachments).
+// Used only by the Intake Record form's simple "at least one photo
+// uploaded" Finalise Intake gate (FR-INT-03) - once the Animal exists,
+// lib/photos/store.ts's seedPhotosFromIntake() converts these into full
+// Photo records (FR-AN-02: altText, selecting the public listing photo,
+// dateTaken/takenBy).
 export interface AnimalPhoto {
   id: string;
   fileName: string;

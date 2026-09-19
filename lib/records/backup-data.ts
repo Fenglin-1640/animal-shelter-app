@@ -1,10 +1,11 @@
 // FR-REC-01 / PRD 8.3: "BackupRun and RecoveryTest | 原型中的备份状态与恢复测试证据"
 // - PRD itself frames these as prototype evidence of backup status, not
-// a real subsystem. There is no actual backend for this client-side/
-// localStorage prototype to back up, so this data is simulated and
-// disclosed as such wherever shown - the same status as the "Backup Job
-// failure" Notification type (lib/notifications/mock-notifications.ts),
-// which this data is written to match (one Failed run "last night").
+// a real subsystem. This prototype has no actual backup subsystem
+// (scheduled backups, offsite storage, recovery testing) to run, so
+// this data is simulated and disclosed as such wherever shown - the
+// same status as the "Backup Job failure" Notification type
+// (lib/notifications/mock-notifications.ts), which this data is
+// written to match (one Failed run "last night").
 export interface BackupRun {
   id: string;
   ranAt: string;

@@ -19,8 +19,8 @@ import { listHoldsNeedingReminder } from "@/lib/statutory-hold/store";
 // end date" precedent below. Only "Backup Job failure" stays simulated
 // (lib/mock-notifications.ts) - PRD 8.3 itself frames BackupRun /
 // RecoveryTest as "原型中的备份状态与恢复测试证据" (prototype evidence of backup
-// status), not a real subsystem this client-side/localStorage prototype
-// has anything to actually back up or fail for real.
+// status), not a real subsystem this database-backed prototype has
+// anything to actually back up or fail for real.
 const REMINDER_LEAD_DAYS = 7;
 const RECENT_DECISION_WINDOW_DAYS = 14;
 

@@ -12,6 +12,8 @@ Tracks implementation status for every functional requirement in `docs/PRD.md` s
 
 _Last updated: 2026-09-15, after adding Archive, Search and Export (FR-REC-01) - all 34 FRs are now Done._
 
+**Storage-layer note (2026-09-19):** every "no real backend" / `localStorage` / "client-side" detail in the Notes column below (e.g. FR-AUTH-01, FR-SA-01, FR-ADP-01, FR-MC-02, FR-NOT-01) describes the implementation as of this file's last FR-completion update. A later migration moved every domain-data store off localStorage onto a real Prisma + SQLite backend; that migration is now complete - see `prisma/README.md`'s "Migration status" section for the current source of truth. None of this affects the functional Status below, only the persistence mechanism, so the FR rows themselves haven't been rewritten to match.
+
 ## Summary
 
 | Status | Count |

@@ -4,9 +4,9 @@
 // nothing in this codebase sets them yet.
 export type TransferStatus = "Draft" | "Submitted" | "Accepted" | "Returned for Information";
 
-// File content isn't persisted (no backend / no durable file storage in
-// this prototype) - only the metadata a real DocumentAttachment would
-// carry, sourced from System Administration's "Document Type" category.
+// File content isn't persisted (no durable file/blob storage in this
+// prototype) - only the metadata a real DocumentAttachment would carry,
+// sourced from System Administration's "Document Type" category.
 export interface TransferAttachment {
   id: string;
   documentType: string;

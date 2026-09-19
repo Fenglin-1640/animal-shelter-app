@@ -1,6 +1,7 @@
-// FR-REC-01: client-side CSV export - there is no backend to generate
-// files server-side, so this builds a CSV Blob in the browser and
-// triggers a normal file download via a temporary anchor element.
+// FR-REC-01: client-side CSV export - there is no server-side endpoint
+// to generate files, so this builds a CSV Blob in the browser (from
+// data already fetched from the database) and triggers a normal file
+// download via a temporary anchor element.
 function escapeCsvValue(value: string | number): string {
   const str = String(value ?? "");
   if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;

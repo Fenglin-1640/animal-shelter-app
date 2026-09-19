@@ -3,7 +3,7 @@ import type { NotificationItem } from "@/lib/notifications/types";
 // Sample data only for "Backup Job failure" - the one FR-NOT-01 event
 // type (lib/notifications/store.ts) that stays simulated. PRD 8.3 frames
 // BackupRun/RecoveryTest as "原型中的备份状态与恢复测试证据" (prototype evidence
-// of backup status), not a real subsystem: this client-side/localStorage
+// of backup status), not a real subsystem: this database-backed
 // prototype has no actual backup job to succeed or fail, so there is no
 // real event to compute this notification from - unlike the other 8
 // types, which are now all dynamically derived from real feature data.

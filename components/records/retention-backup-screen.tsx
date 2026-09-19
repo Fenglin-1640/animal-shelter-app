@@ -176,8 +176,8 @@ function RetentionBackupContent() {
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Backup Job Status</h2>
         <p className="mt-1 text-sm text-text-muted">
-          Simulated: this prototype has no real backend or storage to back up. Shown for
-          demonstration only.
+          Simulated: this prototype has no real backup subsystem (scheduled backups, offsite
+          storage, recovery testing) to actually run. Shown for demonstration only.
         </p>
         <ul className="mt-3 flex flex-col gap-2">
           {backupRuns.map((run) => (

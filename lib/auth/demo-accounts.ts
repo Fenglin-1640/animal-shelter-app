@@ -1,7 +1,9 @@
 import type { Role } from "@/lib/roles/roles";
 
 // The 5 demo accounts and shared password from docs/PRD.md section 4.2.
-// Prototype only: there is no backend, so credentials live in client code.
+// Real credentials now live in the database (User model, seeded from
+// this list by prisma/seed.ts) - this array itself is just the seed
+// source and the reference list shown on the Sign In screen.
 export interface DemoAccount {
   userId: string;
   email: string;
