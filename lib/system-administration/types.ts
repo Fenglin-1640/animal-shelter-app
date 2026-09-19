@@ -1,6 +1,10 @@
 import type { Species } from "@/lib/animals/types";
 
-// FR-SA-01: all 13 dropdown option categories Administrator can maintain.
+// FR-SA-01: the 13 dropdown option categories PRD 6.3 names, plus
+// "Vaccine Type" - added later so the Vaccination form's Vaccine Type
+// field could follow the same seeded-dropdown pattern as Treatment
+// Event's Medication field, rather than staying free text. This is a
+// deliberate addition beyond PRD 6.3's literal 13-category list.
 export const DROPDOWN_CATEGORIES = [
   "Title",
   "User Role",
@@ -15,6 +19,7 @@ export const DROPDOWN_CATEGORIES = [
   "Payment Method",
   "Follow Up Type",
   "Document Type",
+  "Vaccine Type",
 ] as const;
 
 export type DropdownCategory = (typeof DROPDOWN_CATEGORIES)[number];

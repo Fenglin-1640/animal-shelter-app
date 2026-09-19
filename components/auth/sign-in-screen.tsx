@@ -47,6 +47,7 @@ export function SignInScreen({
 
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -195,23 +196,45 @@ export function SignInScreen({
                 >
                   Password <span aria-hidden="true">*</span>
                 </label>
-                <input
-                  ref={passwordRef}
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  aria-required="true"
-                  aria-invalid={Boolean(errors.password)}
-                  aria-describedby={
-                    errors.password ? "password-error" : undefined
-                  }
-                  className={`h-10 rounded-[12px] border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
-                    errors.password ? "border-danger" : "border-border"
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    ref={passwordRef}
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    aria-required="true"
+                    aria-invalid={Boolean(errors.password)}
+                    aria-describedby={
+                      errors.password ? "password-error" : undefined
+                    }
+                    className={`h-10 w-full rounded-[12px] border bg-page px-3 pr-10 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+                      errors.password ? "border-danger" : "border-border"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-text-muted hover:text-text"
+                  >
+                    {showPassword ? (
+                      <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M3 3l18 18" />
+                      </svg>
+                    ) : (
+                      <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
                 {errors.password && (
                   <p id="password-error" className="text-sm text-danger">
                     {errors.password}

@@ -249,6 +249,24 @@ export async function scheduleDesexing(
   return { ok: true };
 }
 
+export async function updateDesexingScheduledDate(
+  animalId: string,
+  scheduledDate: string,
+): Promise<MutationResult> {
+  const schedule = await getDesexingSchedule(animalId);
+  if (!schedule) return { ok: false, reason: "not_found" };
+  if (schedule.status === "Completed") return { ok: false, reason: "already_completed" };
+
+  const response = await fetch(`/api/medical/desexing-schedules/${schedule.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scheduledDate }),
+  });
+  const result = await response.json();
+  if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
+  return { ok: true };
+}
+
 export async function completeDesexing(animalId: string, email: string, name: string): Promise<MutationResult> {
   const schedule = await getDesexingSchedule(animalId);
   if (!schedule) return { ok: false, reason: "not_found" };
@@ -279,11 +297,12 @@ export async function listAllMedicalClearances(): Promise<MedicalClearance[]> {
   return fetchAll<MedicalClearance>("/api/medical/clearances");
 }
 
-// PRD: "系统只有在必需疫苗完成且绝育已经完成或排期后，才允许 issueMedicalClearance()". There
-// is no System Administration category defining "required" vaccine
-// types (only 13 categories exist and none is vaccine-specific), so
-// this prototype treats "at least one vaccination recorded" as
-// satisfying "必需疫苗完成" - disclosed in the UI and BUILD-PROGRESS.md.
+// PRD: "系统只有在必需疫苗完成且绝育已经完成或排期后，才允许 issueMedicalClearance()". The
+// "Vaccine Type" dropdown category (added later, alongside Medication's
+// pattern) lists which vaccine types exist, but nothing marks any of
+// them as "required" - so this prototype treats "at least one
+// vaccination recorded" as satisfying "必需疫苗完成" - disclosed in the UI
+// and BUILD-PROGRESS.md.
 export async function getMedicalClearanceBlockers(animalId: string): Promise<string[]> {
   const blockers: string[] = [];
   const [vaccinations, desexing] = await Promise.all([

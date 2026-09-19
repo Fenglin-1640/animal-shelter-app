@@ -84,6 +84,18 @@ const SEED_ENTRIES: SeedEntry[] = [
   { category: "Medication", value: "Cerenia (Maropitant)", description: "Anti-nausea and vomiting treatment." },
   { category: "Medication", value: "Caninsulin", description: "Insulin used to manage diabetes." },
 
+  // Vaccine Type - not one of PRD 6.3's original 13 categories; added so
+  // the Vaccination form's Vaccine Type field could be a seeded dropdown
+  // like Treatment Event's Medication field, instead of free text.
+  { category: "Vaccine Type", value: "F3", description: "Core feline vaccine covering feline enteritis, herpesvirus and calicivirus." },
+  { category: "Vaccine Type", value: "F4", description: "F3 plus feline leukaemia (FeLV)." },
+  { category: "Vaccine Type", value: "F5", description: "F3 plus chlamydia and feline leukaemia (FeLV)." },
+  { category: "Vaccine Type", value: "C3", description: "Core canine vaccine covering parvovirus, distemper and hepatitis." },
+  { category: "Vaccine Type", value: "C4", description: "C3 plus parainfluenza." },
+  { category: "Vaccine Type", value: "C5", description: "C3 plus parainfluenza and bordetella." },
+  { category: "Vaccine Type", value: "C7", description: "C5 plus additional leptospirosis strains." },
+  { category: "Vaccine Type", value: "Kennel Cough (Bordetella)", description: "Intranasal vaccine for canine infectious tracheobronchitis." },
+
   // Temperament - PRD 12.4, exactly 20 values.
   { category: "Temperament", value: "Calm", description: "Settled and relaxed disposition." },
   { category: "Temperament", value: "Friendly", description: "Warm and sociable with people." },

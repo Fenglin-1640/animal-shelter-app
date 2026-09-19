@@ -24,6 +24,7 @@ import {
   recordHealthAssessment,
   recordVaccination,
   scheduleDesexing,
+  updateDesexingScheduledDate,
   type HealthAssessmentInput,
   type TreatmentEventInput,
   type VaccinationInput,
@@ -331,9 +332,11 @@ function TreatmentEventForm({
 }
 
 function VaccinationForm({
+  vaccineTypeOptions,
   onSubmit,
   onCancel,
 }: {
+  vaccineTypeOptions: string[];
   onSubmit: (input: VaccinationInput) => void;
   onCancel: () => void;
 }) {
@@ -342,21 +345,24 @@ function VaccinationForm({
   const [doseOrChipId, setDoseOrChipId] = useState("");
   const [nextBoosterDueDate, setNextBoosterDueDate] = useState("");
 
-  const canSubmit = vaccineType.trim() && administrationDate && doseOrChipId.trim();
+  const canSubmit = vaccineType && administrationDate && doseOrChipId.trim();
 
   return (
     <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
           <label htmlFor="vac-type" className="text-xs font-semibold text-text-muted">Vaccine Type</label>
-          <input
+          <select
             id="vac-type"
-            type="text"
             value={vaccineType}
             onChange={(e) => setVaccineType(e.target.value)}
-            placeholder="e.g. F3, C5"
-            className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
+            className="h-9 rounded-[12px] border border-border bg-surface px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <option value="">Select</option>
+            {vaccineTypeOptions.map((v) => (
+              <option key={v} value={v}>{v}</option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="vac-admin-date" className="text-xs font-semibold text-text-muted">Administration Date</label>
@@ -436,8 +442,11 @@ function MedicalContent({
   const [showTreatmentForm, setShowTreatmentForm] = useState(false);
   const [showVaccinationForm, setShowVaccinationForm] = useState(false);
   const [scheduledDate, setScheduledDate] = useState(todayDate());
+  const [showEditScheduledDate, setShowEditScheduledDate] = useState(false);
+  const [editedScheduledDate, setEditedScheduledDate] = useState(todayDate());
 
   const [medicationOptions, setMedicationOptions] = useState<string[]>([]);
+  const [vaccineTypeOptions, setVaccineTypeOptions] = useState<string[]>([]);
   const canAct = CAN_ACT_ROLES.includes(role);
 
   const [clearanceBlockers, setClearanceBlockers] = useState<string[]>([]);
@@ -479,6 +488,9 @@ function MedicalContent({
     let cancelled = false;
     getActiveValues("Medication").then((result) => {
       if (!cancelled) setMedicationOptions(result);
+    });
+    getActiveValues("Vaccine Type").then((result) => {
+      if (!cancelled) setVaccineTypeOptions(result);
     });
     return () => {
       cancelled = true;
@@ -655,6 +667,7 @@ function MedicalContent({
         )}
         {canAct && showVaccinationForm && (
           <VaccinationForm
+            vaccineTypeOptions={vaccineTypeOptions}
             onCancel={() => setShowVaccinationForm(false)}
             onSubmit={async (input) => {
               await recordVaccination(animalId, input, email, displayName);
@@ -667,27 +680,74 @@ function MedicalContent({
 
       <SectionCard title="Desexing" required>
         {desexing ? (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-border bg-page p-3 text-sm">
-            <div>
-              <StatusChip label={desexing.status} category={DESEXING_STATUS_CATEGORY[desexing.status]} />
-              <p className="mt-1 text-text">Scheduled for {formatDate(desexing.scheduledDate)}</p>
-              {desexing.status === "Completed" && desexing.completedAt && (
-                <p className="text-text-muted">
-                  Completed {formatDateTime(desexing.completedAt)} by {desexing.completedByName}
-                </p>
+          <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <StatusChip label={desexing.status} category={DESEXING_STATUS_CATEGORY[desexing.status]} />
+                <p className="mt-1 text-text">Scheduled for {formatDate(desexing.scheduledDate)}</p>
+                {desexing.status === "Completed" && desexing.completedAt && (
+                  <p className="text-text-muted">
+                    Completed {formatDateTime(desexing.completedAt)} by {desexing.completedByName}
+                  </p>
+                )}
+              </div>
+              {canAct && desexing.status === "Scheduled" && !showEditScheduledDate && (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditedScheduledDate(desexing.scheduledDate);
+                      setShowEditScheduledDate(true);
+                    }}
+                    className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                  >
+                    Edit Scheduled Date
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await completeDesexing(animalId, email, displayName);
+                      refresh();
+                    }}
+                    className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                  >
+                    Mark Desexing Completed
+                  </button>
+                </div>
               )}
             </div>
-            {canAct && desexing.status === "Scheduled" && (
-              <button
-                type="button"
-                onClick={() => {
-                  completeDesexing(animalId, email, displayName);
-                  refresh();
-                }}
-                className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
-              >
-                Mark Desexing Completed
-              </button>
+            {canAct && desexing.status === "Scheduled" && showEditScheduledDate && (
+              <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="desexing-edit-date" className="text-xs font-semibold text-text-muted">Scheduled Date</label>
+                  <input
+                    id="desexing-edit-date"
+                    type="date"
+                    value={editedScheduledDate}
+                    onChange={(e) => setEditedScheduledDate(e.target.value)}
+                    className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  />
+                </div>
+                <button
+                  type="button"
+                  disabled={!editedScheduledDate}
+                  onClick={async () => {
+                    await updateDesexingScheduledDate(animalId, editedScheduledDate);
+                    setShowEditScheduledDate(false);
+                    refresh();
+                  }}
+                  className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEditScheduledDate(false)}
+                  className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                >
+                  Cancel
+                </button>
+              </div>
             )}
           </div>
         ) : (

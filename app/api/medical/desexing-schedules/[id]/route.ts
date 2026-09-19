@@ -1,28 +1,20 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { toDesexingSchedule } from "@/lib/medical/serialize";
+import { toDesexingSchedule, toDesexingScheduleRowPatch } from "@/lib/medical/serialize";
+import type { DesexingSchedule } from "@/lib/medical/types";
 
-// Mark Desexing Completed. Business-rule checks (already_completed,
-// not_found) stay client-side in lib/medical/store.ts, matching how
-// Animal's generic PATCH route works - see app/api/animals/[id]/route.ts.
+// Generic patch - mirrors Photo's PATCH route. Call sites (completeDesexing,
+// updateDesexingScheduledDate in lib/medical/store.ts) each patch a
+// different subset of fields; business-rule checks (already_completed,
+// not_found) stay client-side.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const body = (await request.json()) as {
-    status: string;
-    completedAt: string;
-    completedByEmail: string;
-    completedByName: string;
-  };
+  const patch = (await request.json()) as Partial<DesexingSchedule>;
 
-  const updated = await db.orm.DesexingSchedule.where({ id }).update({
-    status: body.status,
-    completedAt: new Date(body.completedAt),
-    completedByEmail: body.completedByEmail,
-    completedByName: body.completedByName,
-  });
+  const updated = await db.orm.DesexingSchedule.where({ id }).update(toDesexingScheduleRowPatch(patch));
   if (!updated) {
     return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
   }

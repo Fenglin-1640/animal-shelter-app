@@ -12,10 +12,9 @@ export function LandingScreen() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold text-text">Landing Screen</h1>
-        <p className="mt-1 text-sm text-text-muted">
-          Signed in as {user.displayName} ({user.role}).
-        </p>
+        <h1 className="text-3xl font-bold text-text">
+          Welcome back, {user.firstName} ({user.role})!
+        </h1>
       </div>
 
       <FunctionCardGroup

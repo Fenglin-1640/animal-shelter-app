@@ -72,6 +72,18 @@ export function toDesexingSchedule(row: DesexingScheduleRow): DesexingSchedule {
   };
 }
 
+export function toDesexingScheduleRowPatch(patch: Partial<DesexingSchedule>): Record<string, unknown> {
+  const row: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (key === "completedAt") {
+      row[key] = typeof value === "string" ? new Date(value) : value;
+    } else {
+      row[key] = value;
+    }
+  }
+  return row;
+}
+
 export interface MedicalClearanceRow extends Omit<MedicalClearance, "issuedAt"> {
   issuedAt: Date;
 }
