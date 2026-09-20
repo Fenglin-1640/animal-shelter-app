@@ -22,6 +22,21 @@ export interface AdopterProfileRow {
   refereeConsentAt: Date | null;
 }
 
+// Defensive against rows written before preferredSpecies was guaranteed
+// to be a JSON-encoded array (see toAdopterProfileRow below) - an empty
+// string or any other malformed value falls back to no preference
+// selected, rather than throwing and taking down the whole GET (which
+// fetches every profile in one call, so one bad row broke every
+// Adopter's profile load, not just its own).
+function parsePreferredSpecies(value: string): Species[] {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as Species[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function toAdopterProfile(row: AdopterProfileRow): AdopterProfile {
   return {
     residentialAddress: row.residentialAddress,
@@ -34,7 +49,7 @@ export function toAdopterProfile(row: AdopterProfileRow): AdopterProfile {
     existingPetDetails: row.existingPetDetails,
     environmentDetails: row.environmentDetails,
     hoursAlone: row.hoursAlone,
-    preferredSpecies: JSON.parse(row.preferredSpecies) as Species[],
+    preferredSpecies: parsePreferredSpecies(row.preferredSpecies),
     refereeName: row.refereeName,
     refereeRelationship: row.refereeRelationship,
     refereePhone: row.refereePhone,
@@ -57,7 +72,7 @@ export function toAdopterProfileRow(email: string, profile: AdopterProfile): Omi
     existingPetDetails: profile.existingPetDetails,
     environmentDetails: profile.environmentDetails,
     hoursAlone: profile.hoursAlone,
-    preferredSpecies: JSON.stringify(profile.preferredSpecies),
+    preferredSpecies: JSON.stringify(Array.isArray(profile.preferredSpecies) ? profile.preferredSpecies : []),
     refereeName: profile.refereeName,
     refereeRelationship: profile.refereeRelationship,
     refereePhone: profile.refereePhone,
