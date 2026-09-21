@@ -19,15 +19,20 @@ import type {
 // not Boolean - this SQL PSL provider doesn't support the Boolean field
 // type (CONTRACT.SOURCE_LOAD_FAILED / PSL_UNSUPPORTED_FIELD_TYPE).
 export interface HealthAssessmentRow
-  extends Omit<HealthAssessment, "createdAt" | "urgentTreatmentRequired" | "treatmentPathway"> {
+  extends Omit<HealthAssessment, "createdAt" | "urgentTreatmentRequired" | "treatmentPathway" | "healthRecheckRequired"> {
   urgentTreatmentRequired: number;
   treatmentPathway: string | null;
+  // Nullable - rows created before this column existed have no value;
+  // treated as false (no recheck pending), the same as if it had never
+  // been ticked.
+  healthRecheckRequired: number | null;
   createdAt: Date;
 }
 export function toHealthAssessment(row: HealthAssessmentRow): HealthAssessment {
   return {
     ...row,
     urgentTreatmentRequired: Boolean(row.urgentTreatmentRequired),
+    healthRecheckRequired: Boolean(row.healthRecheckRequired),
     treatmentPathway: (row.treatmentPathway as TreatmentPathway | null) ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };

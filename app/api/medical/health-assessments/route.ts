@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     urgentTreatmentRequired: body.urgentTreatmentRequired ? 1 : 0,
     urgentTreatmentNotes: body.urgentTreatmentNotes,
     treatmentPathway: body.treatmentPathway ?? null,
+    healthRecheckRequired: body.healthRecheckRequired ? 1 : 0,
     assessmentDate: body.assessmentDate,
     veterinarianEmail: body.veterinarianEmail,
     veterinarianName: body.veterinarianName,

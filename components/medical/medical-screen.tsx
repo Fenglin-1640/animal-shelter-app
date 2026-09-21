@@ -110,6 +110,7 @@ function HealthAssessmentForm({
   const [bodyCondition, setBodyCondition] = useState("");
   const [urgentTreatmentRequired, setUrgentTreatmentRequired] = useState(false);
   const [urgentTreatmentNotes, setUrgentTreatmentNotes] = useState("");
+  const [healthRecheckRequired, setHealthRecheckRequired] = useState(false);
   const [assessmentDate, setAssessmentDate] = useState(todayDate());
 
   const canSubmit = examinationObservations.trim() && bodyCondition.trim() && assessmentDate;
@@ -200,6 +201,22 @@ function HealthAssessmentForm({
           Submitting will set this animal&apos;s status to Under Treatment.
         </p>
       )}
+      <label className="flex items-center gap-2 text-sm text-text">
+        <input
+          id="ha-recheck"
+          type="checkbox"
+          checked={healthRecheckRequired}
+          onChange={(e) => setHealthRecheckRequired(e.target.checked)}
+          className="h-4 w-4 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        />
+        Health recheck required
+      </label>
+      {healthRecheckRequired && (
+        <p className="text-xs text-text-muted">
+          Medical Clearance will stay blocked until a later assessment is recorded with this
+          unticked.
+        </p>
+      )}
       <div className="flex gap-2">
         <button
           type="button"
@@ -212,6 +229,7 @@ function HealthAssessmentForm({
               bodyCondition,
               urgentTreatmentRequired,
               urgentTreatmentNotes,
+              healthRecheckRequired,
               assessmentDate,
             })
           }
@@ -545,9 +563,14 @@ function MedicalContent({
               <li key={h.id} className="rounded-[12px] border border-border bg-page p-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-text">{formatDate(h.assessmentDate)}</span>
-                  {h.urgentTreatmentRequired && (
-                    <StatusChip label="Urgent Treatment Required" category="attention" />
-                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    {h.urgentTreatmentRequired && (
+                      <StatusChip label="Urgent Treatment Required" category="attention" />
+                    )}
+                    {h.healthRecheckRequired && (
+                      <StatusChip label="Health Recheck Required" category="caution" />
+                    )}
+                  </div>
                 </div>
                 <p className="mt-1 text-text-muted">Body condition: {h.bodyCondition}</p>
                 {h.examinationObservations && <p className="mt-1 text-text">{h.examinationObservations}</p>}

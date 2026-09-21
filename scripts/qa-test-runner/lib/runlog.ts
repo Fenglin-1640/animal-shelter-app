@@ -32,6 +32,7 @@ export interface CaseEntry {
 
 export interface AdopterEntry {
   email: string;
+  fullName: string;
   signedUp: boolean;
   profileSaved: boolean;
 }

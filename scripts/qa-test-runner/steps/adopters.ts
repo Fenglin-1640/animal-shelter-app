@@ -126,14 +126,14 @@ export async function runAdoptersPhase(force = false): Promise<void> {
     const signupResult = await signUp(row);
     if (!signupResult.ok) {
       console.error(`  ${row.adopterId} (${row.email}): SIGN-UP FAILED - ${signupResult.reason}`);
-      setAdopter(row.adopterId, { email: row.email, signedUp: false, profileSaved: false });
+      setAdopter(row.adopterId, { email: row.email, fullName: row.fullName, signedUp: false, profileSaved: false });
       continue;
     }
 
     const profile = buildProfile(row, rows.indexOf(row));
     await saveAdopterProfile(row.email, profile);
 
-    setAdopter(row.adopterId, { email: row.email, signedUp: true, profileSaved: true });
+    setAdopter(row.adopterId, { email: row.email, fullName: row.fullName, signedUp: true, profileSaved: true });
     console.log(`  ${row.adopterId} (${row.email}): ready${signupResult.reason ? ` (${signupResult.reason})` : ""}`);
   }
 }

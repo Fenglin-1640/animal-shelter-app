@@ -204,6 +204,7 @@ export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
         bodyCondition: assessment.bodyCondition,
         urgentTreatmentRequired: assessment.urgentTreatmentRequired,
         urgentTreatmentNotes: assessment.urgentTreatmentRequired ? assessment.healthNotes : "",
+        healthRecheckRequired: assessment.healthRecheckRequired,
         assessmentDate: assessment.assessmentDate,
       },
       VET.email,
@@ -224,6 +225,10 @@ export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
           bodyCondition: assessment.bodyCondition,
           urgentTreatmentRequired: false,
           urgentTreatmentNotes: "",
+          // This is what actually resolves the recheck gate - a later
+          // assessment recorded with this false (getMedicalClearanceBlockers
+          // only looks at the MOST RECENT HealthAssessment).
+          healthRecheckRequired: false,
           assessmentDate: assessment.healthRecheckDate,
         },
         VET.email,
@@ -381,7 +386,7 @@ export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
   await step(entry, "application_submit", "Application is submitted.", async () => {
     let applicationId = getId(entry, "applicationId");
     if (!applicationId) {
-      const draftResult = await startOrContinueDraft(animalId, adopterEmail, adoption.animalName);
+      const draftResult = await startOrContinueDraft(animalId, adopterEmail, adopterEntry.fullName);
       if (!ok(draftResult)) return fail(`startOrContinueDraft failed: ${(draftResult as { reason: string }).reason}`);
       applicationId = (draftResult as { applicationId: string }).applicationId;
       setId(entry, "applicationId", applicationId);
@@ -480,7 +485,7 @@ export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
     if (!agreement) return fail("agreement not found after generation");
     setId(entry, "agreementId", agreement.agreementId);
     if (!agreement.isSigned) {
-      const signResult = await signAgreement(agreement.agreementId, adopterEmail, adoption.animalName);
+      const signResult = await signAgreement(agreement.agreementId, adopterEmail, adopterEntry.fullName);
       if (!ok(signResult)) return fail(`signAgreement failed: ${(signResult as { reason: string }).reason}`);
     }
     const final = await getActiveAgreementForApplication(applicationId);
@@ -495,7 +500,7 @@ export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
     if (!payment || payment.paymentStatus === "Failed") {
       const methods = await getActiveValues("Payment Method");
       const method = methods[0] ?? "Credit Card";
-      const initResult = await initiatePayment(agreementId, method, adopterEmail, adoption.animalName);
+      const initResult = await initiatePayment(agreementId, method, adopterEmail, adopterEntry.fullName);
       if (!ok(initResult)) return fail(`initiatePayment failed: ${(initResult as { reason: string }).reason}`);
       payment = await getLatestPaymentForAgreement(agreementId);
     }
@@ -544,7 +549,7 @@ export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
       {
         careInstructionsProvided: true,
         releaseDate: release.releaseDate || new Date().toISOString(),
-        receivingAdopter: adoption.animalName,
+        receivingAdopter: adopterEntry.fullName,
         targetDate: release.followUpTargetDate || new Date(Date.now() + 14 * 86400000).toISOString(),
         followUpType: (release.followUpType || "Phone Call") as "Phone Call" | "Home Visit",
       },

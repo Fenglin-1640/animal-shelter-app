@@ -2098,6 +2098,13 @@
                   "kind": "scalar"
                 }
               },
+              "healthRecheckRequired": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -2168,6 +2175,9 @@
                 },
                 "examinationObservations": {
                   "column": "examinationObservations"
+                },
+                "healthRecheckRequired": {
+                  "column": "healthRecheckRequired"
                 },
                 "id": {
                   "column": "id"
@@ -5137,6 +5147,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "healthRecheckRequired": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "sqlite/text@1",
                   "nativeType": "text",
@@ -6210,7 +6225,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "b0b3aa30658af08f09d3845f5fde1e1dfbe47395b6d13b0c8754047508418340"
+    "storageHash": "36ed443b58c6fab5f63fbb55921b1a22bbc9099fdc4de04e5e72ec3803ffba69"
   },
   "capabilities": {
     "sql": {

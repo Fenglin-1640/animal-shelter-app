@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b0b3aa30658af08f09d3845f5fde1e1dfbe47395b6d13b0c8754047508418340'>;
+  StorageHashBase<'36ed443b58c6fab5f63fbb55921b1a22bbc9099fdc4de04e5e72ec3803ffba69'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -343,6 +343,7 @@ export type FieldOutputTypes = {
       readonly urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
       readonly urgentTreatmentNotes: CodecTypes['sqlite/text@1']['output'];
       readonly treatmentPathway: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly healthRecheckRequired: CodecTypes['sqlite/integer@1']['output'] | null;
       readonly assessmentDate: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['output'];
@@ -764,6 +765,7 @@ export type FieldInputTypes = {
       readonly urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['input'];
       readonly urgentTreatmentNotes: CodecTypes['sqlite/text@1']['input'];
       readonly treatmentPathway: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly healthRecheckRequired: CodecTypes['sqlite/integer@1']['input'] | null;
       readonly assessmentDate: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianEmail: CodecTypes['sqlite/text@1']['input'];
       readonly veterinarianName: CodecTypes['sqlite/text@1']['input'];
@@ -1182,6 +1184,7 @@ export type StorageColumnTypes = {
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
       readonly diagnosedConditions: CodecTypes['sqlite/text@1']['output'];
       readonly examinationObservations: CodecTypes['sqlite/text@1']['output'];
+      readonly healthRecheckRequired: CodecTypes['sqlite/integer@1']['output'] | null;
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly sampleTestResults: CodecTypes['sqlite/text@1']['output'];
       readonly treatmentPathway: CodecTypes['sqlite/text@1']['output'] | null;
@@ -1603,6 +1606,7 @@ export type StorageColumnInputTypes = {
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
       readonly diagnosedConditions: CodecTypes['sqlite/text@1']['input'];
       readonly examinationObservations: CodecTypes['sqlite/text@1']['input'];
+      readonly healthRecheckRequired: CodecTypes['sqlite/integer@1']['input'] | null;
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly sampleTestResults: CodecTypes['sqlite/text@1']['input'];
       readonly treatmentPathway: CodecTypes['sqlite/text@1']['input'] | null;
@@ -1868,6 +1872,7 @@ export namespace Models {
     urgentTreatmentRequired: CodecTypes['sqlite/integer@1']['output'];
     urgentTreatmentNotes: CodecTypes['sqlite/text@1']['output'];
     treatmentPathway: CodecTypes['sqlite/text@1']['output'] | null;
+    healthRecheckRequired: CodecTypes['sqlite/integer@1']['output'] | null;
     assessmentDate: CodecTypes['sqlite/text@1']['output'];
     veterinarianEmail: CodecTypes['sqlite/text@1']['output'];
     veterinarianName: CodecTypes['sqlite/text@1']['output'];
@@ -3352,6 +3357,11 @@ type ContractBase = Omit<
                 readonly treatmentPathway: {
                   readonly nativeType: 'text';
                   readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly healthRecheckRequired: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
                   readonly nullable: true;
                 };
                 readonly assessmentDate: {
@@ -5536,6 +5546,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
               };
+              readonly healthRecheckRequired: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
               readonly assessmentDate: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
@@ -5567,6 +5581,7 @@ type ContractBase = Omit<
                 readonly urgentTreatmentRequired: { readonly column: 'urgentTreatmentRequired' };
                 readonly urgentTreatmentNotes: { readonly column: 'urgentTreatmentNotes' };
                 readonly treatmentPathway: { readonly column: 'treatmentPathway' };
+                readonly healthRecheckRequired: { readonly column: 'healthRecheckRequired' };
                 readonly assessmentDate: { readonly column: 'assessmentDate' };
                 readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
                 readonly veterinarianName: { readonly column: 'veterinarianName' };

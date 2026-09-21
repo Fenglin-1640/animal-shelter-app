@@ -31,6 +31,14 @@ export interface HealthAssessment {
   // completes, however many treatment events later. This animal record
   // itself is the "原始 MedicalRecord" each treatment event links back to.
   treatmentPathway?: TreatmentPathway;
+  // Distinct from urgentTreatmentRequired: flags that this assessment
+  // found something needing a follow-up recheck before Medical
+  // Clearance can be issued, without itself being an Under Treatment
+  // episode. getMedicalClearanceBlockers() (lib/medical/store.ts) blocks
+  // clearance while the animal's MOST RECENT HealthAssessment has this
+  // set - recording a later assessment with it false is how a recheck
+  // gets resolved.
+  healthRecheckRequired: boolean;
   assessmentDate: string;
   veterinarianEmail: string;
   veterinarianName: string;

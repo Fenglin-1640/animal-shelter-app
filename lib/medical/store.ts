@@ -75,6 +75,7 @@ export interface HealthAssessmentInput {
   bodyCondition: string;
   urgentTreatmentRequired: boolean;
   urgentTreatmentNotes: string;
+  healthRecheckRequired: boolean;
   assessmentDate: string;
 }
 
@@ -340,15 +341,24 @@ export async function listAllMedicalClearances(): Promise<MedicalClearance[]> {
 // and BUILD-PROGRESS.md.
 export async function getMedicalClearanceBlockers(animalId: string): Promise<string[]> {
   const blockers: string[] = [];
-  const [vaccinations, desexing] = await Promise.all([
+  const [vaccinations, desexing, healthAssessments] = await Promise.all([
     listVaccinations(animalId),
     getDesexingSchedule(animalId),
+    listHealthAssessments(animalId),
   ]);
   if (vaccinations.length === 0) {
     blockers.push("At least one vaccination must be recorded.");
   }
   if (!desexing) {
     blockers.push("Desexing must be scheduled or completed.");
+  }
+  // listHealthAssessments() sorts newest first - only the most recent
+  // assessment's flag matters, since a later assessment recorded with
+  // healthRecheckRequired false is exactly how a Veterinarian resolves
+  // an earlier one's pending recheck (same "newest event wins" pattern
+  // isFitForRelease() uses for PreReleaseCheck).
+  if (healthAssessments[0]?.healthRecheckRequired) {
+    blockers.push("An unresolved Health Recheck is pending - record a follow-up assessment first.");
   }
   return blockers;
 }
@@ -470,6 +480,7 @@ export async function recordPreReleaseCheck(
         bodyCondition: "",
         urgentTreatmentRequired: true,
         urgentTreatmentNotes: input.medicationGuidance,
+        healthRecheckRequired: false,
         assessmentDate: input.checkDate,
       },
       email,

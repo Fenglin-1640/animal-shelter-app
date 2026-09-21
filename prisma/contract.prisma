@@ -85,6 +85,19 @@ model HealthAssessment {
   urgentTreatmentRequired Int
   urgentTreatmentNotes    String
   treatmentPathway        String?
+  // Flags that this assessment found something needing a follow-up
+  // recheck before Medical Clearance (distinct from
+  // urgentTreatmentRequired - a recheck isn't an Under Treatment
+  // episode, just a "check again before clearing" note). Int (0/1),
+  // same reasoning as urgentTreatmentRequired, but nullable (existing
+  // rows predate this column - added to an existing table, unlike
+  // urgentTreatmentRequired which was there from this table's first
+  // migration). Read by getMedicalClearanceBlockers()
+  // (lib/medical/store.ts), which looks at only the MOST RECENT
+  // HealthAssessment for this animal - a later assessment recorded with
+  // this false resolves an earlier one's flag, the same "newest event
+  // wins" pattern isFitForRelease() already uses for PreReleaseCheck.
+  healthRecheckRequired Int?
   assessmentDate          String
   veterinarianEmail       String
   veterinarianName        String

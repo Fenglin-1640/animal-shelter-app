@@ -190,7 +190,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
     await performScan(animalId, `985141${Math.floor(Math.random() * 900000 + 100000)}`, VET.email, VET.name);
     await recordHealthAssessment(
       animalId,
-      { examinationObservations: "Healthy.", sampleTestResults: "Normal.", diagnosedConditions: "None", bodyCondition: "Ideal", urgentTreatmentRequired: false, urgentTreatmentNotes: "", assessmentDate: new Date().toISOString() },
+      { examinationObservations: "Healthy.", sampleTestResults: "Normal.", diagnosedConditions: "None", bodyCondition: "Ideal", urgentTreatmentRequired: false, urgentTreatmentNotes: "", healthRecheckRequired: false, assessmentDate: new Date().toISOString() },
       VET.email,
       VET.name,
     );
@@ -233,7 +233,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
   const applicationId = await step(entry, "application_and_approval", "Application approved, currentStatus = Application In Progress.", async () => {
     let appId = getId(entry, "applicationId");
     if (!appId) {
-      const draftResult = await startOrContinueDraft(animalId, adopterEntry.email, "Test Adopter");
+      const draftResult = await startOrContinueDraft(animalId, adopterEntry.email, adopterEntry.fullName);
       if (!ok(draftResult)) return fail(`startOrContinueDraft failed: ${(draftResult as { reason: string }).reason}`);
       appId = (draftResult as { applicationId: string }).applicationId;
       setId(entry, "applicationId", appId);
