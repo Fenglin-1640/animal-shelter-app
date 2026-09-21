@@ -181,6 +181,7 @@ export async function approveApplication(
 ): Promise<MutationResult> {
   const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
+  if (application.applicationStatus !== "Under Review") return { ok: false, reason: "not_under_review" };
 
   const now = new Date().toISOString();
   await setStatus(applicationId, {
@@ -237,6 +238,7 @@ export async function rejectApplication(
   if (!reason.trim()) return { ok: false, reason: "reason_required" };
   const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
+  if (application.applicationStatus !== "Under Review") return { ok: false, reason: "not_under_review" };
 
   await setStatus(applicationId, {
     applicationStatus: "Rejected",

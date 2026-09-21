@@ -439,7 +439,15 @@ function AdoptionApplicationDetailContent({
 
   const checksComplete = checks.length === CHECK_TYPES.length && checks.every((c) => c.outcome !== "Pending");
   const checksPass = checksComplete && checks.every((c) => c.outcome === "Pass");
-  const canDecide = checksComplete && application.applicationStatus !== "Approved" && application.applicationStatus !== "Rejected";
+  // Deny-listing "Approved"/"Rejected" here left every status further
+  // down the lifecycle (Finalised, or any future terminal status) still
+  // able to re-trigger a decision - the real bug that let a stray
+  // second "Approve" click on an already-Finalised application reset
+  // its applicationStatus back to "Approved" (clobbering the Finalised
+  // status the Pre-Release Check screen's Finalised-application lookup
+  // depends on). Allow-list the one status a decision is actually
+  // pending in instead.
+  const canDecide = checksComplete && application.applicationStatus === "Under Review";
   const snapshot = application.profileSnapshot;
 
   return (
