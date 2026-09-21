@@ -94,6 +94,7 @@ export async function proposeSlots(
 export async function selectSlot(meetAndGreetId: string, slotId: string): Promise<MutationResult> {
   const meetAndGreet = await getMeetAndGreet(meetAndGreetId);
   if (!meetAndGreet) return { ok: false, reason: "not_found" };
+  if (meetAndGreet.status !== "Proposed") return { ok: false, reason: "not_proposed" };
   const slot = meetAndGreet.slotOptions.find((s) => s.id === slotId);
   if (!slot) return { ok: false, reason: "slot_not_found" };
 
@@ -108,6 +109,10 @@ export async function selectSlot(meetAndGreetId: string, slotId: string): Promis
 
 // PRD: "Adopter 可查看预约并记录出席状态".
 export async function confirmAttendance(meetAndGreetId: string): Promise<MutationResult> {
+  const meetAndGreet = await getMeetAndGreet(meetAndGreetId);
+  if (!meetAndGreet) return { ok: false, reason: "not_found" };
+  if (meetAndGreet.status !== "Scheduled") return { ok: false, reason: "not_scheduled" };
+
   return patchMeetAndGreet(meetAndGreetId, {
     attendanceConfirmed: true,
     updatedAt: new Date().toISOString(),
@@ -129,6 +134,7 @@ export async function recordOutcome(
 ): Promise<MutationResult> {
   const meetAndGreet = await getMeetAndGreet(meetAndGreetId);
   if (!meetAndGreet) return { ok: false, reason: "not_found" };
+  if (meetAndGreet.status !== "Scheduled") return { ok: false, reason: "not_scheduled" };
   if (outcome === "Incompatible" && !reason.trim()) return { ok: false, reason: "reason_required" };
 
   const result = await patchMeetAndGreet(meetAndGreetId, {

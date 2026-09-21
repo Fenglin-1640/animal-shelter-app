@@ -65,6 +65,10 @@ export async function completeCheck(
   email: string,
   name: string,
 ): Promise<MutationResult> {
+  const check = (await fetchAll()).find((c) => c.checkId === checkId);
+  if (!check) return { ok: false, reason: "not_found" };
+  if (check.outcome !== "Pending") return { ok: false, reason: "already_completed" };
+
   const response = await fetch(`/api/checks/${checkId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
