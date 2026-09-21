@@ -63,7 +63,16 @@ export interface VaccinationRecord {
   createdAt: string;
 }
 
-export type DesexingStatus = "Scheduled" | "Completed";
+// "Exempt (Species)" and "Already Desexed (Pre-Intake)" both satisfy
+// getMedicalClearanceBlockers()'s "a DesexingSchedule row exists" check
+// without a Scheduled/Completed surgery date - added for two cases the
+// original Scheduled/Completed pair couldn't represent without
+// fabricating a procedure: non-mammal species (birds/reptiles, which
+// this prototype's desexing flow has no veterinary basis for) and
+// animals that already arrived desexed at intake (a historical fact,
+// not a new procedure to schedule). Both are terminal on creation - no
+// further "complete" step applies, unlike Scheduled.
+export type DesexingStatus = "Scheduled" | "Completed" | "Exempt (Species)" | "Already Desexed (Pre-Intake)";
 
 export interface DesexingSchedule {
   id: string;

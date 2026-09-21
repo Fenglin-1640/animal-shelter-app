@@ -37,6 +37,14 @@ yarn-error.log*
 /prisma/dev.db
 /prisma/dev.db-journal
 
+# scripts/qa-test-runner generated output - regenerable by re-running the
+# runner against test-data/ASAMS_60_Animal_Test_Data.xlsx (which IS
+# committed, as the actual input fixture). Photos are placeholder JPEGs
+# re-derived from the workbook on every run; results/ is the run log +
+# report from whoever last ran it locally, not a source of truth.
+/test-data/photos/
+/test-data/results/
+
 # vercel
 .vercel
 

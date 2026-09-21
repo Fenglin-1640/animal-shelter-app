@@ -22,6 +22,7 @@ import {
   listHealthAssessments,
   listTreatmentEvents,
   listVaccinations,
+  recordDesexingExemption,
   recordHealthAssessment,
   recordVaccination,
   scheduleDesexing,
@@ -687,10 +688,23 @@ function MedicalContent({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <StatusChip label={desexing.status} category={DESEXING_STATUS_CATEGORY[desexing.status]} />
-                <p className="mt-1 text-text">Scheduled for {formatDate(desexing.scheduledDate)}</p>
+                {(desexing.status === "Scheduled" || desexing.status === "Completed") && (
+                  <p className="mt-1 text-text">Scheduled for {formatDate(desexing.scheduledDate)}</p>
+                )}
                 {desexing.status === "Completed" && desexing.completedAt && (
                   <p className="text-text-muted">
                     Completed {formatDateTime(desexing.completedAt)} by {desexing.completedByName}
+                  </p>
+                )}
+                {desexing.status === "Exempt (Species)" && (
+                  <p className="mt-1 text-text-muted">
+                    Recorded by {desexing.veterinarianName} - this species is exempt from the desexing
+                    requirement.
+                  </p>
+                )}
+                {desexing.status === "Already Desexed (Pre-Intake)" && (
+                  <p className="mt-1 text-text-muted">
+                    Recorded by {desexing.veterinarianName} - this animal arrived already desexed.
                   </p>
                 )}
               </div>
@@ -778,6 +792,28 @@ function MedicalContent({
                   className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Schedule Desexing
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await recordDesexingExemption(animalId, "Exempt (Species)", email, displayName);
+                    refresh();
+                  }}
+                  className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                  title="For species this prototype's desexing flow doesn't apply to (e.g. birds, reptiles)"
+                >
+                  Record Exempt (Species)
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await recordDesexingExemption(animalId, "Already Desexed (Pre-Intake)", email, displayName);
+                    refresh();
+                  }}
+                  className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+                  title="For an animal that arrived already desexed, e.g. a surrendered pet"
+                >
+                  Record Already Desexed (Pre-Intake)
                 </button>
               </div>
             )}

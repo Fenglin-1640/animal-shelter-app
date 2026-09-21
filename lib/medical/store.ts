@@ -3,6 +3,7 @@ import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import { writeAuditLog } from "@/lib/audit/store";
 import type {
   DesexingSchedule,
+  DesexingStatus,
   HealthAssessment,
   MedicalClearance,
   PreReleaseCheck,
@@ -241,6 +242,40 @@ export async function scheduleDesexing(
     animalId,
     scheduledDate,
     status: "Scheduled",
+    veterinarianEmail: email,
+    veterinarianName: name,
+    createdAt: new Date().toISOString(),
+  };
+  await postJson("/api/medical/desexing-schedules", schedule);
+  return { ok: true };
+}
+
+export type DesexingExemptionReason = Extract<
+  DesexingStatus,
+  "Exempt (Species)" | "Already Desexed (Pre-Intake)"
+>;
+
+// Records a resolved-on-creation desexing outcome that isn't a new
+// Scheduled/Completed procedure - either a species this prototype's
+// desexing flow doesn't apply to, or an animal that arrived already
+// desexed. Shares scheduleDesexing()'s one-row-per-animal rule (no
+// Scheduled/Completed row may already exist) and satisfies
+// getMedicalClearanceBlockers() the same way a completed schedule does,
+// since that check only tests for a DesexingSchedule row's existence.
+export async function recordDesexingExemption(
+  animalId: string,
+  reason: DesexingExemptionReason,
+  email: string,
+  name: string,
+): Promise<MutationResult> {
+  if (!(await getAnimalById(animalId))) return { ok: false, reason: "not_found" };
+  if (await getDesexingSchedule(animalId)) return { ok: false, reason: "already_scheduled" };
+
+  const schedule: DesexingSchedule = {
+    id: generateId("DX"),
+    animalId,
+    scheduledDate: new Date().toISOString(),
+    status: reason,
     veterinarianEmail: email,
     veterinarianName: name,
     createdAt: new Date().toISOString(),

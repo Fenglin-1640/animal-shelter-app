@@ -4,4 +4,6 @@ import type { DesexingStatus } from "@/lib/medical/types";
 export const DESEXING_STATUS_CATEGORY: Record<DesexingStatus, StatusCategory> = {
   Scheduled: "caution",
   Completed: "success",
+  "Exempt (Species)": "neutral",
+  "Already Desexed (Pre-Intake)": "success",
 };
