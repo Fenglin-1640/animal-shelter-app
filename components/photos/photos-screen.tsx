@@ -116,6 +116,13 @@ function PhotosContent({
   }, [photos.length]);
 
   const handleStripPointerDown: PointerEventHandler<HTMLDivElement> = (e) => {
+    // Don't hijack presses that land on a card's own controls (Set as
+    // Public Photo, Remove, the alt-text Confirm/Cancel) - capturing the
+    // pointer here retargets the eventual pointerup away from the
+    // button, which silently breaks its click in most browsers. Only
+    // clicks/drags on the card background (or the strip's own padding)
+    // should start a scroll-drag.
+    if ((e.target as HTMLElement).closest("button, input, a, label")) return;
     const el = stripRef.current;
     if (!el) return;
     dragState.current = { startX: e.clientX, startScrollLeft: el.scrollLeft };
