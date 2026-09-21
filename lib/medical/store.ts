@@ -1,4 +1,4 @@
-import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
+import { changeAnimalStatus, getAllAnimals, getAnimalById } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import { writeAuditLog } from "@/lib/audit/store";
 import type {
@@ -377,6 +377,17 @@ export async function isFitForRelease(animalId: string): Promise<boolean> {
   const animal = await getAnimalById(animalId);
   if (!animal || animal.currentStatus !== "Awaiting Release") return false;
   return (await getLatestPreReleaseCheck(animalId))?.fitnessResult === "Fit for Release";
+}
+
+// For the Veterinarian "Pre-Release Checks" nav badge
+// (lib/pending-actions/registry.ts) - an animal Awaiting Release with no
+// Fit for Release check on file yet (either no check at all, or the
+// latest one came back Health Concern - either way, isFitForRelease is
+// false and a Veterinarian still has a check to do).
+export async function countAwaitingPreReleaseCheck(): Promise<number> {
+  const awaitingRelease = (await getAllAnimals()).filter((a) => a.currentStatus === "Awaiting Release");
+  const fitFlags = await Promise.all(awaitingRelease.map((a) => isFitForRelease(a.animalId)));
+  return fitFlags.filter((fit) => !fit).length;
 }
 
 export interface PreReleaseCheckInput {

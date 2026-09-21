@@ -2924,6 +2924,13 @@
                   "kind": "scalar"
                 }
               },
+              "imageData": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
               "takenByEmail": {
                 "nullable": false,
                 "type": {
@@ -2973,6 +2980,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "imageData": {
+                  "column": "imageData"
                 },
                 "takenByEmail": {
                   "column": "takenByEmail"
@@ -5579,6 +5589,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "imageData": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "takenByEmail": {
                   "codecId": "sqlite/text@1",
                   "nativeType": "text",
@@ -6195,7 +6210,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "bd67249b4939ac40a15856e63c76e51a1134e3901240950d8326dd47d73d5333"
+    "storageHash": "b0b3aa30658af08f09d3845f5fde1e1dfbe47395b6d13b0c8754047508418340"
   },
   "capabilities": {
     "sql": {

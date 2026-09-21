@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { ReadOnlyNoticeModal } from "@/components/shared/read-only-notice-modal";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
@@ -319,12 +320,15 @@ function BehaviourContent({
         <p className="mt-1 text-sm text-text-muted">
           {animal.name} &middot; {animal.shelterId}
         </p>
-        {!canAct && (
-          <p className="mt-2 text-sm text-text-muted">
-            Veterinarian can read Behavioural Assessment records but cannot modify them.
-          </p>
-        )}
       </div>
+
+      {!canAct && (
+        <ReadOnlyNoticeModal
+          storageKey={`behaviour:${role}`}
+          title="Read-only access"
+          message="Veterinarian can read Behavioural Assessment records but cannot modify them."
+        />
+      )}
 
       {programs.length > 0 && (
         <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">

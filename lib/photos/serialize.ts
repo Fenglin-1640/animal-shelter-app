@@ -1,8 +1,9 @@
 import type { Photo } from "@/lib/photos/types";
 
-export interface PhotoRow extends Omit<Photo, "useOnAdoptionListing" | "uploadedAt"> {
+export interface PhotoRow extends Omit<Photo, "useOnAdoptionListing" | "uploadedAt" | "imageData"> {
   useOnAdoptionListing: number;
   uploadedAt: Date;
+  imageData: string | null;
 }
 
 export function toPhoto(row: PhotoRow): Photo {
@@ -10,6 +11,7 @@ export function toPhoto(row: PhotoRow): Photo {
     ...row,
     useOnAdoptionListing: row.useOnAdoptionListing === 1,
     uploadedAt: row.uploadedAt.toISOString(),
+    imageData: row.imageData ?? undefined,
   };
 }
 

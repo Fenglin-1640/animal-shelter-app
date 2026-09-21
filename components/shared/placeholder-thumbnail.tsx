@@ -1,10 +1,10 @@
-// Neutral placeholder per PRD 5.10 (no photo assets until the final
-// visual polish stage) - a generic image icon, not species artwork. When
-// a real Photo (FR-AN-02) has been selected as the public listing photo,
-// pass its altText so the accessible description reflects it - this
-// still renders the same placeholder graphic (no real file bytes are
-// stored in this prototype), just with a truthful screen-reader label
-// instead of "no photo available".
+// Falls back to a neutral placeholder graphic (PRD 5.10) when no real
+// Photo (FR-AN-02) image is available yet. When `photoDataUrl` is
+// supplied (a Photo's base64 imageData, or a listing's/card's
+// precomputed equivalent), that real image renders instead - the
+// placeholder graphic is only ever a stand-in for "no photo uploaded",
+// not a permanent design choice. Pass `altText` (from the Photo record)
+// so the accessible description is truthful either way.
 // `className` must supply the full width behaviour (including a mobile
 // fallback, e.g. "w-full sm:w-40") - it used to be appended after a
 // hardcoded `w-full` base class, but a caller wanting a small width on
@@ -15,12 +15,25 @@
 export function PlaceholderThumbnail({
   species,
   altText,
+  photoDataUrl,
   className = "w-full sm:w-40",
 }: {
   species: string;
   altText?: string;
+  photoDataUrl?: string;
   className?: string;
 }) {
+  if (photoDataUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- a base64 data URL, not a static asset next/image can optimise
+      <img
+        src={photoDataUrl}
+        alt={altText || `Photo of this ${species}`}
+        className={`aspect-[4/3] shrink-0 rounded-[12px] border border-border object-cover ${className}`}
+      />
+    );
+  }
+
   return (
     <div
       className={`flex aspect-[4/3] shrink-0 items-center justify-center rounded-[12px] border border-border bg-page text-text-muted ${className}`}

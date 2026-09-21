@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
+import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { INTAKE_COMPLETENESS_CATEGORY } from "@/lib/intake-records/status";
 import { isIntakeRecordComplete, type IntakeRecord } from "@/lib/intake-records/types";
@@ -14,7 +14,7 @@ export function IntakeRecordCard({ record }: { record: IntakeRecord }) {
 
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-      <PlaceholderThumbnail species={record.species || "animal"} className="w-full sm:w-32" />
+      <AnimalThumbnail animalId={record.animalId} species={record.species || "animal"} className="w-full sm:w-32" />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-start justify-between gap-2">

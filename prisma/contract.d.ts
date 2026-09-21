@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'bd67249b4939ac40a15856e63c76e51a1134e3901240950d8326dd47d73d5333'>;
+  StorageHashBase<'b0b3aa30658af08f09d3845f5fde1e1dfbe47395b6d13b0c8754047508418340'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -432,6 +432,7 @@ export type FieldOutputTypes = {
       readonly useOnAdoptionListing: CodecTypes['sqlite/integer@1']['output'];
       readonly altText: CodecTypes['sqlite/text@1']['output'];
       readonly uploadedAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly imageData: CodecTypes['sqlite/text@1']['output'] | null;
     };
     readonly PreReleaseCheck: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -852,6 +853,7 @@ export type FieldInputTypes = {
       readonly useOnAdoptionListing: CodecTypes['sqlite/integer@1']['input'];
       readonly altText: CodecTypes['sqlite/text@1']['input'];
       readonly uploadedAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly imageData: CodecTypes['sqlite/text@1']['input'] | null;
     };
     readonly PreReleaseCheck: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -1268,6 +1270,7 @@ export type StorageColumnTypes = {
       readonly fileName: CodecTypes['sqlite/text@1']['output'];
       readonly fileSizeKB: CodecTypes['sqlite/integer@1']['output'];
       readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly imageData: CodecTypes['sqlite/text@1']['output'] | null;
       readonly takenByEmail: CodecTypes['sqlite/text@1']['output'];
       readonly takenByName: CodecTypes['sqlite/text@1']['output'];
       readonly uploadedAt: CodecTypes['sqlite/datetime@1']['output'];
@@ -1688,6 +1691,7 @@ export type StorageColumnInputTypes = {
       readonly fileName: CodecTypes['sqlite/text@1']['input'];
       readonly fileSizeKB: CodecTypes['sqlite/integer@1']['input'];
       readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly imageData: CodecTypes['sqlite/text@1']['input'] | null;
       readonly takenByEmail: CodecTypes['sqlite/text@1']['input'];
       readonly takenByName: CodecTypes['sqlite/text@1']['input'];
       readonly uploadedAt: CodecTypes['sqlite/datetime@1']['input'];
@@ -2155,6 +2159,7 @@ export namespace Models {
     useOnAdoptionListing: CodecTypes['sqlite/integer@1']['output'];
     altText: CodecTypes['sqlite/text@1']['output'];
     uploadedAt: CodecTypes['sqlite/datetime@1']['output'];
+    imageData: CodecTypes['sqlite/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
   export type AdopterProfile = {
@@ -3781,6 +3786,11 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'sqlite/datetime@1';
                   readonly nullable: false;
+                };
+                readonly imageData: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -5984,6 +5994,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
               };
+              readonly imageData: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
             };
             readonly relations: Record<string, never>;
             readonly storage: {
@@ -6000,6 +6014,7 @@ type ContractBase = Omit<
                 readonly useOnAdoptionListing: { readonly column: 'useOnAdoptionListing' };
                 readonly altText: { readonly column: 'altText' };
                 readonly uploadedAt: { readonly column: 'uploadedAt' };
+                readonly imageData: { readonly column: 'imageData' };
               };
             };
           };

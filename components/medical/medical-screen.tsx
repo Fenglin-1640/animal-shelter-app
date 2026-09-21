@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { ReadOnlyNoticeModal } from "@/components/shared/read-only-notice-modal";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
@@ -524,13 +525,15 @@ function MedicalContent({
         <p className="mt-1 text-sm text-text-muted">
           {animal.name} &middot; {animal.shelterId}
         </p>
-        {!canAct && (
-          <p className="mt-2 text-sm text-text-muted">
-            Shelter Staff Member and Administrator can read the full Medical History but cannot
-            create, edit or finalise medical content - only Veterinarian can.
-          </p>
-        )}
       </div>
+
+      {!canAct && (
+        <ReadOnlyNoticeModal
+          storageKey={`medical:${role}`}
+          title="Read-only access"
+          message="Shelter Staff Member and Administrator can read the full Medical History but cannot create, edit or finalise medical content - only Veterinarian can."
+        />
+      )}
 
       <SectionCard title="Health Assessments" required>
         {healthAssessments.length === 0 ? (

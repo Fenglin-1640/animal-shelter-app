@@ -40,6 +40,7 @@ export interface PhotoInput {
   fileName: string;
   fileSizeKB: number;
   dateTaken: string;
+  imageData?: string;
 }
 
 export async function addPhoto(

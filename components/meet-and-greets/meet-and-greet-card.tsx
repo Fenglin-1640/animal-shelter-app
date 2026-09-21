@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
+import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { MEET_AND_GREET_STATUS_CATEGORY } from "@/lib/meet-and-greets/status";
 import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
@@ -11,7 +11,7 @@ function formatDateTime(iso: string): string {
 export function MeetAndGreetCard({ meetAndGreet }: { meetAndGreet: MeetAndGreet }) {
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-      <PlaceholderThumbnail species={meetAndGreet.animalSpecies} className="w-full sm:w-32" />
+      <AnimalThumbnail animalId={meetAndGreet.animalId} species={meetAndGreet.animalSpecies} className="w-full sm:w-32" />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-start justify-between gap-2">

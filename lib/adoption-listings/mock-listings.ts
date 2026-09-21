@@ -10,19 +10,23 @@ export async function getPublicListings(): Promise<PublicListing[]> {
   const animals = await getAllAnimals();
   const listed = animals.filter((animal) => animal.listingStatus === "Current");
   return Promise.all(
-    listed.map(async (animal) => ({
-      animalId: animal.animalId,
-      shelterId: animal.shelterId,
-      name: animal.name,
-      species: animal.species,
-      breed: animal.breed,
-      sex: animal.sex,
-      age: getDisplayAge(animal),
-      temperaments: animal.temperaments,
-      adoptionFee: animal.adoptionFee,
-      generalDescription: animal.generalDescription,
-      acceptingApplications: animal.currentStatus === "Available For Adoption",
-      photoAltText: (await getPrimaryPhoto(animal.animalId))?.altText,
-    })),
+    listed.map(async (animal) => {
+      const photo = await getPrimaryPhoto(animal.animalId);
+      return {
+        animalId: animal.animalId,
+        shelterId: animal.shelterId,
+        name: animal.name,
+        species: animal.species,
+        breed: animal.breed,
+        sex: animal.sex,
+        age: getDisplayAge(animal),
+        temperaments: animal.temperaments,
+        adoptionFee: animal.adoptionFee,
+        generalDescription: animal.generalDescription,
+        acceptingApplications: animal.currentStatus === "Available For Adoption",
+        photoAltText: photo?.altText,
+        photoDataUrl: photo?.imageData,
+      };
+    }),
   );
 }

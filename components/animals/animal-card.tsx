@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { AttributeChip } from "@/components/shared/attribute-chip";
-import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { getDisplayAge } from "@/lib/animals/age";
 import { CURRENT_STATUS_CATEGORY } from "@/lib/animals/status";
@@ -9,7 +9,7 @@ import type { Animal } from "@/lib/animals/types";
 export function AnimalCard({ animal }: { animal: Animal }) {
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-      <PlaceholderThumbnail species={animal.species} />
+      <AnimalThumbnail animalId={animal.animalId} species={animal.species} />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div>

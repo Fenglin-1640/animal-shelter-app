@@ -3,7 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FUNCTION_HREFS } from "@/lib/roles/function-links";
+import { usePendingCount } from "@/lib/pending-actions/use-pending-count";
 import { ROLE_FUNCTIONS, type Role } from "@/lib/roles/roles";
+
+// Small badge next to a nav item's label for whatever that role has
+// concretely actionable right now (lib/pending-actions/registry.ts) - a
+// submitted Payment awaiting verification, an Application awaiting
+// decision, and so on. Renders nothing when the label has no registered
+// fetcher or its count is 0.
+function PendingBadge({ label }: { label: string }) {
+  const count = usePendingCount(label);
+  if (count <= 0) return null;
+  return (
+    <span
+      className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-danger px-1.5 text-[11px] font-semibold text-page"
+      aria-label={`${count} item${count === 1 ? "" : "s"} awaiting your action`}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
 
 function NavItem({
   label,
@@ -32,6 +51,7 @@ function NavItem({
           className={className}
         >
           {label}
+          <PendingBadge label={label} />
         </Link>
       ) : (
         <button
@@ -40,6 +60,7 @@ function NavItem({
           className={className}
         >
           {label}
+          <PendingBadge label={label} />
         </button>
       )}
     </li>

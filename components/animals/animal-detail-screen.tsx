@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { EmptySubscreen } from "@/components/animals/empty-subscreen";
+import { ProfilePhotoLightbox } from "@/components/animals/profile-photo-lightbox";
 import { AppShell } from "@/components/layout/app-shell";
 import { AttributeChip } from "@/components/shared/attribute-chip";
-import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { Tabs } from "@/components/shared/tabs";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -234,6 +234,15 @@ function AnimalDetailContent({
     if (result.ok) setAnimal((await getAnimalById(animal.animalId)) ?? animal);
   };
 
+  const refreshPhotos = async () => {
+    const [photosResult, primaryResult] = await Promise.all([
+      listPhotosForAnimal(animal.animalId),
+      getPrimaryPhoto(animal.animalId),
+    ]);
+    setPhotos(photosResult);
+    setPrimaryPhoto(primaryResult);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -244,7 +253,17 @@ function AnimalDetailContent({
       </Link>
 
       <div className="flex flex-col gap-4 rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-        <PlaceholderThumbnail species={animal.species} altText={primaryPhoto?.altText} className="w-full sm:w-48" />
+        <ProfilePhotoLightbox
+          animalId={animal.animalId}
+          species={animal.species}
+          photos={photos}
+          primaryPhoto={primaryPhoto}
+          canEdit={["Administrator", "Shelter Staff Member"].includes(role)}
+          email={email}
+          displayName={displayName}
+          onChanged={refreshPhotos}
+          className="w-full sm:w-48"
+        />
 
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-text">{animal.name}</h1>
@@ -270,227 +289,6 @@ function AnimalDetailContent({
           </div>
         </div>
       </div>
-
-      <InfoGroup heading="Identity">
-        <InfoField label="Animal ID" value={animal.animalId} />
-        <InfoField label="Breed" value={animal.breed} />
-        <InfoField label="Breed Description" value={animal.breedDescription} />
-        <InfoField label="Sex" value={animal.sex} />
-        <InfoField
-          label="Date of Birth"
-          value={animal.dateOfBirth ? formatDate(animal.dateOfBirth) : "Unknown"}
-        />
-        <InfoField
-          label="Estimated Age"
-          value={animal.dateOfBirth ? "N/A (date of birth known)" : (animal.estimatedAge ?? "Unknown")}
-        />
-        <InfoField label="Coat Colour" value={animal.coatColour} />
-        <InfoField label="Coat Markings" value={animal.coatMarkings} />
-        <InfoField
-          label="Microchip Number"
-          value={animal.microchipNumber ?? "No chip recorded"}
-        />
-        {["Administrator", "Shelter Staff Member"].includes(role) && (
-          <div className="sm:col-span-2">
-            <Link
-              href={`/animals/${animal.animalId}/scan-microchip`}
-              className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-            >
-              Scan Microchip
-            </Link>
-          </div>
-        )}
-      </InfoGroup>
-
-      <InfoGroup heading="Adoption">
-        <InfoField
-          label="Adoption Fee"
-          value={animal.adoptionFee != null ? `$${animal.adoptionFee}` : "Not applicable"}
-        />
-        <InfoField label="Temperaments" value={animal.temperaments.join(", ")} />
-        <InfoField label="Listing Status" value={animal.listingStatus} />
-        <InfoField label="Status Updated" value={formatDateTime(animal.statusUpdatedAt)} />
-        {animal.linkedPerson && (
-          <InfoField label={animal.linkedPerson.role} value={animal.linkedPerson.name} />
-        )}
-        {["Administrator", "Shelter Staff Member"].includes(role) && !showEditAdoption && (
-          <div className="sm:col-span-2">
-            <button
-              type="button"
-              onClick={handleOpenEditAdoption}
-              className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-            >
-              Edit Adoption Details
-            </button>
-          </div>
-        )}
-        {["Administrator", "Shelter Staff Member"].includes(role) && showEditAdoption && (
-          <div className="sm:col-span-2 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
-            <p className="text-xs text-text-muted">
-              Breed, Adoption Fee, Temperaments and General Description have no dedicated intake
-              step (Finalise Intake leaves Breed as &quot;Unknown&quot; and Temperaments/Adoption
-              Fee unset) - this is the minimal edit surface needed to fill in FR-LIST-01&apos;s
-              Publish prerequisites, not a general Animal Profile editor.
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="flex flex-col gap-1">
-                <label htmlFor="edit-breed" className="text-xs font-semibold text-text-muted">
-                  Breed
-                </label>
-                <input
-                  id="edit-breed"
-                  type="text"
-                  value={breedInput}
-                  onChange={(e) => setBreedInput(e.target.value)}
-                  className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="edit-fee" className="text-xs font-semibold text-text-muted">
-                  Adoption Fee
-                </label>
-                <input
-                  id="edit-fee"
-                  type="number"
-                  min="0"
-                  value={feeInput}
-                  onChange={(e) => setFeeInput(e.target.value)}
-                  className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="edit-description" className="text-xs font-semibold text-text-muted">
-                General Description
-              </label>
-              <textarea
-                id="edit-description"
-                rows={2}
-                value={descriptionInput}
-                onChange={(e) => setDescriptionInput(e.target.value)}
-                className="rounded-[12px] border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold text-text-muted">Temperaments</span>
-              <div className="flex flex-wrap gap-2">
-                {temperamentOptions.map((option) => (
-                  <label key={option} className="flex items-center gap-1.5 text-sm text-text">
-                    <input
-                      type="checkbox"
-                      checked={temperamentSelection.has(option)}
-                      onChange={() =>
-                        setTemperamentSelection((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(option)) next.delete(option);
-                          else next.add(option);
-                          return next;
-                        })
-                      }
-                      className="h-4 w-4 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                    />
-                    {option}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleSaveAdoptionDetails}
-                className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowEditAdoption(false)}
-                className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-        {["Administrator", "Shelter Staff Member"].includes(role) &&
-          animal.listingStatus === "Pre-Listing" && (
-            <div className="sm:col-span-2">
-              <button
-                type="button"
-                onClick={handlePublish}
-                disabled={publishBlockers.length > 0}
-                title={
-                  publishBlockers.length > 0
-                    ? `Not ready to publish: ${publishBlockers.join(" ")}`
-                    : undefined
-                }
-                className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Publish Adoption Profile
-              </button>
-              {publishBlockers.length > 0 && (
-                <ul className="mt-2 list-inside list-disc text-xs text-text-muted">
-                  {publishBlockers.map((b) => (
-                    <li key={b}>{b}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        {["Administrator", "Shelter Staff Member"].includes(role) &&
-          animal.listingStatus === "Current" && (
-            <div className="sm:col-span-2">
-              <button
-                type="button"
-                onClick={handleUnpublish}
-                className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-              >
-                Withdraw Listing
-              </button>
-            </div>
-          )}
-      </InfoGroup>
-
-      <InfoGroup heading="Lifecycle">
-        <InfoField label="Current Status" value={animal.currentStatus} />
-        <InfoField label="Entered Shelter" value={formatDateTime(animal.enteredAt)} />
-        <InfoField label="Last Modified" value={formatDateTime(animal.lastModifiedAt)} />
-        <InfoField label="Intake Source" value={animal.intakeSource} />
-        {animal.currentStatus === "Under Assessment" && (
-          <div className="sm:col-span-2">
-            <Link
-              href={`/animals/${animal.animalId}/adoption-fitness`}
-              className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-            >
-              Review Adoption Fitness
-            </Link>
-          </div>
-        )}
-        {["Administrator", "Shelter Staff Member"].includes(role) &&
-          (animal.currentStatus === "On Statutory Hold" ||
-            animal.currentStatus === "Reclaimed By Owner") && (
-            <div className="sm:col-span-2">
-              <Link
-                href={`/animals/${animal.animalId}/statutory-hold`}
-                className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-              >
-                Manage Statutory Hold
-              </Link>
-            </div>
-          )}
-        {["Administrator", "Shelter Staff Member"].includes(role) &&
-          animal.currentStatus === "Unsuitable For Adoption" && (
-            <div className="sm:col-span-2">
-              <button
-                type="button"
-                onClick={handleArchive}
-                className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-              >
-                Archive Record
-              </button>
-            </div>
-          )}
-      </InfoGroup>
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <Tabs
@@ -713,6 +511,227 @@ function AnimalDetailContent({
           ]}
         />
       </section>
+
+      <InfoGroup heading="Identity">
+        <InfoField label="Animal ID" value={animal.animalId} />
+        <InfoField label="Breed" value={animal.breed} />
+        <InfoField label="Breed Description" value={animal.breedDescription} />
+        <InfoField label="Sex" value={animal.sex} />
+        <InfoField
+          label="Date of Birth"
+          value={animal.dateOfBirth ? formatDate(animal.dateOfBirth) : "Unknown"}
+        />
+        <InfoField
+          label="Estimated Age"
+          value={animal.dateOfBirth ? "N/A (date of birth known)" : (animal.estimatedAge ?? "Unknown")}
+        />
+        <InfoField label="Coat Colour" value={animal.coatColour} />
+        <InfoField label="Coat Markings" value={animal.coatMarkings} />
+        <InfoField
+          label="Microchip Number"
+          value={animal.microchipNumber ?? "No chip recorded"}
+        />
+        {["Administrator", "Shelter Staff Member"].includes(role) && (
+          <div className="sm:col-span-2">
+            <Link
+              href={`/animals/${animal.animalId}/scan-microchip`}
+              className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Scan Microchip
+            </Link>
+          </div>
+        )}
+      </InfoGroup>
+
+      <InfoGroup heading="Adoption">
+        <InfoField
+          label="Adoption Fee"
+          value={animal.adoptionFee != null ? `$${animal.adoptionFee}` : "Not applicable"}
+        />
+        <InfoField label="Temperaments" value={animal.temperaments.join(", ")} />
+        <InfoField label="Listing Status" value={animal.listingStatus} />
+        <InfoField label="Status Updated" value={formatDateTime(animal.statusUpdatedAt)} />
+        {animal.linkedPerson && (
+          <InfoField label={animal.linkedPerson.role} value={animal.linkedPerson.name} />
+        )}
+        {["Administrator", "Shelter Staff Member"].includes(role) && !showEditAdoption && (
+          <div className="sm:col-span-2">
+            <button
+              type="button"
+              onClick={handleOpenEditAdoption}
+              className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Edit Adoption Details
+            </button>
+          </div>
+        )}
+        {["Administrator", "Shelter Staff Member"].includes(role) && showEditAdoption && (
+          <div className="sm:col-span-2 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
+            <p className="text-xs text-text-muted">
+              Breed, Adoption Fee, Temperaments and General Description have no dedicated intake
+              step (Finalise Intake leaves Breed as &quot;Unknown&quot; and Temperaments/Adoption
+              Fee unset) - this is the minimal edit surface needed to fill in FR-LIST-01&apos;s
+              Publish prerequisites, not a general Animal Profile editor.
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="edit-breed" className="text-xs font-semibold text-text-muted">
+                  Breed
+                </label>
+                <input
+                  id="edit-breed"
+                  type="text"
+                  value={breedInput}
+                  onChange={(e) => setBreedInput(e.target.value)}
+                  className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="edit-fee" className="text-xs font-semibold text-text-muted">
+                  Adoption Fee
+                </label>
+                <input
+                  id="edit-fee"
+                  type="number"
+                  min="0"
+                  value={feeInput}
+                  onChange={(e) => setFeeInput(e.target.value)}
+                  className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="edit-description" className="text-xs font-semibold text-text-muted">
+                General Description
+              </label>
+              <textarea
+                id="edit-description"
+                rows={2}
+                value={descriptionInput}
+                onChange={(e) => setDescriptionInput(e.target.value)}
+                className="rounded-[12px] border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold text-text-muted">Temperaments</span>
+              <div className="flex flex-wrap gap-2">
+                {temperamentOptions.map((option) => (
+                  <label key={option} className="flex items-center gap-1.5 text-sm text-text">
+                    <input
+                      type="checkbox"
+                      checked={temperamentSelection.has(option)}
+                      onChange={() =>
+                        setTemperamentSelection((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(option)) next.delete(option);
+                          else next.add(option);
+                          return next;
+                        })
+                      }
+                      className="h-4 w-4 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleSaveAdoptionDetails}
+                className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEditAdoption(false)}
+                className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          animal.listingStatus === "Pre-Listing" && (
+            <div className="sm:col-span-2">
+              <button
+                type="button"
+                onClick={handlePublish}
+                disabled={publishBlockers.length > 0}
+                title={
+                  publishBlockers.length > 0
+                    ? `Not ready to publish: ${publishBlockers.join(" ")}`
+                    : undefined
+                }
+                className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Publish Adoption Profile
+              </button>
+              {publishBlockers.length > 0 && (
+                <ul className="mt-2 list-inside list-disc text-xs text-text-muted">
+                  {publishBlockers.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          animal.listingStatus === "Current" && (
+            <div className="sm:col-span-2">
+              <button
+                type="button"
+                onClick={handleUnpublish}
+                className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Withdraw Listing
+              </button>
+            </div>
+          )}
+      </InfoGroup>
+
+      <InfoGroup heading="Lifecycle">
+        <InfoField label="Current Status" value={animal.currentStatus} />
+        <InfoField label="Entered Shelter" value={formatDateTime(animal.enteredAt)} />
+        <InfoField label="Last Modified" value={formatDateTime(animal.lastModifiedAt)} />
+        <InfoField label="Intake Source" value={animal.intakeSource} />
+        {animal.currentStatus === "Under Assessment" && (
+          <div className="sm:col-span-2">
+            <Link
+              href={`/animals/${animal.animalId}/adoption-fitness`}
+              className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Review Adoption Fitness
+            </Link>
+          </div>
+        )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          (animal.currentStatus === "On Statutory Hold" ||
+            animal.currentStatus === "Reclaimed By Owner") && (
+            <div className="sm:col-span-2">
+              <Link
+                href={`/animals/${animal.animalId}/statutory-hold`}
+                className="inline-flex h-9 items-center rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Manage Statutory Hold
+              </Link>
+            </div>
+          )}
+        {["Administrator", "Shelter Staff Member"].includes(role) &&
+          animal.currentStatus === "Unsuitable For Adoption" && (
+            <div className="sm:col-span-2">
+              <button
+                type="button"
+                onClick={handleArchive}
+                className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+              >
+                Archive Record
+              </button>
+            </div>
+          )}
+      </InfoGroup>
     </div>
   );
 }

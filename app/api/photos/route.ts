@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     useOnAdoptionListing: body.useOnAdoptionListing ? 1 : 0,
     altText: body.altText,
     uploadedAt: new Date(body.uploadedAt),
+    imageData: body.imageData ?? null,
   });
   return NextResponse.json({ ok: true, item: toPhoto(created) });
 }

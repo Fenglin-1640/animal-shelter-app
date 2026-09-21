@@ -433,7 +433,14 @@ model IntakeRecord {
 // input, same reasoning as Medical/Behaviour's user-entered date
 // fields. useOnAdoptionListing is Int (0/1), same reasoning as
 // AdoptionAgreement's isSigned. uploadedAt is a system-generated
-// timestamp, so it's DateTime.
+// timestamp, so it's DateTime. imageData is a base64 data URL of the
+// actual uploaded image (downscaled client-side before upload) - added
+// so photos render for real instead of a placeholder icon; nullable
+// since rows seeded before this field existed have none. No real
+// filesystem storage is used (this app deploys to Vercel, which has no
+// writable/persistent filesystem for uploads), so the bytes live in
+// this column instead - same reasoning that ruled out disk storage
+// anywhere else in this prototype.
 model Photo {
   id                  String   @id
   animalId            String
@@ -445,6 +452,7 @@ model Photo {
   useOnAdoptionListing Int
   altText              String
   uploadedAt            DateTime
+  imageData             String?
 }
 
 // Mirrors lib/adopter-profile/types.ts (FR-ADP-01). Keyed by the

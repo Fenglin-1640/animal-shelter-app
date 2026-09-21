@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { ReadOnlyNoticeModal } from "@/components/shared/read-only-notice-modal";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
@@ -341,14 +342,19 @@ function PreReleaseCheckContent({
         <p className="mt-1 text-sm text-text-muted">
           {animal.name} &middot; {animal.shelterId} &middot; {animal.currentStatus}
         </p>
-        {!canAct && (
-          <p className="mt-2 text-sm text-text-muted">
-            {role === "Shelter Staff Member"
-              ? "Shelter Staff Member can read the Pre-Release Check history and execute the Release action once Fit for Release - only Veterinarian can create or finalise the check itself."
-              : "Only Veterinarian can create or finalise a Pre-Release Check."}
-          </p>
-        )}
       </div>
+
+      {!canAct && (
+        <ReadOnlyNoticeModal
+          storageKey={`pre-release-check:${role}`}
+          title="Read-only access"
+          message={
+            role === "Shelter Staff Member"
+              ? "Shelter Staff Member can read the Pre-Release Check history and execute the Release action once Fit for Release - only Veterinarian can create or finalise the check itself."
+              : "Only Veterinarian can create or finalise a Pre-Release Check."
+          }
+        />
+      )}
 
       {released && (
         <div className="rounded-[12px] border border-primary bg-primary/10 p-4 text-sm text-text">
