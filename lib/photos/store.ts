@@ -79,7 +79,13 @@ export async function seedPhotosFromIntake(
   name: string,
 ): Promise<void> {
   for (const p of photos) {
-    await addPhoto(animalId, { fileName: p.fileName, fileSizeKB: p.fileSizeKB, dateTaken: p.uploadedAt }, email, name, p.uploadedAt);
+    await addPhoto(
+      animalId,
+      { fileName: p.fileName, fileSizeKB: p.fileSizeKB, dateTaken: p.uploadedAt, imageData: p.imageData },
+      email,
+      name,
+      p.uploadedAt,
+    );
   }
 }
 

@@ -24,6 +24,8 @@ import {
   type IntakeRecordFormInput,
 } from "@/lib/intake-records/types";
 import type { AnimalPhoto, Sex, Species } from "@/lib/animals/types";
+import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
+import { fileToDataUrl } from "@/lib/photos/upload";
 import type { Role } from "@/lib/roles/roles";
 import { getActiveValues } from "@/lib/system-administration/store";
 
@@ -141,6 +143,8 @@ function IntakeRecordFormContent({
   const [photos, setPhotos] = useState<AnimalPhoto[]>([]);
   const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
   const [photoInputKey, setPhotoInputKey] = useState(0);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [addingPhoto, setAddingPhoto] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
@@ -229,17 +233,33 @@ function IntakeRecordFormContent({
   const complete = isIntakeRecordComplete(buildInput());
   const liveBlockers = getFinaliseBlockers(buildInput(), linkedTransfer);
 
-  const handleAddPhoto = () => {
+  const handleAddPhoto = async () => {
     if (!pendingPhotoFile) return;
-    const photo: AnimalPhoto = {
-      id: `PH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-      fileName: pendingPhotoFile.name,
-      fileSizeKB: Math.max(1, Math.round(pendingPhotoFile.size / 1024)),
-      uploadedAt: new Date().toISOString(),
-    };
-    setPhotos((prev) => [...prev, photo]);
-    setPendingPhotoFile(null);
-    setPhotoInputKey((k) => k + 1);
+    setPhotoError(null);
+    setAddingPhoto(true);
+    try {
+      const converted = await fileToDataUrl(pendingPhotoFile);
+      if (!converted.ok) {
+        setPhotoError(
+          converted.reason === "too_large"
+            ? "That photo is too large - please choose a file under 8 MB."
+            : "That file could not be read as an image.",
+        );
+        return;
+      }
+      const photo: AnimalPhoto = {
+        id: `PH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+        fileName: pendingPhotoFile.name,
+        fileSizeKB: Math.max(1, Math.round(pendingPhotoFile.size / 1024)),
+        uploadedAt: new Date().toISOString(),
+        imageData: converted.dataUrl,
+      };
+      setPhotos((prev) => [...prev, photo]);
+      setPendingPhotoFile(null);
+      setPhotoInputKey((k) => k + 1);
+    } finally {
+      setAddingPhoto(false);
+    }
   };
 
   const handleRemovePhoto = (id: string) => {
@@ -571,18 +591,23 @@ function IntakeRecordFormContent({
           Photos <span aria-hidden="true">*</span>
         </h2>
         <p className="mt-1 text-sm text-text-muted">
-          At least one photo is required before Finalise Intake. This
-          prototype records the file name only; file content is not stored.
+          At least one photo is required before Finalise Intake.
         </p>
+        {photoError && (
+          <p role="status" className="mt-2 text-sm text-danger">
+            {photoError}
+          </p>
+        )}
 
         {photos.length > 0 && (
           <ul className="mt-4 flex flex-col gap-2">
             {photos.map((p) => (
               <li
                 key={p.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-page px-3 py-2 text-sm"
+                className="flex flex-wrap items-center gap-3 rounded-[12px] border border-border bg-page px-3 py-2 text-sm"
               >
-                <div>
+                <PlaceholderThumbnail species={species || "animal"} photoDataUrl={p.imageData} className="w-16" />
+                <div className="flex-1">
                   <span className="font-semibold text-text">{p.fileName}</span>
                   <span className="text-text-muted"> ({formatSize(p.fileSizeKB)})</span>
                 </div>
@@ -618,10 +643,10 @@ function IntakeRecordFormContent({
             <button
               type="button"
               onClick={handleAddPhoto}
-              disabled={!pendingPhotoFile}
+              disabled={!pendingPhotoFile || addingPhoto}
               className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Add Photo
+              {addingPhoto ? "Adding..." : "Add Photo"}
             </button>
           </div>
         )}

@@ -39,6 +39,13 @@ export interface AnimalPhoto {
   fileName: string;
   fileSizeKB: number;
   uploadedAt: string;
+  // The actual uploaded image, as a base64 data URL - same field/format
+  // as Photo.imageData (lib/photos/types.ts), carried through here so a
+  // photo added during Intake keeps its real bytes once
+  // seedPhotosFromIntake() converts it into a full Photo record, instead
+  // of only ever getting a placeholder graphic. Optional since older
+  // rows predate this field.
+  imageData?: string;
 }
 
 export interface Animal {
