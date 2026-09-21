@@ -9,11 +9,21 @@ import type { Animal } from "@/lib/animals/types";
 export function AnimalCard({ animal }: { animal: Animal }) {
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
-      <AnimalThumbnail animalId={animal.animalId} species={animal.species} />
+      <Link
+        href={`/animals/${animal.animalId}`}
+        aria-label={`Open ${animal.name}'s profile`}
+        className="shrink-0 rounded-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <AnimalThumbnail animalId={animal.animalId} species={animal.species} />
+      </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div>
-          <h3 className="text-base font-semibold text-text">{animal.name}</h3>
+          <h3 className="text-base font-semibold text-text">
+            <Link href={`/animals/${animal.animalId}`} className="hover:underline">
+              {animal.name}
+            </Link>
+          </h3>
           <p className="text-xs text-text-muted">{animal.shelterId}</p>
         </div>
         <p className="text-sm text-text-muted">
