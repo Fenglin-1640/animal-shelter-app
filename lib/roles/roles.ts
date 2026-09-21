@@ -1,4 +1,15 @@
-// Role names and function groupings mirror PRD docs/PRD.md section 5.2 exactly.
+// Role names and function groupings mirror PRD docs/PRD.md section 5.2, with
+// two deliberate omissions: PRD 5.2 also lists "Behaviour Assessments" for
+// Shelter Staff Member/Administrator and "Medical Work Queue" for
+// Veterinarian, but neither ever got a standalone top-level screen built -
+// there's no matching route in lib/roles/function-links.ts's FUNCTION_HREFS,
+// so both rendered as dead, silently-inert nav items/Landing Screen cards
+// (no href, no onClick, no error - just did nothing on click). The
+// underlying functionality is fully built and reachable per-animal instead
+// (Behavioural Assessment tab at /animals/{animalId}/behaviour, Medical
+// History tab at /animals/{animalId}/medical), so these two labels were
+// removed rather than left as no-op stubs or built out as redundant
+// shelter-wide dashboards.
 export const ROLES = [
   "Administrator",
   "Shelter Staff Member",
@@ -27,10 +38,6 @@ const staffUserFunctions: FunctionEntry[] = [
   {
     label: "Animals",
     description: "View animal profiles, lifecycle status and photos.",
-  },
-  {
-    label: "Behaviour Assessments",
-    description: "Record temperament results and behaviour program progress.",
   },
   {
     label: "Adoption Applications",
@@ -82,10 +89,6 @@ export const ROLE_FUNCTIONS: Record<Role, RoleFunctions> = {
       {
         label: "Animals",
         description: "View animal profiles, lifecycle status and photos.",
-      },
-      {
-        label: "Medical Work Queue",
-        description: "Health assessments, treatment, vaccination and desexing.",
       },
       {
         label: "Pre-Release Checks",
