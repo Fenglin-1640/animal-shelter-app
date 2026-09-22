@@ -1,6 +1,6 @@
 // QA test runner entry point. Usage (from the project root):
 //   npx tsx scripts/qa-test-runner/run.ts adopters [--force]
-//   npx tsx scripts/qa-test-runner/run.ts animals [TC-001 TC-002 ...]
+//   npx tsx scripts/qa-test-runner/run.ts animals [TC-001 TC-002 ...] [--stop-after-publish]
 //   npx tsx scripts/qa-test-runner/run.ts negatives
 //   npx tsx scripts/qa-test-runner/run.ts report
 import { assertServerUp } from "./lib/fetch-shim";
@@ -40,16 +40,17 @@ async function main() {
 
     case "animals": {
       const bundles = buildBundles();
+      const stopAfterPublish = rest.includes("--stop-after-publish");
       const only = rest.filter((a) => a.startsWith("TC-"));
       const targets = only.length > 0 ? only : [...bundles.keys()];
-      console.log(`\n=== Animal workflow phase (${targets.length} test case${targets.length === 1 ? "" : "s"}) ===`);
+      console.log(`\n=== Animal workflow phase (${targets.length} test case${targets.length === 1 ? "" : "s"}${stopAfterPublish ? ", stop-after-publish" : ""}) ===`);
       for (const tcId of targets) {
         const bundle = bundles.get(tcId);
         if (!bundle) {
           console.warn(`Unknown Test Case ID: ${tcId}`);
           continue;
         }
-        await runAnimalWorkflow(bundle);
+        await runAnimalWorkflow(bundle, { stopAfterPublish });
       }
       break;
     }

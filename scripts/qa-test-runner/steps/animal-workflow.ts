@@ -58,7 +58,22 @@ function ok<T extends { ok: boolean }>(result: T): boolean {
   return result.ok === true;
 }
 
-export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
+export interface RunAnimalWorkflowOptions {
+  // When true, every TC that reaches Publish stops there (currentStatus
+  // = Available For Adoption, listingStatus = Current) instead of
+  // continuing into Application/Meet-and-Greet/Agreement/Payment/
+  // Finalise/Pre-Release/Release/Follow-Up/Audit. Vaccination/desexing/
+  // Medical Clearance still run in full either way - only steps AFTER
+  // Publish are cut. The 8 "Behaviour blocked before listing" TCs are
+  // unaffected by this flag - they already stop before reaching Publish
+  // via the adoption_fitness_confirm block below.
+  stopAfterPublish?: boolean;
+}
+
+export async function runAnimalWorkflow(
+  bundle: TestCaseBundle,
+  options: RunAnimalWorkflowOptions = {},
+): Promise<void> {
   const { intake, assessment, adoption, release } = bundle;
   const tcId = intake.testCaseId;
   const entry = getCase(tcId);
@@ -374,6 +389,11 @@ export async function runAnimalWorkflow(bundle: TestCaseBundle): Promise<void> {
       ? pass(actual)
       : fail(actual);
   });
+
+  if (options.stopAfterPublish) {
+    console.log(`    STOP ${tcId}: stopAfterPublish - terminal state is Publish, not continuing into the adoption pipeline.`);
+    return;
+  }
 
   // 11. Adopter applies.
   const adopterEntry = getAdopter(adoption.adopterId);
