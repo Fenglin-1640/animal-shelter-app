@@ -25,8 +25,8 @@ export async function GET(
       firstName: account.firstName,
       lastName: account.lastName,
       phone: account.phone,
-      signUpAt: account.signUpAt.toISOString(),
-      lastLoginAt: account.lastLoginAt?.toISOString() ?? null,
+      signUpAt: account.signUpAt,
+      lastLoginAt: account.lastLoginAt ?? null,
     },
   });
 }

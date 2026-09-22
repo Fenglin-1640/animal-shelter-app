@@ -14,14 +14,14 @@ export interface TemperamentAssessmentRow
   outcome: string;
   reassessmentDate: string | null;
   programReassessmentOf: string | null;
-  createdAt: Date;
+  createdAt: string;
 }
 export function toTemperamentAssessment(row: TemperamentAssessmentRow): TemperamentAssessment {
   return {
     ...row,
     followUpRequired: Boolean(row.followUpRequired),
     outcome: row.outcome as BehaviourOutcome,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: row.createdAt,
     reassessmentDate: row.reassessmentDate ?? undefined,
     programReassessmentOf: row.programReassessmentOf ?? undefined,
   };
@@ -30,14 +30,14 @@ export function toTemperamentAssessment(row: TemperamentAssessmentRow): Temperam
 export interface BehaviourProgramRow
   extends Omit<BehaviourProgram, "createdAt" | "resolvedAt" | "status"> {
   status: string;
-  createdAt: Date;
-  resolvedAt: Date | null;
+  createdAt: string;
+  resolvedAt: string | null;
 }
 export function toBehaviourProgram(row: BehaviourProgramRow): BehaviourProgram {
   return {
     ...row,
     status: row.status as BehaviourProgram["status"],
-    createdAt: row.createdAt.toISOString(),
-    resolvedAt: row.resolvedAt?.toISOString(),
+    createdAt: row.createdAt,
+    resolvedAt: row.resolvedAt ?? undefined,
   };
 }

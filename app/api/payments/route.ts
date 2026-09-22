@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toAdoptionPayment } from "@/lib/payments/serialize";
 import type { AdoptionPayment } from "@/lib/payments/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.AdoptionPayment.where({}).all();
@@ -21,15 +22,15 @@ export async function POST(request: Request) {
     adopterName: body.adopterName,
     amount: body.amount,
     paymentMethod: body.paymentMethod,
-    paymentDate: new Date(body.paymentDate),
+    paymentDate: toTimestamptz(body.paymentDate),
     paymentStatus: body.paymentStatus,
     receiptNumber: body.receiptNumber ?? null,
     verifiedByEmail: body.verifiedByEmail ?? null,
     verifiedByName: body.verifiedByName ?? null,
-    verifiedDate: body.verifiedDate ? new Date(body.verifiedDate) : null,
+    verifiedDate: toTimestamptz(body.verifiedDate ?? null),
     failureReason: body.failureReason ?? null,
-    createdAt: new Date(body.createdAt),
-    updatedAt: new Date(body.updatedAt),
+    createdAt: toTimestamptz(body.createdAt),
+    updatedAt: toTimestamptz(body.updatedAt),
   });
   return NextResponse.json({ ok: true, item: toAdoptionPayment(created) });
 }

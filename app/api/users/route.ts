@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toDirectoryUser } from "@/lib/user-administration/serialize";
 import { DEMO_PASSWORD } from "@/lib/auth/demo-accounts";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 function generateAccountId(): string {
   return `U-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, reason: "duplicate" });
   }
 
-  const now = new Date();
+  const now = new Date().toISOString();
   const account = await db.orm.User.create({
     id: generateAccountId(),
     email,
@@ -42,10 +43,10 @@ export async function POST(request: Request) {
     firstName,
     lastName,
     phone,
-    signUpAt: now,
+    signUpAt: toTimestamptz(now),
     failedLoginAttempts: 0,
     ...(status === "Inactive"
-      ? { statusUpdatedBy: createdBy, statusUpdatedAt: now }
+      ? { statusUpdatedBy: createdBy, statusUpdatedAt: toTimestamptz(now) }
       : {}),
   });
 

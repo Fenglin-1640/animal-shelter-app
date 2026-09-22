@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toHealthAssessment } from "@/lib/medical/serialize";
 import type { HealthAssessment } from "@/lib/medical/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 // FR-MED-01. Like /api/animals, this returns every row and callers
 // filter by animalId client-side (lib/medical/store.ts) - consistent
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     assessmentDate: body.assessmentDate,
     veterinarianEmail: body.veterinarianEmail,
     veterinarianName: body.veterinarianName,
-    createdAt: new Date(body.createdAt),
+    createdAt: toTimestamptz(body.createdAt),
   });
   return NextResponse.json({ ok: true, item: toHealthAssessment(created) });
 }

@@ -26,7 +26,7 @@ export interface HealthAssessmentRow
   // treated as false (no recheck pending), the same as if it had never
   // been ticked.
   healthRecheckRequired: number | null;
-  createdAt: Date;
+  createdAt: string;
 }
 export function toHealthAssessment(row: HealthAssessmentRow): HealthAssessment {
   return {
@@ -34,37 +34,37 @@ export function toHealthAssessment(row: HealthAssessmentRow): HealthAssessment {
     urgentTreatmentRequired: Boolean(row.urgentTreatmentRequired),
     healthRecheckRequired: Boolean(row.healthRecheckRequired),
     treatmentPathway: (row.treatmentPathway as TreatmentPathway | null) ?? undefined,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: row.createdAt,
   };
 }
 
 export interface TreatmentEventRow
   extends Omit<TreatmentEvent, "createdAt" | "furtherTreatmentRequired"> {
   furtherTreatmentRequired: number;
-  createdAt: Date;
+  createdAt: string;
 }
 export function toTreatmentEvent(row: TreatmentEventRow): TreatmentEvent {
   return {
     ...row,
     furtherTreatmentRequired: Boolean(row.furtherTreatmentRequired),
-    createdAt: row.createdAt.toISOString(),
+    createdAt: row.createdAt,
   };
 }
 
 export interface VaccinationRecordRow extends Omit<VaccinationRecord, "createdAt"> {
-  createdAt: Date;
+  createdAt: string;
 }
 export function toVaccinationRecord(row: VaccinationRecordRow): VaccinationRecord {
-  return { ...row, createdAt: row.createdAt.toISOString() };
+  return { ...row, createdAt: row.createdAt };
 }
 
 export interface DesexingScheduleRow
   extends Omit<DesexingSchedule, "createdAt" | "completedAt" | "status" | "completedByEmail" | "completedByName"> {
   status: string;
-  completedAt: Date | null;
+  completedAt: string | null;
   completedByEmail: string | null;
   completedByName: string | null;
-  createdAt: Date;
+  createdAt: string;
 }
 export function toDesexingSchedule(row: DesexingScheduleRow): DesexingSchedule {
   return {
@@ -72,38 +72,34 @@ export function toDesexingSchedule(row: DesexingScheduleRow): DesexingSchedule {
     status: row.status as DesexingStatus,
     completedByEmail: row.completedByEmail ?? undefined,
     completedByName: row.completedByName ?? undefined,
-    createdAt: row.createdAt.toISOString(),
-    completedAt: row.completedAt?.toISOString(),
+    createdAt: row.createdAt,
+    completedAt: row.completedAt ?? undefined,
   };
 }
 
 export function toDesexingScheduleRowPatch(patch: Partial<DesexingSchedule>): Record<string, unknown> {
   const row: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(patch)) {
-    if (key === "completedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
-    } else {
-      row[key] = value;
-    }
+    row[key] = value;
   }
   return row;
 }
 
 export interface MedicalClearanceRow extends Omit<MedicalClearance, "issuedAt"> {
-  issuedAt: Date;
+  issuedAt: string;
 }
 export function toMedicalClearance(row: MedicalClearanceRow): MedicalClearance {
-  return { ...row, issuedAt: row.issuedAt.toISOString() };
+  return { ...row, issuedAt: row.issuedAt };
 }
 
 export interface PreReleaseCheckRow extends Omit<PreReleaseCheck, "createdAt" | "fitnessResult"> {
   fitnessResult: string;
-  createdAt: Date;
+  createdAt: string;
 }
 export function toPreReleaseCheck(row: PreReleaseCheckRow): PreReleaseCheck {
   return {
     ...row,
     fitnessResult: row.fitnessResult as PreReleaseFitnessResult,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: row.createdAt,
   };
 }

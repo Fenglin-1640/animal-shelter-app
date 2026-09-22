@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toDropdownOption } from "@/lib/system-administration/serialize";
 import type { DropdownOption } from "@/lib/system-administration/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.DropdownOption.where({}).all();
@@ -18,8 +19,8 @@ export async function POST(request: Request) {
     speciesId: body.speciesId ?? null,
     isRetired: body.isRetired ? 1 : 0,
     systemLocked: body.systemLocked ? 1 : 0,
-    createdAt: new Date(body.createdAt),
-    updatedAt: new Date(body.updatedAt),
+    createdAt: toTimestamptz(body.createdAt),
+    updatedAt: toTimestamptz(body.updatedAt),
   });
   return NextResponse.json({ ok: true, item: toDropdownOption(created) });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toIntakeRecord } from "@/lib/intake-records/serialize";
 import type { IntakeRecord } from "@/lib/intake-records/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.IntakeRecord.where({}).all();
@@ -28,9 +29,9 @@ export async function POST(request: Request) {
     coatColour: body.coatColour,
     coatMarkings: body.coatMarkings,
     photos: JSON.stringify(body.photos),
-    createdAt: new Date(body.createdAt),
-    updatedAt: new Date(body.updatedAt),
-    finalisedAt: body.finalisedAt ? new Date(body.finalisedAt) : null,
+    createdAt: toTimestamptz(body.createdAt),
+    updatedAt: toTimestamptz(body.updatedAt),
+    finalisedAt: toTimestamptz(body.finalisedAt ?? null),
     registeredOwnerContactName: body.registeredOwnerContact?.name ?? null,
     registeredOwnerContactPhone: body.registeredOwnerContact?.phone ?? null,
     registeredOwnerContactAddress: body.registeredOwnerContact?.address ?? null,

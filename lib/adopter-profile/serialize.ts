@@ -19,7 +19,7 @@ export interface AdopterProfileRow {
   refereePhone: string;
   refereeEmail: string;
   refereeConsent: number;
-  refereeConsentAt: Date | null;
+  refereeConsentAt: string | null;
 }
 
 // Defensive against rows written before preferredSpecies was guaranteed
@@ -55,11 +55,11 @@ export function toAdopterProfile(row: AdopterProfileRow): AdopterProfile {
     refereePhone: row.refereePhone,
     refereeEmail: row.refereeEmail,
     refereeConsent: row.refereeConsent === 1,
-    refereeConsentAt: row.refereeConsentAt?.toISOString(),
+    refereeConsentAt: row.refereeConsentAt ?? undefined,
   };
 }
 
-export function toAdopterProfileRow(email: string, profile: AdopterProfile): Omit<AdopterProfileRow, "refereeConsentAt"> & { refereeConsentAt: Date | null } {
+export function toAdopterProfileRow(email: string, profile: AdopterProfile): AdopterProfileRow {
   return {
     email,
     residentialAddress: profile.residentialAddress,
@@ -78,6 +78,6 @@ export function toAdopterProfileRow(email: string, profile: AdopterProfile): Omi
     refereePhone: profile.refereePhone,
     refereeEmail: profile.refereeEmail,
     refereeConsent: profile.refereeConsent ? 1 : 0,
-    refereeConsentAt: profile.refereeConsentAt ? new Date(profile.refereeConsentAt) : null,
+    refereeConsentAt: profile.refereeConsentAt ?? null,
   };
 }

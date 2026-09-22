@@ -20,9 +20,9 @@ export interface AnimalRow {
   adoptionFee: number | null;
   currentStatus: string;
   listingStatus: string;
-  statusUpdatedAt: Date;
-  enteredAt: Date;
-  lastModifiedAt: Date;
+  statusUpdatedAt: string;
+  enteredAt: string;
+  lastModifiedAt: string;
   intakeSource: string;
   linkedPersonRole: string | null;
   linkedPersonName: string | null;
@@ -47,9 +47,9 @@ export function toAnimal(row: AnimalRow): Animal {
     adoptionFee: row.adoptionFee ?? undefined,
     currentStatus: row.currentStatus as Animal["currentStatus"],
     listingStatus: row.listingStatus as Animal["listingStatus"],
-    statusUpdatedAt: row.statusUpdatedAt.toISOString(),
-    enteredAt: row.enteredAt.toISOString(),
-    lastModifiedAt: row.lastModifiedAt.toISOString(),
+    statusUpdatedAt: row.statusUpdatedAt,
+    enteredAt: row.enteredAt,
+    lastModifiedAt: row.lastModifiedAt,
     intakeSource: row.intakeSource,
     linkedPerson:
       row.linkedPersonRole && row.linkedPersonName
@@ -70,8 +70,6 @@ export function toAnimalRowPatch(patch: Partial<Animal>): Record<string, unknown
       row.linkedPersonName = linkedPerson?.name ?? null;
     } else if (key === "temperaments") {
       row.temperaments = JSON.stringify(value);
-    } else if (key === "statusUpdatedAt" || key === "enteredAt" || key === "lastModifiedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else {
       row[key] = value;
     }

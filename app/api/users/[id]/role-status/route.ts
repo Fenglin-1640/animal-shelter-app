@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 // FR-UA-02: role/status rules - a single concurrent Active Administrator
 // (auto-demoting the outgoing one to Shelter Staff Member as part of a
@@ -31,7 +32,7 @@ export async function PATCH(
   }
 
   const becomingAdministrator = newRole === "Administrator" && current.role !== "Administrator";
-  const now = new Date();
+  const now = new Date().toISOString();
   let demoted: { email: string; displayName: string } | null = null;
 
   if (becomingAdministrator) {
@@ -45,7 +46,7 @@ export async function PATCH(
       await db.orm.User.where({ id: existingAdmin.id }).update({
         role: "Shelter Staff Member",
         roleUpdatedBy: actingAdminDisplayName,
-        roleUpdatedAt: now,
+        roleUpdatedAt: toTimestamptz(now),
       });
       demoted = {
         email: existingAdmin.email,
@@ -60,12 +61,12 @@ export async function PATCH(
   if (newRole !== current.role) {
     patch.role = newRole;
     patch.roleUpdatedBy = actingAdminDisplayName;
-    patch.roleUpdatedAt = now;
+    patch.roleUpdatedAt = toTimestamptz(now);
   }
   if (newStatus !== current.status) {
     patch.status = newStatus;
     patch.statusUpdatedBy = actingAdminDisplayName;
-    patch.statusUpdatedAt = now;
+    patch.statusUpdatedAt = toTimestamptz(now);
   }
 
   const changed = Object.keys(patch).length > 0;

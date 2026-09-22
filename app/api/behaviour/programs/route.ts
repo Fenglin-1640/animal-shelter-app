@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toBehaviourProgram } from "@/lib/behaviour/serialize";
 import type { BehaviourProgram } from "@/lib/behaviour/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.BehaviourProgram.where({}).all();
@@ -15,8 +16,8 @@ export async function POST(request: Request) {
     animalId: body.animalId,
     triggeringAssessmentId: body.triggeringAssessmentId,
     status: body.status,
-    createdAt: new Date(body.createdAt),
-    resolvedAt: body.resolvedAt ? new Date(body.resolvedAt) : null,
+    createdAt: toTimestamptz(body.createdAt),
+    resolvedAt: toTimestamptz(body.resolvedAt ?? null),
   });
   return NextResponse.json({ ok: true, item: toBehaviourProgram(created) });
 }

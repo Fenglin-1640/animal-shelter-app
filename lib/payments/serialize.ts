@@ -16,41 +16,37 @@ export interface AdoptionPaymentRow
     | "updatedAt"
   > {
   animalSpecies: string;
-  paymentDate: Date;
+  paymentDate: string;
   paymentStatus: string;
   receiptNumber: string | null;
   verifiedByEmail: string | null;
   verifiedByName: string | null;
-  verifiedDate: Date | null;
+  verifiedDate: string | null;
   failureReason: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function toAdoptionPayment(row: AdoptionPaymentRow): AdoptionPayment {
   return {
     ...row,
     animalSpecies: row.animalSpecies as Species,
-    paymentDate: row.paymentDate.toISOString(),
+    paymentDate: row.paymentDate,
     paymentStatus: row.paymentStatus as PaymentStatus,
     receiptNumber: row.receiptNumber ?? undefined,
     verifiedByEmail: row.verifiedByEmail ?? undefined,
     verifiedByName: row.verifiedByName ?? undefined,
-    verifiedDate: row.verifiedDate?.toISOString(),
+    verifiedDate: row.verifiedDate ?? undefined,
     failureReason: row.failureReason ?? undefined,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
 export function toPaymentRowPatch(patch: Partial<AdoptionPayment>): Record<string, unknown> {
   const row: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(patch)) {
-    if (key === "paymentDate" || key === "verifiedDate" || key === "createdAt" || key === "updatedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
-    } else {
-      row[key] = value;
-    }
+    row[key] = value;
   }
   return row;
 }

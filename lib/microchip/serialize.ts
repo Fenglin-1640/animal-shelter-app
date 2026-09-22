@@ -6,7 +6,7 @@ export interface MicrochipLookupRow
   ownerContactName: string | null;
   ownerContactPhone: string | null;
   ownerContactAddress: string | null;
-  performedAt: Date;
+  performedAt: string;
 }
 
 export function toMicrochipLookup(row: MicrochipLookupRow): MicrochipLookup {
@@ -20,6 +20,6 @@ export function toMicrochipLookup(row: MicrochipLookupRow): MicrochipLookup {
           address: row.ownerContactAddress ?? "",
         }
       : undefined,
-    performedAt: row.performedAt.toISOString(),
+    performedAt: row.performedAt,
   };
 }

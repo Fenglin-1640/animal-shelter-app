@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toFollowUpVisit } from "@/lib/follow-up-visits/serialize";
 import type { FollowUpVisit } from "@/lib/follow-up-visits/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.FollowUpVisit.where({}).all();
@@ -31,8 +32,8 @@ export async function POST(request: Request) {
     outcomeNotes: body.outcomeNotes,
     completedByEmail: body.completedByEmail ?? null,
     completedByName: body.completedByName ?? null,
-    completedAt: body.completedAt ? new Date(body.completedAt) : null,
-    createdAt: new Date(body.createdAt),
+    completedAt: toTimestamptz(body.completedAt ?? null),
+    createdAt: toTimestamptz(body.createdAt),
   });
   return NextResponse.json({ ok: true, item: toFollowUpVisit(created) });
 }

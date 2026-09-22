@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 import { toAdopterProfile, toAdopterProfileRow } from "@/lib/adopter-profile/serialize";
 import type { AdopterProfile } from "@/lib/adopter-profile/types";
 
@@ -16,6 +17,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const body = (await request.json()) as AdopterProfile & { email: string };
   const row = toAdopterProfileRow(body.email, body);
-  const saved = await db.orm.AdopterProfile.upsert({ create: row, update: row });
+  const dbRow = { ...row, refereeConsentAt: toTimestamptz(row.refereeConsentAt) };
+  const saved = await db.orm.AdopterProfile.upsert({ create: dbRow, update: dbRow });
   return NextResponse.json({ ok: true, item: { email: saved.email, ...toAdopterProfile(saved) } });
 }

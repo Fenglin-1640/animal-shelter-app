@@ -4,22 +4,22 @@ import type { AdoptionAgreement } from "@/lib/agreements/types";
 export interface AdoptionAgreementRow
   extends Omit<AdoptionAgreement, "animalSpecies" | "generatedAt" | "isSigned" | "signedDate" | "createdAt" | "updatedAt"> {
   animalSpecies: string;
-  generatedAt: Date;
+  generatedAt: string;
   isSigned: number;
-  signedDate: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+  signedDate: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function toAdoptionAgreement(row: AdoptionAgreementRow): AdoptionAgreement {
   return {
     ...row,
     animalSpecies: row.animalSpecies as Species,
-    generatedAt: row.generatedAt.toISOString(),
+    generatedAt: row.generatedAt,
     isSigned: row.isSigned === 1,
-    signedDate: row.signedDate?.toISOString(),
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    signedDate: row.signedDate ?? undefined,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -28,8 +28,6 @@ export function toAgreementRowPatch(patch: Partial<AdoptionAgreement>): Record<s
   for (const [key, value] of Object.entries(patch)) {
     if (key === "isSigned") {
       row[key] = value ? 1 : 0;
-    } else if (key === "generatedAt" || key === "signedDate" || key === "createdAt" || key === "updatedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else {
       row[key] = value;
     }

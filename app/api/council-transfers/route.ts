@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toCouncilTransferSubmission } from "@/lib/council-transfers/serialize";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.CouncilTransferSubmission.where({}).all();
@@ -20,9 +21,9 @@ export async function POST(request: Request) {
     animalDescription: body.animalDescription,
     attachments: JSON.stringify(body.attachments),
     status: body.status,
-    submissionDate: body.submissionDate ? new Date(body.submissionDate) : null,
-    createdAt: new Date(body.createdAt),
-    updatedAt: new Date(body.updatedAt),
+    submissionDate: toTimestamptz(body.submissionDate ?? null),
+    createdAt: toTimestamptz(body.createdAt),
+    updatedAt: toTimestamptz(body.updatedAt),
   });
   return NextResponse.json({ ok: true, item: toCouncilTransferSubmission(created) });
 }

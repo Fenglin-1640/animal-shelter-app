@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 import { toAdoptionApplication } from "@/lib/applications/serialize";
 import type { AdoptionApplication } from "@/lib/applications/types";
 
@@ -23,13 +24,13 @@ export async function POST(request: Request) {
     documents: JSON.stringify(body.documents),
     profileSnapshot: body.profileSnapshot ? JSON.stringify(body.profileSnapshot) : null,
     applicationStatus: body.applicationStatus,
-    submissionDate: body.submissionDate ? new Date(body.submissionDate) : null,
-    decisionDate: body.decisionDate ? new Date(body.decisionDate) : null,
+    submissionDate: toTimestamptz(body.submissionDate ?? null),
+    decisionDate: toTimestamptz(body.decisionDate ?? null),
     decisionByEmail: body.decisionByEmail ?? null,
     decisionByName: body.decisionByName ?? null,
     rejectionReason: body.rejectionReason ?? null,
-    createdAt: new Date(body.createdAt),
-    updatedAt: new Date(body.updatedAt),
+    createdAt: toTimestamptz(body.createdAt),
+    updatedAt: toTimestamptz(body.updatedAt),
   });
   return NextResponse.json({ ok: true, item: toAdoptionApplication(created) });
 }

@@ -8,8 +8,8 @@ export interface DropdownOptionRow
   speciesId: string | null;
   isRetired: number;
   systemLocked: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function toDropdownOption(row: DropdownOptionRow): DropdownOption {
@@ -19,8 +19,8 @@ export function toDropdownOption(row: DropdownOptionRow): DropdownOption {
     speciesId: (row.speciesId as Species | null) ?? undefined,
     isRetired: row.isRetired === 1,
     systemLocked: row.systemLocked === 1,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 

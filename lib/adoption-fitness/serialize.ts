@@ -6,7 +6,7 @@ export interface AssessmentTaskRow
   status: string;
   markedByEmail: string | null;
   markedByName: string | null;
-  markedAt: Date | null;
+  markedAt: string | null;
 }
 
 export function toAssessmentTask(row: AssessmentTaskRow): AssessmentTask {
@@ -16,7 +16,7 @@ export function toAssessmentTask(row: AssessmentTaskRow): AssessmentTask {
     status: row.status as TaskStatus,
     markedByEmail: row.markedByEmail ?? undefined,
     markedByName: row.markedByName ?? undefined,
-    markedAt: row.markedAt?.toISOString(),
+    markedAt: row.markedAt ?? undefined,
   };
 }
 
@@ -32,10 +32,10 @@ export interface FitnessReviewRow
   > {
   staffConfirmedByEmail: string | null;
   staffConfirmedByName: string | null;
-  staffConfirmedAt: Date | null;
+  staffConfirmedAt: string | null;
   vetConfirmedByEmail: string | null;
   vetConfirmedByName: string | null;
-  vetConfirmedAt: Date | null;
+  vetConfirmedAt: string | null;
 }
 
 export function toFitnessReview(row: FitnessReviewRow): FitnessReview {
@@ -43,9 +43,9 @@ export function toFitnessReview(row: FitnessReviewRow): FitnessReview {
     ...row,
     staffConfirmedByEmail: row.staffConfirmedByEmail ?? undefined,
     staffConfirmedByName: row.staffConfirmedByName ?? undefined,
-    staffConfirmedAt: row.staffConfirmedAt?.toISOString(),
+    staffConfirmedAt: row.staffConfirmedAt ?? undefined,
     vetConfirmedByEmail: row.vetConfirmedByEmail ?? undefined,
     vetConfirmedByName: row.vetConfirmedByName ?? undefined,
-    vetConfirmedAt: row.vetConfirmedAt?.toISOString(),
+    vetConfirmedAt: row.vetConfirmedAt ?? undefined,
   };
 }

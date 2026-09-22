@@ -1,6 +1,7 @@
 // Relative imports (not the "@/..." alias) - this script runs standalone
 // via tsx, outside Next.js's bundler, which is what resolves that alias.
 import { db } from "../lib/db/client";
+import { toTimestamptz } from "../lib/db/temporal";
 import { DEMO_ACCOUNTS } from "../lib/auth/demo-accounts";
 import { MOCK_ANIMALS } from "../lib/animals/mock-animals";
 import type { AdopterProfile } from "../lib/adopter-profile/types";
@@ -50,7 +51,7 @@ async function main() {
         firstName: account.firstName,
         lastName: account.lastName,
         phone: account.phone,
-        signUpAt: new Date(account.signUpAt),
+        signUpAt: toTimestamptz(account.signUpAt),
         failedLoginAttempts: 0,
       },
       update: {
@@ -86,9 +87,9 @@ async function main() {
       adoptionFee: animal.adoptionFee ?? null,
       currentStatus: animal.currentStatus,
       listingStatus: animal.listingStatus,
-      statusUpdatedAt: new Date(animal.statusUpdatedAt),
-      enteredAt: new Date(animal.enteredAt),
-      lastModifiedAt: new Date(animal.lastModifiedAt),
+      statusUpdatedAt: toTimestamptz(animal.statusUpdatedAt),
+      enteredAt: toTimestamptz(animal.enteredAt),
+      lastModifiedAt: toTimestamptz(animal.lastModifiedAt),
       intakeSource: animal.intakeSource,
       linkedPersonRole: animal.linkedPerson?.role ?? null,
       linkedPersonName: animal.linkedPerson?.name ?? null,
@@ -119,7 +120,7 @@ async function main() {
     refereePhone: DEMO_ADOPTER_PROFILE.refereePhone,
     refereeEmail: DEMO_ADOPTER_PROFILE.refereeEmail,
     refereeConsent: DEMO_ADOPTER_PROFILE.refereeConsent ? 1 : 0,
-    refereeConsentAt: DEMO_ADOPTER_PROFILE.refereeConsentAt ? new Date(DEMO_ADOPTER_PROFILE.refereeConsentAt) : null,
+    refereeConsentAt: toTimestamptz(DEMO_ADOPTER_PROFILE.refereeConsentAt ?? null),
   };
   await db.orm.AdopterProfile.upsert({
     create: adopterProfileRow,
@@ -136,8 +137,8 @@ async function main() {
       speciesId: option.speciesId ?? null,
       isRetired: option.isRetired ? 1 : 0,
       systemLocked: option.systemLocked ? 1 : 0,
-      createdAt: new Date(option.createdAt),
-      updatedAt: new Date(option.updatedAt),
+      createdAt: toTimestamptz(option.createdAt),
+      updatedAt: toTimestamptz(option.updatedAt),
     };
     await db.orm.DropdownOption.upsert({ create: row, update: row });
   }

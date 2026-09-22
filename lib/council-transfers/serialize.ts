@@ -7,9 +7,9 @@ export interface CouncilTransferSubmissionRow
   > {
   attachments: string;
   status: string;
-  submissionDate: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+  submissionDate: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function toCouncilTransferSubmission(row: CouncilTransferSubmissionRow): CouncilTransferSubmission {
@@ -17,9 +17,9 @@ export function toCouncilTransferSubmission(row: CouncilTransferSubmissionRow): 
     ...row,
     attachments: JSON.parse(row.attachments) as TransferAttachment[],
     status: row.status as TransferStatus,
-    submissionDate: row.submissionDate?.toISOString(),
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    submissionDate: row.submissionDate ?? undefined,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -28,8 +28,6 @@ export function toTransferRowPatch(patch: Partial<CouncilTransferSubmission>): R
   for (const [key, value] of Object.entries(patch)) {
     if (key === "attachments") {
       row[key] = JSON.stringify(value);
-    } else if (key === "submissionDate" || key === "createdAt" || key === "updatedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else {
       row[key] = value;
     }

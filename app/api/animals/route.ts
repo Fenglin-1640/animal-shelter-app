@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 import { toAnimal } from "@/lib/animals/serialize";
 import type { Animal } from "@/lib/animals/types";
 
@@ -33,9 +34,9 @@ export async function POST(request: Request) {
     adoptionFee: body.adoptionFee ?? null,
     currentStatus: body.currentStatus,
     listingStatus: body.listingStatus,
-    statusUpdatedAt: new Date(body.statusUpdatedAt),
-    enteredAt: new Date(body.enteredAt),
-    lastModifiedAt: new Date(body.lastModifiedAt),
+    statusUpdatedAt: toTimestamptz(body.statusUpdatedAt),
+    enteredAt: toTimestamptz(body.enteredAt),
+    lastModifiedAt: toTimestamptz(body.lastModifiedAt),
     intakeSource: body.intakeSource,
     linkedPersonRole: body.linkedPerson?.role ?? null,
     linkedPersonName: body.linkedPerson?.name ?? null,

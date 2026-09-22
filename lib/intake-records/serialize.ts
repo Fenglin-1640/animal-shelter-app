@@ -17,9 +17,9 @@ export interface IntakeRecordRow
   species: string;
   sex: string;
   photos: string;
-  createdAt: Date;
-  updatedAt: Date;
-  finalisedAt: Date | null;
+  createdAt: string;
+  updatedAt: string;
+  finalisedAt: string | null;
   registeredOwnerContactName: string | null;
   registeredOwnerContactPhone: string | null;
   registeredOwnerContactAddress: string | null;
@@ -32,9 +32,9 @@ export function toIntakeRecord(row: IntakeRecordRow): IntakeRecord {
     species: row.species as Species | "",
     sex: row.sex as Sex | "",
     photos: JSON.parse(row.photos) as AnimalPhoto[],
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-    finalisedAt: row.finalisedAt?.toISOString(),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    finalisedAt: row.finalisedAt ?? undefined,
     registeredOwnerContact: row.registeredOwnerContactName
       ? {
           name: row.registeredOwnerContactName,
@@ -50,8 +50,6 @@ export function toIntakeRecordRowPatch(patch: Partial<IntakeRecord>): Record<str
   for (const [key, value] of Object.entries(patch)) {
     if (key === "photos") {
       row[key] = JSON.stringify(value);
-    } else if (key === "createdAt" || key === "updatedAt" || key === "finalisedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else if (key === "registeredOwnerContact") {
       const contact = value as IntakeRecord["registeredOwnerContact"];
       row.registeredOwnerContactName = contact?.name ?? null;

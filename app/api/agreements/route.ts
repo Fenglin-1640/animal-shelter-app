@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 import { toAdoptionAgreement } from "@/lib/agreements/serialize";
 import type { AdoptionAgreement } from "@/lib/agreements/types";
 
@@ -22,13 +23,13 @@ export async function POST(request: Request) {
     templateVersion: body.templateVersion,
     adoptionConditions: body.adoptionConditions,
     returnPolicyPeriod: body.returnPolicyPeriod,
-    generatedAt: new Date(body.generatedAt),
+    generatedAt: toTimestamptz(body.generatedAt),
     generatedByEmail: body.generatedByEmail,
     generatedByName: body.generatedByName,
     isSigned: body.isSigned ? 1 : 0,
-    signedDate: body.signedDate ? new Date(body.signedDate) : null,
-    createdAt: new Date(body.createdAt),
-    updatedAt: new Date(body.updatedAt),
+    signedDate: toTimestamptz(body.signedDate ?? null),
+    createdAt: toTimestamptz(body.createdAt),
+    updatedAt: toTimestamptz(body.updatedAt),
   });
   return NextResponse.json({ ok: true, item: toAdoptionAgreement(created) });
 }

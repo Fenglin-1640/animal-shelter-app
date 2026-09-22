@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toAssessmentTask } from "@/lib/adoption-fitness/serialize";
 import type { AssessmentTask } from "@/lib/adoption-fitness/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 // Generic patch - mirrors CouncilTransferSubmission's/DropdownOption's
 // PATCH routes. The only call site today (markTaskContinuable) just
@@ -16,7 +17,7 @@ export async function PATCH(
   const row: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(patch)) {
     if (key === "markedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
+      row[key] = toTimestamptz(value as string | null);
     } else {
       row[key] = value;
     }

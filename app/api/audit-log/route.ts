@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 import { toAuditLogEntry } from "@/lib/audit/serialize";
 import type { AuditLogEntry } from "@/lib/audit/types";
 
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     auditId: body.auditId,
     userId: body.userId,
     userName: body.userName,
-    timestamp: new Date(body.timestamp),
+    timestamp: toTimestamptz(body.timestamp),
     action: body.action,
     entityType: body.entityType,
     entityId: body.entityId,

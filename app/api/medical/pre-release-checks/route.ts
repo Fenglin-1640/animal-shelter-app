@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toPreReleaseCheck } from "@/lib/medical/serialize";
 import type { PreReleaseCheck } from "@/lib/medical/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.PreReleaseCheck.where({}).all();
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     careInstructions: body.careInstructions,
     veterinarianEmail: body.veterinarianEmail,
     veterinarianName: body.veterinarianName,
-    createdAt: new Date(body.createdAt),
+    createdAt: toTimestamptz(body.createdAt),
   });
   return NextResponse.json({ ok: true, item: toPreReleaseCheck(created) });
 }

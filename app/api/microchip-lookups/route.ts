@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toMicrochipLookup } from "@/lib/microchip/serialize";
 import type { MicrochipLookup } from "@/lib/microchip/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 // No PATCH or DELETE route, and none in lib/microchip/store.ts either -
 // FR-MC-01's "不可删除" (immutable, never edited or deleted once created)
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     ownerContactAddress: body.ownerContact?.address ?? null,
     performedByEmail: body.performedByEmail,
     performedByName: body.performedByName,
-    performedAt: new Date(body.performedAt),
+    performedAt: toTimestamptz(body.performedAt),
   });
   return NextResponse.json({ ok: true, item: toMicrochipLookup(created) });
 }

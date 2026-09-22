@@ -17,6 +17,14 @@ only `localStorage`/`sessionStorage` usages left in the codebase, and
 both are genuinely per-device/session state rather than shared domain
 data, so they are correctly out of scope, not oversights.
 
+**Database target: Neon Postgres, not SQLite.** The project moved off
+`prisma/dev.db` to a Neon Postgres database (`DATABASE_URL` in
+`.env.development.local`, gitignored). `prisma.config.ts` and
+`lib/db/client.ts` now use `@prisma/orm-postgres`, not
+`@prisma/orm-sqlite` - the sqlite-specific notes below are kept for
+history/contrast but no longer describe this project's actual setup.
+See "Postgres-specific gotchas" below for what changed.
+
 Verified with a final full-app regression pass across all 5 roles
 (Administrator, Shelter Staff Member, Veterinarian, Council Animal
 Control Officer, Adopter) and every route in the app: `tsc --noEmit`
@@ -85,15 +93,61 @@ has been fixed.
   across the whole repo is a fast way to audit for this after converting
   any store to async.
 
+## Postgres-specific gotchas
+
+- **`DateTime` columns are `Temporal`-backed by default, and this
+  Node version has no global `Temporal`.** On the `postgres` target,
+  `DateTime` compiles to a native `timestamptz` codec that reads/writes
+  `Temporal.Instant` (not `Date`, not a string) and throws
+  `RUNTIME.TEMPORAL_UNAVAILABLE` on first use without a polyfill. Rather
+  than convert every read/write site to `Temporal.Instant` and every
+  serializer to call `.toString()`, every `DateTime` field in
+  `contract.prisma` is authored as `TimestamptzString(6)` instead - a
+  branded-string codec that reads/writes PostgreSQL's own text directly,
+  matching what every store/serializer in this codebase already assumed
+  (`Date`-typed row fields, `.toISOString()` in, plain ISO strings out).
+  `lib/db/temporal.ts`'s `toTimestamptz()` casts a plain `string` to the
+  branded type at every `db.orm.<Model>.create()`/`.update()` call site
+  that writes one of these columns - required because the brand isn't
+  structurally satisfied by a bare `string`, unlike the read side (a
+  branded string widens to `string` with no cast needed, so
+  `*Row` interfaces just declare these fields as `string`).
+- **`db.orm.<Model>` is namespaced on Postgres, unlike SQLite.**
+  SQLite's contract declares one synthetic `__unbound__` namespace,
+  which `@prisma/orm-sqlite` flattens onto `.orm` directly
+  (`db.orm.Animal`). Postgres has real schemas, so the contract declares
+  an actual `public` namespace and `@prisma/orm-postgres`'s `.orm` stays
+  namespaced (`client.orm.public.Animal`) - every store in this codebase
+  was written against the flat shape, so `lib/db/client.ts` re-derives
+  `db.orm` as `client.orm.public` once instead of touching every call
+  site.
+- **Changing a `DateTime`-family column's codec (e.g. Temporal ->
+  TimestamptzString) via `prisma db update` can fail at postcheck even
+  when the underlying native SQL type is already correct** - seen
+  consistently in this rc build even after matching the target
+  precision to what was already on disk. On an empty/dev database, the
+  reliable fix is `DROP SCHEMA public CASCADE; CREATE SCHEMA public;`
+  (via a one-off script using `pg` directly) so the next `db update`
+  plans pure `CREATE TABLE`, not `ALTER TYPE`.
+- **This CLI's `prisma.config.ts` (`dotenv/config`) only loads `.env`,
+  not `.env.development.local`/`.env.local`** - Next.js's own
+  convention, which only `next dev`/`next build` apply automatically.
+  Both `prisma.config.ts` and `lib/db/client.ts` (the latter for plain
+  `tsx` scripts like `prisma/seed.ts` and the QA runner, which import
+  `lib/db/client.ts` directly, bypassing Next.js entirely) load
+  `.env.development.local`, `.env.local`, then `.env` explicitly, in
+  that precedence order, via `dotenv`'s `path` array.
+
 ## Commands
 
 ```bash
 npm run db:emit     # contract.prisma -> contract.json/contract.d.ts
-npm run db:update    # db:emit, then apply the contract to prisma/dev.db
+npm run db:update    # db:emit, then apply the contract to the DATABASE_URL database
 npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animals
 ```
 
-`prisma/dev.db` is gitignored (local dev only, per-checkout).
+`DATABASE_URL` (the Neon Postgres connection string) lives in
+`.env.development.local`, gitignored (per-checkout, not shared).
 
 ## Models
 

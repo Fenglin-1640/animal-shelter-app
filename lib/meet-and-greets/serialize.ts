@@ -25,8 +25,8 @@ export interface MeetAndGreetRow
   attendanceConfirmed: number;
   outcome: string | null;
   outcomeReason: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function toMeetAndGreet(row: MeetAndGreetRow): MeetAndGreet {
@@ -41,8 +41,8 @@ export function toMeetAndGreet(row: MeetAndGreetRow): MeetAndGreet {
     attendanceConfirmed: row.attendanceConfirmed === 1,
     outcome: (row.outcome as "Compatible" | "Incompatible" | null) ?? undefined,
     outcomeReason: row.outcomeReason ?? undefined,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -53,8 +53,6 @@ export function toMeetAndGreetRowPatch(patch: Partial<MeetAndGreet>): Record<str
       row[key] = JSON.stringify(value);
     } else if (key === "attendanceConfirmed") {
       row[key] = value ? 1 : 0;
-    } else if (key === "createdAt" || key === "updatedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else {
       row[key] = value;
     }

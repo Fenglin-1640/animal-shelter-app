@@ -23,16 +23,16 @@ export interface StatutoryHoldRow
   ownerContactPhone: string;
   ownerContactAddress: string;
   status: string;
-  holdStartAt: Date;
-  holdEndAt: Date;
-  createdAt: Date;
-  reclaimedAt: Date | null;
+  holdStartAt: string;
+  holdEndAt: string;
+  createdAt: string;
+  reclaimedAt: string | null;
   reclaimedByEmail: string | null;
   reclaimedByName: string | null;
-  custodyTransferCompletedAt: Date | null;
+  custodyTransferCompletedAt: string | null;
   custodyTransferByEmail: string | null;
   custodyTransferByName: string | null;
-  expiredAt: Date | null;
+  expiredAt: string | null;
 }
 
 export function toStatutoryHold(row: StatutoryHoldRow): StatutoryHold {
@@ -44,16 +44,16 @@ export function toStatutoryHold(row: StatutoryHoldRow): StatutoryHold {
       address: row.ownerContactAddress,
     },
     status: row.status as StatutoryHoldStatus,
-    holdStartAt: row.holdStartAt.toISOString(),
-    holdEndAt: row.holdEndAt.toISOString(),
-    createdAt: row.createdAt.toISOString(),
-    reclaimedAt: row.reclaimedAt?.toISOString(),
+    holdStartAt: row.holdStartAt,
+    holdEndAt: row.holdEndAt,
+    createdAt: row.createdAt,
+    reclaimedAt: row.reclaimedAt ?? undefined,
     reclaimedByEmail: row.reclaimedByEmail ?? undefined,
     reclaimedByName: row.reclaimedByName ?? undefined,
-    custodyTransferCompletedAt: row.custodyTransferCompletedAt?.toISOString(),
+    custodyTransferCompletedAt: row.custodyTransferCompletedAt ?? undefined,
     custodyTransferByEmail: row.custodyTransferByEmail ?? undefined,
     custodyTransferByName: row.custodyTransferByName ?? undefined,
-    expiredAt: row.expiredAt?.toISOString(),
+    expiredAt: row.expiredAt ?? undefined,
   };
 }
 
@@ -68,15 +68,6 @@ export function toStatutoryHoldRowPatch(patch: Partial<StatutoryHold>): Record<s
       row.ownerContactName = contact.name;
       row.ownerContactPhone = contact.phone;
       row.ownerContactAddress = contact.address;
-    } else if (
-      key === "holdStartAt" ||
-      key === "holdEndAt" ||
-      key === "createdAt" ||
-      key === "reclaimedAt" ||
-      key === "custodyTransferCompletedAt" ||
-      key === "expiredAt"
-    ) {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else {
       row[key] = value;
     }

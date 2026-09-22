@@ -18,8 +18,8 @@ export interface FollowUpVisitRow
   outcome: string | null;
   completedByEmail: string | null;
   completedByName: string | null;
-  completedAt: Date | null;
-  createdAt: Date;
+  completedAt: string | null;
+  createdAt: string;
 }
 
 export function toFollowUpVisit(row: FollowUpVisitRow): FollowUpVisit {
@@ -31,8 +31,8 @@ export function toFollowUpVisit(row: FollowUpVisitRow): FollowUpVisit {
     outcome: (row.outcome as WelfareOutcome | null) ?? undefined,
     completedByEmail: row.completedByEmail ?? undefined,
     completedByName: row.completedByName ?? undefined,
-    completedAt: row.completedAt?.toISOString(),
-    createdAt: row.createdAt.toISOString(),
+    completedAt: row.completedAt ?? undefined,
+    createdAt: row.createdAt,
   };
 }
 
@@ -41,8 +41,6 @@ export function toFollowUpVisitRowPatch(patch: Partial<FollowUpVisit>): Record<s
   for (const [key, value] of Object.entries(patch)) {
     if (key === "careInstructionsProvided") {
       row[key] = value ? 1 : 0;
-    } else if (key === "completedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else {
       row[key] = value;
     }

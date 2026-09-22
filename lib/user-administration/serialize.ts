@@ -16,14 +16,14 @@ export interface UserRow {
   firstName: string;
   lastName: string;
   phone: string;
-  signUpAt: Date;
-  lastLoginAt: Date | null;
+  signUpAt: string;
+  lastLoginAt: string | null;
   roleUpdatedBy: string | null;
-  roleUpdatedAt: Date | null;
+  roleUpdatedAt: string | null;
   statusUpdatedBy: string | null;
-  statusUpdatedAt: Date | null;
+  statusUpdatedAt: string | null;
   failedLoginAttempts: number;
-  lockedAt: Date | null;
+  lockedAt: string | null;
 }
 
 // DirectoryUser is the client-facing shape (FR-UA-01) - never includes
@@ -40,11 +40,11 @@ export function toDirectoryUser(row: UserRow): DirectoryUser {
     status: row.status as "Active" | "Inactive",
     isLocked: Boolean(row.lockedAt),
     failedAttempts: row.failedLoginAttempts,
-    signUpAt: row.signUpAt.toISOString(),
-    lastLoginAt: row.lastLoginAt?.toISOString(),
+    signUpAt: row.signUpAt,
+    lastLoginAt: row.lastLoginAt ?? undefined,
     roleUpdatedBy: row.roleUpdatedBy ?? undefined,
-    roleUpdatedAt: row.roleUpdatedAt?.toISOString(),
+    roleUpdatedAt: row.roleUpdatedAt ?? undefined,
     statusUpdatedBy: row.statusUpdatedBy ?? undefined,
-    statusUpdatedAt: row.statusUpdatedAt?.toISOString(),
+    statusUpdatedAt: row.statusUpdatedAt ?? undefined,
   };
 }

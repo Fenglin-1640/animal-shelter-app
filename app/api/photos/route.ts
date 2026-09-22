@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toPhoto } from "@/lib/photos/serialize";
 import type { Photo } from "@/lib/photos/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.Photo.where({}).all();
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     takenByName: body.takenByName,
     useOnAdoptionListing: body.useOnAdoptionListing ? 1 : 0,
     altText: body.altText,
-    uploadedAt: new Date(body.uploadedAt),
+    uploadedAt: toTimestamptz(body.uploadedAt),
     imageData: body.imageData ?? null,
   });
   return NextResponse.json({ ok: true, item: toPhoto(created) });

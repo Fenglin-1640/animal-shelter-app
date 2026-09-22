@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toBehaviourProgram } from "@/lib/behaviour/serialize";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 // resolveProgram(): marks a Behaviour Program Completed - Suitable /
 // Completed - Permanently Unsuitable. Not_found is handled client-side
@@ -15,7 +16,7 @@ export async function PATCH(
 
   const updated = await db.orm.BehaviourProgram.where({ id }).update({
     status: body.status,
-    resolvedAt: new Date(body.resolvedAt),
+    resolvedAt: toTimestamptz(body.resolvedAt),
   });
   if (!updated) {
     return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });

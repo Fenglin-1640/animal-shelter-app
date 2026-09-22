@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toStatutoryHold } from "@/lib/statutory-hold/serialize";
 import type { StatutoryHold } from "@/lib/statutory-hold/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.StatutoryHold.where({}).all();
@@ -18,11 +19,11 @@ export async function POST(request: Request) {
     ownerContactName: body.ownerContact.name,
     ownerContactPhone: body.ownerContact.phone,
     ownerContactAddress: body.ownerContact.address,
-    holdStartAt: new Date(body.holdStartAt),
-    holdEndAt: new Date(body.holdEndAt),
+    holdStartAt: toTimestamptz(body.holdStartAt),
+    holdEndAt: toTimestamptz(body.holdEndAt),
     holdingPeriodDays: body.holdingPeriodDays,
     status: body.status,
-    createdAt: new Date(body.createdAt),
+    createdAt: toTimestamptz(body.createdAt),
   });
   return NextResponse.json({ ok: true, item: toStatutoryHold(created) });
 }

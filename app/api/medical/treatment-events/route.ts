@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toTreatmentEvent } from "@/lib/medical/serialize";
 import type { TreatmentEvent } from "@/lib/medical/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.TreatmentEvent.where({}).all();
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
     furtherTreatmentRequired: body.furtherTreatmentRequired ? 1 : 0,
     veterinarianEmail: body.veterinarianEmail,
     veterinarianName: body.veterinarianName,
-    createdAt: new Date(body.createdAt),
+    createdAt: toTimestamptz(body.createdAt),
   });
   return NextResponse.json({ ok: true, item: toTreatmentEvent(created) });
 }

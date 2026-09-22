@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 import { toAssessmentTask } from "@/lib/adoption-fitness/serialize";
 import type { AssessmentTask } from "@/lib/adoption-fitness/types";
 
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
     status: body.status,
     markedByEmail: body.markedByEmail ?? null,
     markedByName: body.markedByName ?? null,
-    markedAt: body.markedAt ? new Date(body.markedAt) : null,
+    markedAt: toTimestamptz(body.markedAt ?? null),
   });
   return NextResponse.json({ ok: true, item: toAssessmentTask(created) });
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 function generateAccountId(): string {
   return `U-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     firstName,
     lastName,
     phone,
-    signUpAt: new Date(),
+    signUpAt: toTimestamptz(new Date().toISOString()),
     failedLoginAttempts: 0,
   });
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toDropdownOption } from "@/lib/system-administration/serialize";
 import type { DropdownOption } from "@/lib/system-administration/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 // Generic patch - mirrors AdoptionAgreement's/CouncilTransferSubmission's
 // PATCH routes. Call sites (updateOption, setRetired) each patch a
@@ -19,7 +20,7 @@ export async function PATCH(
     if (key === "isRetired" || key === "systemLocked") {
       row[key] = value ? 1 : 0;
     } else if (key === "updatedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
+      row[key] = toTimestamptz(value as string);
     } else if (key === "speciesId") {
       row[key] = value ?? null;
     } else {

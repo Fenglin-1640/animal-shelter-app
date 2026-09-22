@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toFitnessReview } from "@/lib/adoption-fitness/serialize";
 import type { FitnessReview } from "@/lib/adoption-fitness/types";
+import { toTimestamptz } from "@/lib/db/temporal";
 
 export async function GET() {
   const rows = await db.orm.FitnessReview.where({}).all();
@@ -18,10 +19,10 @@ export async function POST(request: Request) {
     animalId: body.animalId,
     staffConfirmedByEmail: body.staffConfirmedByEmail ?? null,
     staffConfirmedByName: body.staffConfirmedByName ?? null,
-    staffConfirmedAt: body.staffConfirmedAt ? new Date(body.staffConfirmedAt) : null,
+    staffConfirmedAt: toTimestamptz(body.staffConfirmedAt ?? null),
     vetConfirmedByEmail: body.vetConfirmedByEmail ?? null,
     vetConfirmedByName: body.vetConfirmedByName ?? null,
-    vetConfirmedAt: body.vetConfirmedAt ? new Date(body.vetConfirmedAt) : null,
+    vetConfirmedAt: toTimestamptz(body.vetConfirmedAt ?? null),
   };
   const saved = await db.orm.FitnessReview.upsert({ create: row, update: row });
   return NextResponse.json({ ok: true, item: toFitnessReview(saved) });

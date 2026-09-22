@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
+import { toTimestamptz } from "@/lib/db/temporal";
 import { LOCKOUT_THRESHOLD } from "@/lib/auth/lockout-config";
 
 // FR-AUTH-01 / PRD 4.1: 6 failed attempts locks the account; Inactive
@@ -28,8 +29,11 @@ export async function POST(request: Request) {
 
   if (account.password !== password) {
     const failedLoginAttempts = account.failedLoginAttempts + 1;
-    const lockedAt = failedLoginAttempts >= LOCKOUT_THRESHOLD ? new Date() : null;
-    await db.orm.User.where({ id: account.id }).update({ failedLoginAttempts, lockedAt });
+    const lockedAt = failedLoginAttempts >= LOCKOUT_THRESHOLD ? new Date().toISOString() : null;
+    await db.orm.User.where({ id: account.id }).update({
+      failedLoginAttempts,
+      lockedAt: toTimestamptz(lockedAt),
+    });
 
     if (lockedAt) {
       return NextResponse.json({ ok: false, reason: "locked" });
@@ -41,11 +45,11 @@ export async function POST(request: Request) {
     });
   }
 
-  const lastLoginAt = new Date();
+  const lastLoginAt = new Date().toISOString();
   await db.orm.User.where({ id: account.id }).update({
     failedLoginAttempts: 0,
     lockedAt: null,
-    lastLoginAt,
+    lastLoginAt: toTimestamptz(lastLoginAt),
   });
 
   return NextResponse.json({
@@ -59,8 +63,8 @@ export async function POST(request: Request) {
       firstName: account.firstName,
       lastName: account.lastName,
       phone: account.phone,
-      signUpAt: account.signUpAt.toISOString(),
-      lastLoginAt: lastLoginAt.toISOString(),
+      signUpAt: account.signUpAt,
+      lastLoginAt,
     },
   });
 }

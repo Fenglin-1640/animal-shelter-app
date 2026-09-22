@@ -24,13 +24,13 @@ export interface AdoptionApplicationRow
   documents: string;
   profileSnapshot: string | null;
   applicationStatus: string;
-  submissionDate: Date | null;
-  decisionDate: Date | null;
+  submissionDate: string | null;
+  decisionDate: string | null;
   decisionByEmail: string | null;
   decisionByName: string | null;
   rejectionReason: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function toAdoptionApplication(row: AdoptionApplicationRow): AdoptionApplication {
@@ -40,13 +40,13 @@ export function toAdoptionApplication(row: AdoptionApplicationRow): AdoptionAppl
     documents: JSON.parse(row.documents),
     profileSnapshot: row.profileSnapshot ? JSON.parse(row.profileSnapshot) : undefined,
     applicationStatus: row.applicationStatus as ApplicationStatus,
-    submissionDate: row.submissionDate?.toISOString(),
-    decisionDate: row.decisionDate?.toISOString(),
+    submissionDate: row.submissionDate ?? undefined,
+    decisionDate: row.decisionDate ?? undefined,
     decisionByEmail: row.decisionByEmail ?? undefined,
     decisionByName: row.decisionByName ?? undefined,
     rejectionReason: row.rejectionReason ?? undefined,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -58,8 +58,6 @@ export function toApplicationRowPatch(patch: Partial<AdoptionApplication>): Reco
   for (const [key, value] of Object.entries(patch)) {
     if (key === "documents" || key === "profileSnapshot") {
       row[key] = value === undefined ? null : JSON.stringify(value);
-    } else if (key === "submissionDate" || key === "decisionDate" || key === "createdAt" || key === "updatedAt") {
-      row[key] = typeof value === "string" ? new Date(value) : value;
     } else {
       row[key] = value;
     }

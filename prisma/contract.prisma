@@ -17,14 +17,14 @@ model User {
   firstName           String
   lastName            String
   phone               String
-  signUpAt            DateTime
-  lastLoginAt         DateTime?
+  signUpAt            TimestamptzString(6)
+  lastLoginAt         TimestamptzString(6)?
   roleUpdatedBy       String?
-  roleUpdatedAt       DateTime?
+  roleUpdatedAt       TimestamptzString(6)?
   statusUpdatedBy     String?
-  statusUpdatedAt     DateTime?
+  statusUpdatedAt     TimestamptzString(6)?
   failedLoginAttempts Int       @default(0)
-  lockedAt            DateTime?
+  lockedAt            TimestamptzString(6)?
 }
 
 // Mirrors lib/animals/types.ts's Animal interface - the core entity
@@ -56,9 +56,9 @@ model Animal {
   adoptionFee         Float?
   currentStatus       String
   listingStatus       String
-  statusUpdatedAt     DateTime
-  enteredAt           DateTime
-  lastModifiedAt      DateTime
+  statusUpdatedAt     TimestamptzString(6)
+  enteredAt           TimestamptzString(6)
+  lastModifiedAt      TimestamptzString(6)
   intakeSource        String
   linkedPersonRole    String?
   linkedPersonName    String?
@@ -101,7 +101,7 @@ model HealthAssessment {
   assessmentDate          String
   veterinarianEmail       String
   veterinarianName        String
-  createdAt               DateTime
+  createdAt               TimestamptzString(6)
 }
 
 model TreatmentEvent {
@@ -115,7 +115,7 @@ model TreatmentEvent {
   furtherTreatmentRequired  Int
   veterinarianEmail         String
   veterinarianName          String
-  createdAt                 DateTime
+  createdAt                 TimestamptzString(6)
 }
 
 model VaccinationRecord {
@@ -127,7 +127,7 @@ model VaccinationRecord {
   nextBoosterDueDate String
   veterinarianEmail  String
   veterinarianName   String
-  createdAt          DateTime
+  createdAt          TimestamptzString(6)
 }
 
 model DesexingSchedule {
@@ -135,12 +135,12 @@ model DesexingSchedule {
   animalId          String
   scheduledDate     String
   status            String
-  completedAt       DateTime?
+  completedAt       TimestamptzString(6)?
   completedByEmail  String?
   completedByName   String?
   veterinarianEmail String
   veterinarianName  String
-  createdAt         DateTime
+  createdAt         TimestamptzString(6)
 }
 
 model MedicalClearance {
@@ -148,7 +148,7 @@ model MedicalClearance {
   animalId      String
   issuedByEmail String
   issuedByName  String
-  issuedAt      DateTime
+  issuedAt      TimestamptzString(6)
 }
 
 model PreReleaseCheck {
@@ -161,7 +161,7 @@ model PreReleaseCheck {
   careInstructions   String
   veterinarianEmail  String
   veterinarianName   String
-  createdAt          DateTime
+  createdAt          TimestamptzString(6)
 }
 
 // Mirrors lib/behaviour/types.ts (FR-BEH-01/02). followUpRequired is
@@ -182,7 +182,7 @@ model TemperamentAssessment {
   followUpRequired                   Int
   reassessmentDate                    String?
   outcome                             String
-  createdAt                            DateTime
+  createdAt                            TimestamptzString(6)
   programReassessmentOf                String?
 }
 
@@ -191,8 +191,8 @@ model BehaviourProgram {
   animalId               String
   triggeringAssessmentId String
   status                 String
-  createdAt              DateTime
-  resolvedAt             DateTime?
+  createdAt              TimestamptzString(6)
+  resolvedAt             TimestamptzString(6)?
 }
 
 // Mirrors lib/statutory-hold/types.ts (FR-MC-02). ownerContact is
@@ -207,18 +207,18 @@ model StatutoryHold {
   ownerContactName           String
   ownerContactPhone          String
   ownerContactAddress        String
-  holdStartAt                DateTime
-  holdEndAt                  DateTime
+  holdStartAt                TimestamptzString(6)
+  holdEndAt                  TimestamptzString(6)
   holdingPeriodDays          Int
   status                     String
-  createdAt                  DateTime
-  reclaimedAt                DateTime?
+  createdAt                  TimestamptzString(6)
+  reclaimedAt                TimestamptzString(6)?
   reclaimedByEmail           String?
   reclaimedByName            String?
-  custodyTransferCompletedAt DateTime?
+  custodyTransferCompletedAt TimestamptzString(6)?
   custodyTransferByEmail     String?
   custodyTransferByName      String?
-  expiredAt                  DateTime?
+  expiredAt                  TimestamptzString(6)?
 }
 
 // Mirrors lib/applications/types.ts (FR-APP-01). documents (array of
@@ -241,13 +241,13 @@ model AdoptionApplication {
   documents           String
   profileSnapshot     String?
   applicationStatus   String
-  submissionDate      DateTime?
-  decisionDate        DateTime?
+  submissionDate      TimestamptzString(6)?
+  decisionDate        TimestamptzString(6)?
   decisionByEmail     String?
   decisionByName      String?
   rejectionReason     String?
-  createdAt           DateTime
-  updatedAt           DateTime
+  createdAt           TimestamptzString(6)
+  updatedAt           TimestamptzString(6)
 }
 
 // Mirrors lib/checks/types.ts (FR-CHK-01/02). conductedDate stays
@@ -291,13 +291,13 @@ model AdoptionAgreement {
   templateVersion   String
   adoptionConditions String
   returnPolicyPeriod String
-  generatedAt       DateTime
+  generatedAt       TimestamptzString(6)
   generatedByEmail  String
   generatedByName   String
   isSigned          Int
-  signedDate        DateTime?
-  createdAt         DateTime
-  updatedAt         DateTime
+  signedDate        TimestamptzString(6)?
+  createdAt         TimestamptzString(6)
+  updatedAt         TimestamptzString(6)
 }
 
 // Mirrors lib/payments/types.ts (FR-PAY-01). Same "no nested
@@ -315,15 +315,15 @@ model AdoptionPayment {
   adopterName      String
   amount           Float
   paymentMethod    String
-  paymentDate      DateTime
+  paymentDate      TimestamptzString(6)
   paymentStatus    String
   receiptNumber    String?
   verifiedByEmail  String?
   verifiedByName   String?
-  verifiedDate     DateTime?
+  verifiedDate     TimestamptzString(6)?
   failureReason    String?
-  createdAt        DateTime
-  updatedAt        DateTime
+  createdAt        TimestamptzString(6)
+  updatedAt        TimestamptzString(6)
 }
 
 model MeetAndGreet {
@@ -346,8 +346,8 @@ model MeetAndGreet {
   outcomeReason       String?
   createdByEmail      String
   createdByName       String
-  createdAt           DateTime
-  updatedAt           DateTime
+  createdAt           TimestamptzString(6)
+  updatedAt           TimestamptzString(6)
 }
 
 // Mirrors lib/follow-up-visits/types.ts (FR-REL-02). No nested
@@ -381,8 +381,8 @@ model FollowUpVisit {
   outcomeNotes              String
   completedByEmail          String?
   completedByName           String?
-  completedAt               DateTime?
-  createdAt                 DateTime
+  completedAt               TimestamptzString(6)?
+  createdAt                 TimestamptzString(6)
 }
 
 // Mirrors lib/council-transfers/types.ts (FR-INT-01). attachments
@@ -401,9 +401,9 @@ model CouncilTransferSubmission {
   animalDescription    String
   attachments           String
   status                 String
-  submissionDate          DateTime?
-  createdAt                DateTime
-  updatedAt                 DateTime
+  submissionDate          TimestamptzString(6)?
+  createdAt                TimestamptzString(6)
+  updatedAt                 TimestamptzString(6)
 }
 
 // Mirrors lib/intake-records/types.ts (FR-INT-02). photos (array of
@@ -433,9 +433,9 @@ model IntakeRecord {
   coatColour                         String
   coatMarkings                        String
   photos                               String
-  createdAt                            DateTime
-  updatedAt                             DateTime
-  finalisedAt                           DateTime?
+  createdAt                            TimestamptzString(6)
+  updatedAt                             TimestamptzString(6)
+  finalisedAt                           TimestamptzString(6)?
   registeredOwnerContactName             String?
   registeredOwnerContactPhone             String?
   registeredOwnerContactAddress            String?
@@ -464,7 +464,7 @@ model Photo {
   takenByName         String
   useOnAdoptionListing Int
   altText              String
-  uploadedAt            DateTime
+  uploadedAt            TimestamptzString(6)
   imageData             String?
 }
 
@@ -496,7 +496,7 @@ model AdopterProfile {
   refereePhone        String
   refereeEmail        String
   refereeConsent      Int
-  refereeConsentAt    DateTime?
+  refereeConsentAt    TimestamptzString(6)?
 }
 
 // Mirrors lib/audit/types.ts (FR-AUD-01/BR-013). Every field a plain
@@ -510,7 +510,7 @@ model AuditLogEntry {
   auditId    String   @id
   userId     String
   userName   String
-  timestamp  DateTime
+  timestamp  TimestamptzString(6)
   action     String
   entityType String
   entityId   String
@@ -534,8 +534,8 @@ model DropdownOption {
   speciesId    String?
   isRetired    Int
   systemLocked Int
-  createdAt    DateTime
-  updatedAt    DateTime
+  createdAt    TimestamptzString(6)
+  updatedAt    TimestamptzString(6)
 }
 
 // Mirrors lib/system-administration/settings-types.ts (FR-SA-02). A
@@ -569,7 +569,7 @@ model MicrochipLookup {
   ownerContactAddress String?
   performedByEmail    String
   performedByName     String
-  performedAt         DateTime
+  performedAt         TimestamptzString(6)
 }
 
 // Mirrors lib/adoption-fitness/types.ts (FR-INT-04). markedAt is a
@@ -581,7 +581,7 @@ model AssessmentTask {
   status        String
   markedByEmail String?
   markedByName  String?
-  markedAt      DateTime?
+  markedAt      TimestamptzString(6)?
 }
 
 // Keyed by animalId - there is exactly one joint Fitness Review per
@@ -594,10 +594,10 @@ model FitnessReview {
   animalId              String    @id
   staffConfirmedByEmail String?
   staffConfirmedByName  String?
-  staffConfirmedAt      DateTime?
+  staffConfirmedAt      TimestamptzString(6)?
   vetConfirmedByEmail   String?
   vetConfirmedByName    String?
-  vetConfirmedAt        DateTime?
+  vetConfirmedAt        TimestamptzString(6)?
 }
 
 // Per-account "mark as read" overrides for the Notifications screen
