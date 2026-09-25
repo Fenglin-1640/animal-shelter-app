@@ -7,11 +7,13 @@ import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 // FR-LIST-01's 5 conditions, plus BR-007's "Staff publish from
 // Pre-Listing": the animal must already be in Pre-Listing, which only
 // evaluatePreListingEligibility() (lib/adoption-listings/pre-listing.ts)
-// sets, once Medical Clearance is issued, no Statutory Hold is
-// unresolved and the latest Behavioural Assessment is Suitable. The
-// first 3 conditions are re-checked here via the same getters as a
-// safety net in case something changed after the animal reached
-// Pre-Listing (e.g. a new hold or a later assessment).
+// sets, once getPreListingBlockers() is empty (Medical Clearance issued,
+// no unresolved Statutory Hold, latest Behavioural Assessment Suitable,
+// Review Adoption Fitness confirmed). The clearance, hold and behaviour
+// conditions are re-checked here via the same getters as a safety net
+// in case something changed after the animal reached Pre-Listing (e.g. a
+// new hold or a later assessment); the fitness review has no undo path,
+// so it isn't re-checked.
 export async function getPublishBlockers(animalId: string): Promise<string[]> {
   const animal = await getAnimalById(animalId);
   if (!animal) return ["Animal not found."];

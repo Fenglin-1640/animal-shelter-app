@@ -18,7 +18,7 @@ import { getAnimalById, updateAnimal } from "@/lib/animals/animal-store";
 import { CURRENT_STATUS_CATEGORY, LISTING_STATUS_CATEGORY } from "@/lib/animals/status";
 import { getBreedsForSpecies } from "@/lib/options/breeds";
 import type { Animal } from "@/lib/animals/types";
-import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
+import { evaluatePreListingEligibility, getPreListingBlockers } from "@/lib/adoption-listings/pre-listing";
 import { listApplicationsForAnimal } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication } from "@/lib/applications/types";
@@ -125,6 +125,7 @@ function AnimalDetailContent({
 
   const [fitForRelease, setFitForRelease] = useState(false);
   const [publishBlockers, setPublishBlockers] = useState<string[]>([]);
+  const [preListingBlockers, setPreListingBlockers] = useState<string[]>([]);
   const [healthAssessments, setHealthAssessments] = useState<HealthAssessment[]>([]);
   const [medicalClearance, setMedicalClearance] = useState<MedicalClearance | undefined>(undefined);
   const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
@@ -145,6 +146,9 @@ function AnimalDetailContent({
     });
     getPublishBlockers(animal.animalId).then((result) => {
       if (!cancelled) setPublishBlockers(result);
+    });
+    getPreListingBlockers(animal.animalId).then((result) => {
+      if (!cancelled) setPreListingBlockers(result);
     });
     listHealthAssessments(animal.animalId).then((result) => {
       if (!cancelled) setHealthAssessments(result);
@@ -630,6 +634,16 @@ function AnimalDetailContent({
                 Cancel
               </button>
             </div>
+          </div>
+        )}
+        {animal.listingStatus === "Not Fit" && preListingBlockers.length > 0 && (
+          <div className="sm:col-span-2">
+            <p className="text-xs font-semibold text-text-muted">Not yet eligible for Pre-Listing:</p>
+            <ul className="mt-1 list-inside list-disc text-xs text-text-muted">
+              {preListingBlockers.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
           </div>
         )}
         {["Administrator", "Shelter Staff Member"].includes(role) &&

@@ -29,8 +29,10 @@ export function isValidStatusTransition(from: CurrentStatus, to: CurrentStatus):
 }
 
 // PRD 7.2 listingStatus. Pre-Listing is only reachable from Not Fit (the
-// system move once Medical Clearance, hold and behaviour conditions all
-// hold - FR-MED-03), and Current only from Pre-Listing (BR-007: Staff
+// system move once the clearance, hold, behaviour and Review Adoption
+// Fitness conditions all hold - see getPreListingBlockers() in
+// lib/adoption-listings/pre-listing.ts), and Current only from
+// Pre-Listing (BR-007: Staff
 // publish from Pre-Listing). Removed is reachable from any non-final
 // listing state (reclaimed, permanently unsuitable, or withdrawn).
 export const ALLOWED_LISTING_TRANSITIONS: Record<ListingStatus, ListingStatus[]> = {

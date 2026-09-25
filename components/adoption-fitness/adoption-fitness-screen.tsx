@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
+import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 import type { Animal } from "@/lib/animals/types";
 import {
   confirmAsStaff,
@@ -104,14 +105,21 @@ function AdoptionFitnessContent({
   const complete = isFitnessReviewComplete(review);
   const blockers = getFitnessBlockers(animal, tasks);
 
+  // A completed review is one of the Pre-Listing conditions, so re-check
+  // eligibility after each confirmation (the other conditions may
+  // already hold).
   const handleConfirmStaff = async () => {
     const result = await confirmAsStaff(animalId, email, displayName);
-    if (result.ok) setReview(await getFitnessReview(animalId));
+    if (!result.ok) return;
+    setReview(await getFitnessReview(animalId));
+    await evaluatePreListingEligibility(animalId, { email, name: displayName });
   };
 
   const handleConfirmVet = async () => {
     const result = await confirmAsVet(animalId, email, displayName);
-    if (result.ok) setReview(await getFitnessReview(animalId));
+    if (!result.ok) return;
+    setReview(await getFitnessReview(animalId));
+    await evaluatePreListingEligibility(animalId, { email, name: displayName });
   };
 
   return (

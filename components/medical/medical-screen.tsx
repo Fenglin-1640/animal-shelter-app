@@ -888,9 +888,10 @@ function MedicalContent({
               </button>
             )}
             <p className="mt-2 text-xs text-text-muted">
-              Once issued, if there is no unresolved Statutory Hold and the latest Behavioural
-              Assessment is Suitable for Adoption, this animal&apos;s listing moves to
-              Pre-Listing automatically.
+              Once issued, if there is no unresolved Statutory Hold, the latest Behavioural
+              Assessment is Suitable for Adoption and Review Adoption Fitness has been confirmed
+              by both Staff and a Veterinarian, this animal&apos;s listing moves to Pre-Listing
+              automatically.
             </p>
           </>
         )}
