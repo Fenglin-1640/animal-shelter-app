@@ -1,6 +1,7 @@
 import { getAnimalById } from "@/lib/animals/animal-store";
 import { writeAuditLog } from "@/lib/audit/store";
 import { getAgreement } from "@/lib/agreements/store";
+import { getApplication } from "@/lib/applications/store";
 import type { AdoptionPayment, PaymentStatus } from "@/lib/payments/types";
 
 // FR-PAY-01: AdoptionPayment now lives in the database (see
@@ -70,8 +71,11 @@ export async function initiatePayment(
     return { ok: false, reason: "already_in_progress" };
   }
 
-  const animal = await getAnimalById(agreement.animalId);
-  const amount = animal?.adoptionFee ?? 0;
+  // Charge the fee locked in when the application was submitted; only
+  // applications submitted before that lock existed fall back to the
+  // Animal's current fee.
+  const application = await getApplication(agreement.applicationId);
+  const amount = application?.adoptionFee ?? (await getAnimalById(agreement.animalId))?.adoptionFee ?? 0;
 
   const now = new Date().toISOString();
   const payment: AdoptionPayment = {

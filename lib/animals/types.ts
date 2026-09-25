@@ -46,6 +46,11 @@ export interface AnimalPhoto {
   // of only ever getting a placeholder graphic. Optional since older
   // rows predate this field.
   imageData?: string;
+  // Screen-reader description entered at upload - required before
+  // Finalise Intake, and carried onto the Photo record (which Publish
+  // requires on the public listing photo). Optional since older rows
+  // predate this field.
+  altText?: string;
 }
 
 export interface Animal {

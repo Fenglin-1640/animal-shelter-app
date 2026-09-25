@@ -229,6 +229,11 @@ model StatutoryHold {
 // 2-3-field objects, flattening either of these would mean a lot of
 // schema surface for data nothing ever queries by field. See
 // lib/applications/serialize.ts.
+// adoptionFee is the Animal's fee as it stood when the Adopter
+// submitted - the amount AdoptionPayment charges, so a later fee edit
+// on the Animal Profile can't change what an in-flight applicant pays.
+// Nullable: drafts and applications submitted before this column
+// existed have none (payment falls back to the Animal's current fee).
 model AdoptionApplication {
   applicationId       String    @id
   adopterEmail        String
@@ -237,6 +242,7 @@ model AdoptionApplication {
   animalName          String
   animalSpecies       String
   animalBreed         String
+  adoptionFee         Float?
   motivationStatement String
   documents           String
   profileSnapshot     String?
@@ -415,6 +421,10 @@ model CouncilTransferSubmission {
 // datetime-local input, same reasoning as MeetAndGreet.scheduledDate.
 // finalisedAt is a system-generated timestamp (set to `now` when
 // Finalise Intake runs), so it's DateTime.
+// breed/adoptionFee/temperaments/generalDescription are captured at
+// intake and copied onto the Animal by Finalise Intake (temperaments is
+// JSON-encoded, same as Animal.temperaments). All four are nullable so
+// intake records created before these columns existed stay valid.
 model IntakeRecord {
   intakeId            String    @id
   animalId             String
@@ -433,6 +443,10 @@ model IntakeRecord {
   coatColour                         String
   coatMarkings                        String
   photos                               String
+  breed                                String?
+  adoptionFee                          Float?
+  temperaments                         String?
+  generalDescription                   String?
   createdAt                            TimestamptzString(6)
   updatedAt                             TimestamptzString(6)
   finalisedAt                           TimestamptzString(6)?

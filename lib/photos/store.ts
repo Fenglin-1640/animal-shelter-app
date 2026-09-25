@@ -41,6 +41,7 @@ export interface PhotoInput {
   fileSizeKB: number;
   dateTaken: string;
   imageData?: string;
+  altText?: string;
 }
 
 export async function addPhoto(
@@ -57,7 +58,7 @@ export async function addPhoto(
     takenByEmail: email,
     takenByName: name,
     useOnAdoptionListing: false,
-    altText: "",
+    altText: input.altText?.trim() ?? "",
     uploadedAt,
   };
   await fetch("/api/photos", {
@@ -68,25 +69,31 @@ export async function addPhoto(
   return photo;
 }
 
-// FR-INT-03's Finalise Intake only captures minimal metadata for its
-// "at least one photo uploaded" gate (lib/intake-records). Once the
-// Animal is created, those become real Photo records here so FR-AN-02's
-// full feature (primary selection, altText) has something to act on.
+// Once Finalise Intake (FR-INT-03) creates the Animal, the photos
+// uploaded at intake become real Photo records here, carrying the alt
+// text Staff entered for each at upload. The first one is selected as the
+// default public listing photo (FR-LIST-01 condition 5); Staff can pick a
+// different one, or edit its alt text, on the Photos screen (FR-AN-02).
 export async function seedPhotosFromIntake(
   animalId: string,
   photos: AnimalPhoto[],
   email: string,
   name: string,
 ): Promise<void> {
+  const created: Photo[] = [];
   for (const p of photos) {
-    await addPhoto(
-      animalId,
-      { fileName: p.fileName, fileSizeKB: p.fileSizeKB, dateTaken: p.uploadedAt, imageData: p.imageData },
-      email,
-      name,
-      p.uploadedAt,
+    created.push(
+      await addPhoto(
+        animalId,
+        { fileName: p.fileName, fileSizeKB: p.fileSizeKB, dateTaken: p.uploadedAt, imageData: p.imageData, altText: p.altText },
+        email,
+        name,
+        p.uploadedAt,
+      ),
     );
   }
+  const first = created.find((p) => p.altText);
+  if (first) await setPrimaryPhoto(first.id, first.altText);
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: string };

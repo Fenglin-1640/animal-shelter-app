@@ -80,9 +80,9 @@ export async function markTaskContinuable(
   return { ok: true };
 }
 
-// Used by a task's real, dedicated feature (e.g. Scan Microchip, FR-MC-01)
-// once it reaches a definitive outcome, superseding the generic "Mark
-// Continuable" stand-in for that specific task type.
+// Used by each task's dedicated feature (Scan Microchip, Health
+// Assessment, Temperament Assessment) once it reaches a continuable
+// outcome - the only way a task becomes Continuable.
 export async function completeTaskByType(
   animalId: string,
   taskType: TaskType,

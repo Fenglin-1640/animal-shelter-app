@@ -304,7 +304,7 @@ function BehaviourContent({
   const refresh = async () => {
     setAssessments(await listTemperamentAssessments(animalId));
     setPrograms(await listBehaviourPrograms(animalId));
-    await evaluatePreListingEligibility(animalId);
+    await evaluatePreListingEligibility(animalId, { email, name: displayName });
   };
 
   return (

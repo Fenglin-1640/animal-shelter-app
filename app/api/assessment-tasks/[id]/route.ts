@@ -5,7 +5,8 @@ import type { AssessmentTask } from "@/lib/adoption-fitness/types";
 import { toTimestamptz } from "@/lib/db/temporal";
 
 // Generic patch - mirrors CouncilTransferSubmission's/DropdownOption's
-// PATCH routes. The only call site today (markTaskContinuable) just
+// PATCH routes. The only call site today (markTaskContinuable, via
+// completeTaskByType) just
 // patches status/markedBy*/markedAt; the not_found check stays
 // client-side in lib/adoption-fitness/store.ts.
 export async function PATCH(

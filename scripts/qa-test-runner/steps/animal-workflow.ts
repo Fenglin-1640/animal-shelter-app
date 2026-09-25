@@ -24,7 +24,6 @@ import {
   recordPreReleaseCheck,
 } from "@/lib/medical/store";
 import { publishAdoptionProfile, getPublishBlockers } from "@/lib/adoption-listings/publish";
-import { updateAnimal } from "@/lib/animals/animal-store";
 import {
   startOrContinueDraft,
   updateDraft,
@@ -40,6 +39,7 @@ import { finaliseAdoption } from "@/lib/adoptions/finalise";
 import { releaseAnimal, completeFollowUpVisit, getLatestFollowUpVisitForAnimal } from "@/lib/follow-up-visits/store";
 import { listAuditLog } from "@/lib/audit/store";
 import { getActiveValues } from "@/lib/system-administration/store";
+import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 
 import type { AdoptionRow, AssessmentRow, IntakeRow, ReleaseRow } from "../lib/sheet";
 import { getAdopter, getCase, getId, setAnimalId, setId } from "../lib/runlog";
@@ -138,12 +138,17 @@ export async function runAnimalWorkflow(
           sex: intake.sex as "Male" | "Female",
           coatColour: intake.coatColour,
           coatMarkings: intake.coatMarkings,
+          breed: intake.breed,
+          adoptionFee: adoption.adoptionFee,
+          temperaments: adoption.temperaments.split(",").map((t) => t.trim()).filter(Boolean),
+          generalDescription: adoption.generalDescription,
           photos: [
             {
               id: `PH-${tcId}`,
               fileName: intake.photoFilename,
               fileSizeKB: photo.fileSizeKB,
               uploadedAt: new Date().toISOString(),
+              altText: intake.photoAltText,
             },
           ],
         });
@@ -162,22 +167,6 @@ export async function runAnimalWorkflow(
       if (!animal) return fail("finalised but Animal row not found");
 
       setAnimalId(entry, animal.animalId, animal.shelterId);
-
-      // Set the public listing photo's alt text (addPhoto/seedPhotosFromIntake
-      // doesn't set altText - Photos screen's "Set as Public Photo" flow
-      // requires it, so the sheet's alt text is applied directly here).
-      const photosRes = await fetch(`/api/photos`);
-      const photosJson = await photosRes.json();
-      const seededPhoto = (photosJson.items as { id: string; animalId: string }[]).find(
-        (p) => p.animalId === animal.animalId,
-      );
-      if (seededPhoto) {
-        await fetch(`/api/photos/${seededPhoto.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ altText: intake.photoAltText, useOnAdoptionListing: true }),
-        });
-      }
 
       const currentMatch = animal.currentStatus === intake.expectedCurrentStatus;
       const listingMatch = animal.listingStatus === intake.expectedListingStatus;
@@ -363,6 +352,9 @@ export async function runAnimalWorkflow(
     if (blockers.length > 0) return fail(`Blocked: ${blockers.join("; ")}`);
     const result = await issueMedicalClearance(animalId, VET.email, VET.name);
     if (!ok(result)) return fail(`issueMedicalClearance failed: ${(result as { reason: string }).reason}`);
+    // Same call the Medical screen makes after issuing clearance - moves
+    // the animal to Pre-Listing, which Publish requires (BR-007).
+    await evaluatePreListingEligibility(animalId, VET);
     return pass("Issued");
   });
   if (clearanceOutcome && clearanceOutcome.status === "fail") {
@@ -370,14 +362,9 @@ export async function runAnimalWorkflow(
     return;
   }
 
-  // 10. Staff fills publish-required fields, then publishes.
+  // 10. Staff publishes. Breed/Adoption Fee/Temperaments/General
+  // Description were already captured at Intake (step 2).
   await step(entry, "publish", `${adoption.currentStatusAfterPublish} / ${adoption.listingStatusAfterPublish}`, async () => {
-    await updateAnimal(animalId, {
-      breed: intake.breed,
-      adoptionFee: adoption.adoptionFee,
-      temperaments: adoption.temperaments.split(",").map((t) => t.trim()).filter(Boolean),
-      generalDescription: adoption.generalDescription,
-    });
     const blockers = await getPublishBlockers(animalId);
     if (blockers.length > 0) return fail(`Blocked: ${blockers.join("; ")}`);
     const result = await publishAdoptionProfile(animalId, STAFF.email, STAFF.name);

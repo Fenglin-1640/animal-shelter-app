@@ -9,6 +9,7 @@ export interface AdoptionApplicationRow
   extends Omit<
     AdoptionApplication,
     | "animalSpecies"
+    | "adoptionFee"
     | "documents"
     | "profileSnapshot"
     | "applicationStatus"
@@ -21,6 +22,7 @@ export interface AdoptionApplicationRow
     | "updatedAt"
   > {
   animalSpecies: string;
+  adoptionFee: number | null;
   documents: string;
   profileSnapshot: string | null;
   applicationStatus: string;
@@ -37,6 +39,7 @@ export function toAdoptionApplication(row: AdoptionApplicationRow): AdoptionAppl
   return {
     ...row,
     animalSpecies: row.animalSpecies as Species,
+    adoptionFee: row.adoptionFee ?? undefined,
     documents: JSON.parse(row.documents),
     profileSnapshot: row.profileSnapshot ? JSON.parse(row.profileSnapshot) : undefined,
     applicationStatus: row.applicationStatus as ApplicationStatus,

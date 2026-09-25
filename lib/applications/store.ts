@@ -150,8 +150,13 @@ export async function submitApplication(applicationId: string): Promise<SubmitRe
   blockers.push(...getAdopterProfileSubmissionBlockers(profile));
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
 
+  // Lock in the fee the Adopter is applying at, so a later edit on the
+  // Animal Profile doesn't change what this application pays.
+  const animal = await getAnimalById(application.animalId);
+
   const now = new Date().toISOString();
   await patchApplication(applicationId, {
+    adoptionFee: animal?.adoptionFee,
     profileSnapshot: profile,
     applicationStatus: "Submitted",
     submissionDate: now,

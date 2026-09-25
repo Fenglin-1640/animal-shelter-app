@@ -178,8 +178,9 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   field-by-field) are both JSON-encoded into single `String` columns -
   unlike the flattened-column treatment given to Animal's
   `linkedPerson`/StatutoryHold's `ownerContact`, which are small and
-  fixed-shape enough to be worth individual columns. See
-  lib/applications/serialize.ts.
+  fixed-shape enough to be worth individual columns. `adoptionFee`
+  (nullable) is the Animal's fee locked in at submission - what
+  AdoptionPayment charges. See lib/applications/serialize.ts.
 - `SuitabilityCheck` - see lib/checks/. Mirrored from
   lib/checks/types.ts; one row per check per application (3 per
   application, auto-created on submission).
@@ -229,8 +230,11 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   stays a plain String, not DateTime - it's a user-entered value from
   a datetime-local input, same reasoning as MeetAndGreet.scheduledDate.
   `finalisedAt` is a system-generated timestamp (set to `now` when
-  Finalise Intake runs), so it's DateTime. See
-  lib/intake-records/serialize.ts.
+  Finalise Intake runs), so it's DateTime. `breed`, `adoptionFee`,
+  `temperaments` (JSON-encoded) and `generalDescription` are captured
+  at intake and copied onto the Animal by Finalise Intake; all four are
+  nullable so intake records created before they existed stay valid.
+  See lib/intake-records/serialize.ts.
 - `Photo` - see lib/photos/. Mirrored from lib/photos/types.ts.
   `dateTaken` stays a plain String, not DateTime - it's a user-entered
   value from a date-picker input, same reasoning as Medical/

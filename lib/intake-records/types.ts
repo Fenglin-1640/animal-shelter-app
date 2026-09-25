@@ -15,6 +15,14 @@ import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 // the UI, and FR-INT-03 requires at least one photo before Finalise Intake
 // can create the Animal record. finalisedAt marks the record read-only
 // once Finalise Intake has run (prevents finalising twice).
+//
+// breed, adoptionFee, temperaments and generalDescription are also
+// outside FR-INT-02's list, but are captured here so Breed is identified
+// when the animal enters the shelter and the Animal Profile already
+// carries FR-LIST-01's publish fields, instead of them being patched in
+// right before listing. generalDescription is the public-facing listing
+// description - distinct from the linked Council Transfer's
+// animalDescription (FR-INT-01's internal preliminary note).
 export interface IntakeRecord {
   intakeId: string;
   animalId: string;
@@ -33,10 +41,14 @@ export interface IntakeRecord {
   coatColour: string;
   coatMarkings: string;
   photos: AnimalPhoto[];
+  breed: string;
+  adoptionFee?: number;
+  temperaments: string[];
+  generalDescription: string;
   createdAt: string;
   updatedAt: string;
   finalisedAt?: string;
-  // FR-MC-02 step 1: "registered owner contact details 链接到 IntakeRecord",
+  // FR-MC-02 step 1: "registered owner contact details linked to IntakeRecord",
   // written by lib/statutory-hold/store.ts when a Scan Microchip lookup
   // (FR-MC-01) returns Owner Match. Not user-editable, so it lives here
   // rather than in IntakeRecordFormInput.
@@ -57,6 +69,10 @@ export interface IntakeRecordFormInput {
   coatColour: string;
   coatMarkings: string;
   photos: AnimalPhoto[];
+  breed: string;
+  adoptionFee?: number;
+  temperaments: string[];
+  generalDescription: string;
 }
 
 export function isIntakeRecordComplete(record: IntakeRecordFormInput): boolean {
@@ -78,7 +94,7 @@ export function isIntakeRecordComplete(record: IntakeRecordFormInput): boolean {
 }
 
 // FR-INT-03: Finalise Intake gates. Listed as a set of unmet-condition
-// messages (PRD 5.3 "逐项说明未满足条件") rather than a single boolean, so the
+// messages (PRD 5.3: explain each unmet condition) rather than a single boolean, so the
 // UI can show Staff exactly what's missing.
 export function getFinaliseBlockers(
   record: IntakeRecordFormInput,
@@ -91,7 +107,13 @@ export function getFinaliseBlockers(
   }
   if (record.photos.length === 0) {
     blockers.push("At least one animal photo must be uploaded.");
+  } else if (record.photos.some((p) => !p.altText?.trim())) {
+    blockers.push("Every photo needs a description (alt text).");
   }
+  if (!record.breed.trim()) blockers.push("Breed is required.");
+  if (record.adoptionFee == null) blockers.push("Adoption Fee is required.");
+  if (record.temperaments.length === 0) blockers.push("At least one Temperament must be selected.");
+  if (!record.generalDescription.trim()) blockers.push("General Description is required.");
   if (record.intakeSource === "Council Transfer") {
     if (!linkedTransfer || linkedTransfer.attachments.length === 0) {
       blockers.push(

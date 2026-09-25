@@ -8,6 +8,10 @@ export interface IntakeRecordRow
     | "species"
     | "sex"
     | "photos"
+    | "breed"
+    | "adoptionFee"
+    | "temperaments"
+    | "generalDescription"
     | "createdAt"
     | "updatedAt"
     | "finalisedAt"
@@ -17,6 +21,10 @@ export interface IntakeRecordRow
   species: string;
   sex: string;
   photos: string;
+  breed: string | null;
+  adoptionFee: number | null;
+  temperaments: string | null;
+  generalDescription: string | null;
   createdAt: string;
   updatedAt: string;
   finalisedAt: string | null;
@@ -32,6 +40,10 @@ export function toIntakeRecord(row: IntakeRecordRow): IntakeRecord {
     species: row.species as Species | "",
     sex: row.sex as Sex | "",
     photos: JSON.parse(row.photos) as AnimalPhoto[],
+    breed: row.breed ?? "",
+    adoptionFee: row.adoptionFee ?? undefined,
+    temperaments: row.temperaments ? (JSON.parse(row.temperaments) as string[]) : [],
+    generalDescription: row.generalDescription ?? "",
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     finalisedAt: row.finalisedAt ?? undefined,
@@ -48,7 +60,7 @@ export function toIntakeRecord(row: IntakeRecordRow): IntakeRecord {
 export function toIntakeRecordRowPatch(patch: Partial<IntakeRecord>): Record<string, unknown> {
   const row: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(patch)) {
-    if (key === "photos") {
+    if (key === "photos" || key === "temperaments") {
       row[key] = JSON.stringify(value);
     } else if (key === "registeredOwnerContact") {
       const contact = value as IntakeRecord["registeredOwnerContact"];

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4830c9bee85d684cd0def240873e8326a522398d3d2a797e5632039789072ca7'>;
+  StorageHashBase<'e03c951a035d714f4c68cb8cbb86a718d3b04cb47a0da78b8b8c3ba5bc2c8cd2'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -289,6 +289,7 @@ export type FieldOutputTypes = {
       readonly animalName: CodecTypes['pg/text@1']['output'];
       readonly animalSpecies: CodecTypes['pg/text@1']['output'];
       readonly animalBreed: CodecTypes['pg/text@1']['output'];
+      readonly adoptionFee: CodecTypes['pg/float8@1']['output'] | null;
       readonly motivationStatement: CodecTypes['pg/text@1']['output'];
       readonly documents: CodecTypes['pg/text@1']['output'];
       readonly profileSnapshot: CodecTypes['pg/text@1']['output'] | null;
@@ -480,6 +481,10 @@ export type FieldOutputTypes = {
       readonly coatColour: CodecTypes['pg/text@1']['output'];
       readonly coatMarkings: CodecTypes['pg/text@1']['output'];
       readonly photos: CodecTypes['pg/text@1']['output'];
+      readonly breed: CodecTypes['pg/text@1']['output'] | null;
+      readonly adoptionFee: CodecTypes['pg/float8@1']['output'] | null;
+      readonly temperaments: CodecTypes['pg/text@1']['output'] | null;
+      readonly generalDescription: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: TimestamptzString<6>;
       readonly updatedAt: TimestamptzString<6>;
       readonly finalisedAt: TimestamptzString<6> | null;
@@ -711,6 +716,7 @@ export type FieldInputTypes = {
       readonly animalName: CodecTypes['pg/text@1']['input'];
       readonly animalSpecies: CodecTypes['pg/text@1']['input'];
       readonly animalBreed: CodecTypes['pg/text@1']['input'];
+      readonly adoptionFee: CodecTypes['pg/float8@1']['input'] | null;
       readonly motivationStatement: CodecTypes['pg/text@1']['input'];
       readonly documents: CodecTypes['pg/text@1']['input'];
       readonly profileSnapshot: CodecTypes['pg/text@1']['input'] | null;
@@ -902,6 +908,10 @@ export type FieldInputTypes = {
       readonly coatColour: CodecTypes['pg/text@1']['input'];
       readonly coatMarkings: CodecTypes['pg/text@1']['input'];
       readonly photos: CodecTypes['pg/text@1']['input'];
+      readonly breed: CodecTypes['pg/text@1']['input'] | null;
+      readonly adoptionFee: CodecTypes['pg/float8@1']['input'] | null;
+      readonly temperaments: CodecTypes['pg/text@1']['input'] | null;
+      readonly generalDescription: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly finalisedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
@@ -1128,6 +1138,7 @@ export type StorageColumnTypes = {
     readonly adoptionApplication: {
       readonly adopterEmail: CodecTypes['pg/text@1']['output'];
       readonly adopterName: CodecTypes['pg/text@1']['output'];
+      readonly adoptionFee: CodecTypes['pg/float8@1']['output'] | null;
       readonly animalBreed: CodecTypes['pg/text@1']['output'];
       readonly animalId: CodecTypes['pg/text@1']['output'];
       readonly animalName: CodecTypes['pg/text@1']['output'];
@@ -1307,10 +1318,12 @@ export type StorageColumnTypes = {
       readonly veterinarianName: CodecTypes['pg/text@1']['output'];
     };
     readonly intakeRecord: {
+      readonly adoptionFee: CodecTypes['pg/float8@1']['output'] | null;
       readonly animalId: CodecTypes['pg/text@1']['output'];
       readonly animalName: CodecTypes['pg/text@1']['output'];
       readonly arrivalCircumstance: CodecTypes['pg/text@1']['output'];
       readonly arrivalDateTime: CodecTypes['pg/text@1']['output'];
+      readonly breed: CodecTypes['pg/text@1']['output'] | null;
       readonly coatColour: CodecTypes['pg/text@1']['output'];
       readonly coatMarkings: CodecTypes['pg/text@1']['output'];
       readonly councilTransferSubmissionId: CodecTypes['pg/text@1']['output'] | null;
@@ -1320,6 +1333,7 @@ export type StorageColumnTypes = {
       readonly dateOfBirth: CodecTypes['pg/text@1']['output'];
       readonly estimatedAge: CodecTypes['pg/text@1']['output'];
       readonly finalisedAt: TimestamptzString<6> | null;
+      readonly generalDescription: CodecTypes['pg/text@1']['output'] | null;
       readonly intakeId: CodecTypes['pg/text@1']['output'];
       readonly intakeSource: CodecTypes['pg/text@1']['output'];
       readonly photos: CodecTypes['pg/text@1']['output'];
@@ -1329,6 +1343,7 @@ export type StorageColumnTypes = {
       readonly sex: CodecTypes['pg/text@1']['output'];
       readonly species: CodecTypes['pg/text@1']['output'];
       readonly surrenderingPartyName: CodecTypes['pg/text@1']['output'];
+      readonly temperaments: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: TimestamptzString<6>;
     };
     readonly medicalClearance: {
@@ -1550,6 +1565,7 @@ export type StorageColumnInputTypes = {
     readonly adoptionApplication: {
       readonly adopterEmail: CodecTypes['pg/text@1']['input'];
       readonly adopterName: CodecTypes['pg/text@1']['input'];
+      readonly adoptionFee: CodecTypes['pg/float8@1']['input'] | null;
       readonly animalBreed: CodecTypes['pg/text@1']['input'];
       readonly animalId: CodecTypes['pg/text@1']['input'];
       readonly animalName: CodecTypes['pg/text@1']['input'];
@@ -1729,10 +1745,12 @@ export type StorageColumnInputTypes = {
       readonly veterinarianName: CodecTypes['pg/text@1']['input'];
     };
     readonly intakeRecord: {
+      readonly adoptionFee: CodecTypes['pg/float8@1']['input'] | null;
       readonly animalId: CodecTypes['pg/text@1']['input'];
       readonly animalName: CodecTypes['pg/text@1']['input'];
       readonly arrivalCircumstance: CodecTypes['pg/text@1']['input'];
       readonly arrivalDateTime: CodecTypes['pg/text@1']['input'];
+      readonly breed: CodecTypes['pg/text@1']['input'] | null;
       readonly coatColour: CodecTypes['pg/text@1']['input'];
       readonly coatMarkings: CodecTypes['pg/text@1']['input'];
       readonly councilTransferSubmissionId: CodecTypes['pg/text@1']['input'] | null;
@@ -1742,6 +1760,7 @@ export type StorageColumnInputTypes = {
       readonly dateOfBirth: CodecTypes['pg/text@1']['input'];
       readonly estimatedAge: CodecTypes['pg/text@1']['input'];
       readonly finalisedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly generalDescription: CodecTypes['pg/text@1']['input'] | null;
       readonly intakeId: CodecTypes['pg/text@1']['input'];
       readonly intakeSource: CodecTypes['pg/text@1']['input'];
       readonly photos: CodecTypes['pg/text@1']['input'];
@@ -1751,6 +1770,7 @@ export type StorageColumnInputTypes = {
       readonly sex: CodecTypes['pg/text@1']['input'];
       readonly species: CodecTypes['pg/text@1']['input'];
       readonly surrenderingPartyName: CodecTypes['pg/text@1']['input'];
+      readonly temperaments: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly medicalClearance: {
@@ -2109,6 +2129,7 @@ export namespace Models {
     animalName: CodecTypes['pg/text@1']['output'];
     animalSpecies: CodecTypes['pg/text@1']['output'];
     animalBreed: CodecTypes['pg/text@1']['output'];
+    adoptionFee: CodecTypes['pg/float8@1']['output'] | null;
     motivationStatement: CodecTypes['pg/text@1']['output'];
     documents: CodecTypes['pg/text@1']['output'];
     profileSnapshot: CodecTypes['pg/text@1']['output'] | null;
@@ -2258,6 +2279,10 @@ export namespace Models {
     coatColour: CodecTypes['pg/text@1']['output'];
     coatMarkings: CodecTypes['pg/text@1']['output'];
     photos: CodecTypes['pg/text@1']['output'];
+    breed: CodecTypes['pg/text@1']['output'] | null;
+    adoptionFee: CodecTypes['pg/float8@1']['output'] | null;
+    temperaments: CodecTypes['pg/text@1']['output'] | null;
+    generalDescription: CodecTypes['pg/text@1']['output'] | null;
     createdAt: TimestamptzString<6>;
     updatedAt: TimestamptzString<6>;
     finalisedAt: TimestamptzString<6> | null;
@@ -2665,6 +2690,11 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly adoptionFee: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
                 };
                 readonly motivationStatement: {
                   readonly nativeType: 'text';
@@ -3623,6 +3653,26 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly breed: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly adoptionFee: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                };
+                readonly temperaments: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly generalDescription: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly createdAt: {
                   readonly nativeType: 'timestamptz';
@@ -4892,6 +4942,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly adoptionFee: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
               readonly motivationStatement: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4965,6 +5019,7 @@ type ContractBase = Omit<
                 readonly animalName: { readonly column: 'animalName' };
                 readonly animalSpecies: { readonly column: 'animalSpecies' };
                 readonly animalBreed: { readonly column: 'animalBreed' };
+                readonly adoptionFee: { readonly column: 'adoptionFee' };
                 readonly motivationStatement: { readonly column: 'motivationStatement' };
                 readonly documents: { readonly column: 'documents' };
                 readonly profileSnapshot: { readonly column: 'profileSnapshot' };
@@ -5957,6 +6012,22 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly breed: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly adoptionFee: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly temperaments: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly generalDescription: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -6018,6 +6089,10 @@ type ContractBase = Omit<
                 readonly coatColour: { readonly column: 'coatColour' };
                 readonly coatMarkings: { readonly column: 'coatMarkings' };
                 readonly photos: { readonly column: 'photos' };
+                readonly breed: { readonly column: 'breed' };
+                readonly adoptionFee: { readonly column: 'adoptionFee' };
+                readonly temperaments: { readonly column: 'temperaments' };
+                readonly generalDescription: { readonly column: 'generalDescription' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly finalisedAt: { readonly column: 'finalisedAt' };

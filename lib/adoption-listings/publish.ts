@@ -4,17 +4,24 @@ import { getMedicalClearance } from "@/lib/medical/store";
 import { getPrimaryPhoto } from "@/lib/photos/store";
 import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 
-// FR-LIST-01's 5 conditions. The first 3 are exactly
-// evaluatePreListingEligibility()'s conditions (lib/adoption-listings/
-// pre-listing.ts) - reused here via the same underlying getters rather
-// than duplicated, since by the time listingStatus reaches Pre-Listing
-// they already held; re-checking them here is a defensive safety net
-// (in case they still held) rather than fabricated new logic.
+// FR-LIST-01's 5 conditions, plus BR-007's "Staff publish from
+// Pre-Listing": the animal must already be in Pre-Listing, which only
+// evaluatePreListingEligibility() (lib/adoption-listings/pre-listing.ts)
+// sets, once Medical Clearance is issued, no Statutory Hold is
+// unresolved and the latest Behavioural Assessment is Suitable. The
+// first 3 conditions are re-checked here via the same getters as a
+// safety net in case something changed after the animal reached
+// Pre-Listing (e.g. a new hold or a later assessment).
 export async function getPublishBlockers(animalId: string): Promise<string[]> {
   const animal = await getAnimalById(animalId);
   if (!animal) return ["Animal not found."];
 
   const blockers: string[] = [];
+  if (animal.listingStatus !== "Pre-Listing") {
+    blockers.push(
+      `Listing status must be Pre-Listing to publish (currently ${animal.listingStatus}, ${animal.currentStatus}).`,
+    );
+  }
   if (!(await getMedicalClearance(animalId))) blockers.push("Medical Clearance has not been issued.");
   if ((await getLatestTemperamentAssessment(animalId))?.outcome !== "Suitable for Adoption") {
     blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
@@ -23,9 +30,9 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
   if (animal.adoptionFee == null) blockers.push("Adoption Fee must be filled in.");
   if (!animal.generalDescription.trim()) blockers.push("General Description must be filled in.");
   if (!animal.breed.trim() || animal.breed === "Unknown") {
-    // "Unknown" is Finalise Intake's own placeholder (breed assessment is
-    // deferred, not part of FR-INT-02's fields) - not a real Staff answer,
-    // so it doesn't satisfy "已填写...breed".
+    // "Unknown" is the placeholder older Finalise Intake runs wrote before
+    // Breed was captured at intake - not a real Staff answer, so it doesn't
+    // satisfy FR-LIST-01's "breed is filled in".
     blockers.push("Breed must be filled in.");
   }
   if (!animal.sex) blockers.push("Sex must be filled in.");

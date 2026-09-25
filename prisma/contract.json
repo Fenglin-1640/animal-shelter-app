@@ -534,6 +534,13 @@
                   "kind": "scalar"
                 }
               },
+              "adoptionFee": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
               "animalBreed": {
                 "nullable": false,
                 "type": {
@@ -667,6 +674,9 @@
                 },
                 "adopterName": {
                   "column": "adopterName"
+                },
+                "adoptionFee": {
+                  "column": "adoptionFee"
                 },
                 "animalBreed": {
                   "column": "animalBreed"
@@ -2303,6 +2313,13 @@
           },
           "IntakeRecord": {
             "fields": {
+              "adoptionFee": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
               "animalId": {
                 "nullable": false,
                 "type": {
@@ -2326,6 +2343,13 @@
               },
               "arrivalDateTime": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "breed": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -2400,6 +2424,13 @@
                   }
                 }
               },
+              "generalDescription": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "intakeId": {
                 "nullable": false,
                 "type": {
@@ -2463,6 +2494,13 @@
                   "kind": "scalar"
                 }
               },
+              "temperaments": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -2477,6 +2515,9 @@
             "relations": {},
             "storage": {
               "fields": {
+                "adoptionFee": {
+                  "column": "adoptionFee"
+                },
                 "animalId": {
                   "column": "animalId"
                 },
@@ -2488,6 +2529,9 @@
                 },
                 "arrivalDateTime": {
                   "column": "arrivalDateTime"
+                },
+                "breed": {
+                  "column": "breed"
                 },
                 "coatColour": {
                   "column": "coatColour"
@@ -2516,6 +2560,9 @@
                 "finalisedAt": {
                   "column": "finalisedAt"
                 },
+                "generalDescription": {
+                  "column": "generalDescription"
+                },
                 "intakeId": {
                   "column": "intakeId"
                 },
@@ -2542,6 +2589,9 @@
                 },
                 "surrenderingPartyName": {
                   "column": "surrenderingPartyName"
+                },
+                "temperaments": {
+                  "column": "temperaments"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -4454,6 +4504,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "adoptionFee": {
+                  "codecId": "pg/float8@1",
+                  "nativeType": "float8",
+                  "nullable": true
+                },
                 "animalBreed": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -5460,6 +5515,11 @@
             },
             "intakeRecord": {
               "columns": {
+                "adoptionFee": {
+                  "codecId": "pg/float8@1",
+                  "nativeType": "float8",
+                  "nullable": true
+                },
                 "animalId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -5479,6 +5539,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "breed": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "coatColour": {
                   "codecId": "pg/text@1",
@@ -5531,6 +5596,11 @@
                     "precision": 6
                   }
                 },
+                "generalDescription": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "intakeId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -5575,6 +5645,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "temperaments": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -6556,7 +6631,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4830c9bee85d684cd0def240873e8326a522398d3d2a797e5632039789072ca7"
+    "storageHash": "e03c951a035d714f4c68cb8cbb86a718d3b04cb47a0da78b8b8c3ba5bc2c8cd2"
   },
   "capabilities": {
     "postgres": {

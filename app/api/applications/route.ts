@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     animalName: body.animalName,
     animalSpecies: body.animalSpecies,
     animalBreed: body.animalBreed,
+    adoptionFee: body.adoptionFee ?? null,
     motivationStatement: body.motivationStatement,
     documents: JSON.stringify(body.documents),
     profileSnapshot: body.profileSnapshot ? JSON.stringify(body.profileSnapshot) : null,

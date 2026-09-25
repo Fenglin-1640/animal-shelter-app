@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
+import { BreedSelect } from "@/components/animals/breed-select";
+import { TemperamentCheckboxes } from "@/components/animals/temperament-checkboxes";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -140,8 +142,13 @@ function IntakeRecordFormContent({
   const [sex, setSex] = useState<Sex | "">("");
   const [coatColour, setCoatColour] = useState("");
   const [coatMarkings, setCoatMarkings] = useState("");
+  const [breed, setBreed] = useState("");
+  const [adoptionFee, setAdoptionFee] = useState("");
+  const [temperaments, setTemperaments] = useState<string[]>([]);
+  const [generalDescription, setGeneralDescription] = useState("");
   const [photos, setPhotos] = useState<AnimalPhoto[]>([]);
   const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [pendingAltText, setPendingAltText] = useState("");
   const [photoInputKey, setPhotoInputKey] = useState(0);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [addingPhoto, setAddingPhoto] = useState(false);
@@ -181,6 +188,10 @@ function IntakeRecordFormContent({
       setSex(record?.sex ?? "");
       setCoatColour(record?.coatColour ?? "");
       setCoatMarkings(record?.coatMarkings ?? "");
+      setBreed(record?.breed ?? "");
+      setAdoptionFee(record?.adoptionFee?.toString() ?? "");
+      setTemperaments(record?.temperaments ?? []);
+      setGeneralDescription(record?.generalDescription ?? "");
       setPhotos(record?.photos ?? []);
       setDataLoaded(true);
     });
@@ -214,6 +225,8 @@ function IntakeRecordFormContent({
     ? allTransfers.find((t) => t.id === councilTransferSubmissionId)
     : undefined;
 
+  const parsedFee = adoptionFee.trim() ? Number(adoptionFee) : undefined;
+
   const buildInput = (): IntakeRecordFormInput => ({
     animalName,
     arrivalCircumstance,
@@ -228,13 +241,17 @@ function IntakeRecordFormContent({
     coatColour,
     coatMarkings,
     photos,
+    breed,
+    adoptionFee: parsedFee != null && !Number.isNaN(parsedFee) && parsedFee >= 0 ? parsedFee : undefined,
+    temperaments,
+    generalDescription,
   });
 
   const complete = isIntakeRecordComplete(buildInput());
   const liveBlockers = getFinaliseBlockers(buildInput(), linkedTransfer);
 
   const handleAddPhoto = async () => {
-    if (!pendingPhotoFile) return;
+    if (!pendingPhotoFile || !pendingAltText.trim()) return;
     setPhotoError(null);
     setAddingPhoto(true);
     try {
@@ -253,13 +270,19 @@ function IntakeRecordFormContent({
         fileSizeKB: Math.max(1, Math.round(pendingPhotoFile.size / 1024)),
         uploadedAt: new Date().toISOString(),
         imageData: converted.dataUrl,
+        altText: pendingAltText.trim(),
       };
       setPhotos((prev) => [...prev, photo]);
       setPendingPhotoFile(null);
+      setPendingAltText("");
       setPhotoInputKey((k) => k + 1);
     } finally {
       setAddingPhoto(false);
     }
+  };
+
+  const handlePhotoAltTextChange = (id: string, altText: string) => {
+    setPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, altText } : p)));
   };
 
   const handleRemovePhoto = (id: string) => {
@@ -481,7 +504,12 @@ function IntakeRecordFormContent({
               <select
                 id="species"
                 value={species}
-                onChange={(e) => setSpecies(e.target.value as Species)}
+                onChange={(e) => {
+                  setSpecies(e.target.value as Species);
+                  // Breed options are per species, so a breed picked for the
+                  // previous species no longer applies.
+                  setBreed("");
+                }}
                 disabled={isReadOnly}
                 className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               >
@@ -587,11 +615,79 @@ function IntakeRecordFormContent({
       </section>
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
+        <h2 className="text-lg font-bold text-text">Breed and Adoption Details</h2>
+        <p className="mt-1 text-sm text-text-muted">
+          Required before Finalise Intake. These carry over to the Animal Profile and its
+          adoption listing, and can still be corrected there later.
+        </p>
+        <div className="mt-4 flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="breed" className="text-sm font-semibold text-text">
+                Breed
+              </label>
+              <BreedSelect
+                id="breed"
+                species={species}
+                value={breed}
+                onChange={setBreed}
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="adoptionFee" className="text-sm font-semibold text-text">
+                Adoption Fee (AUD)
+              </label>
+              <input
+                id="adoptionFee"
+                type="number"
+                min="0"
+                value={adoptionFee}
+                onChange={(e) => setAdoptionFee(e.target.value)}
+                disabled={isReadOnly}
+                className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-semibold text-text">Temperaments</span>
+            <TemperamentCheckboxes selected={temperaments} onChange={setTemperaments} disabled={isReadOnly} />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="generalDescription" className="text-sm font-semibold text-text">
+              General Description
+            </label>
+            <p className="text-xs text-text-muted">
+              Public-facing description shown to Adopters on the adoption listing.
+            </p>
+            {linkedTransfer?.animalDescription && (
+              <p className="text-xs text-text-muted">
+                Council&apos;s preliminary description (internal, for reference):{" "}
+                <span className="text-text">{linkedTransfer.animalDescription}</span>
+              </p>
+            )}
+            <textarea
+              id="generalDescription"
+              rows={3}
+              value={generalDescription}
+              onChange={(e) => setGeneralDescription(e.target.value)}
+              disabled={isReadOnly}
+              className="rounded-[12px] border border-border bg-page px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">
           Photos <span aria-hidden="true">*</span>
         </h2>
         <p className="mt-1 text-sm text-text-muted">
-          At least one photo is required before Finalise Intake.
+          At least one photo, each with a short description for screen readers, is required
+          before Finalise Intake. The first photo becomes the default public listing photo.
         </p>
         {photoError && (
           <p role="status" className="mt-2 text-sm text-danger">
@@ -607,9 +703,23 @@ function IntakeRecordFormContent({
                 className="flex flex-wrap items-center gap-3 rounded-[12px] border border-border bg-page px-3 py-2 text-sm"
               >
                 <PlaceholderThumbnail species={species || "animal"} photoDataUrl={p.imageData} className="w-16" />
-                <div className="flex-1">
-                  <span className="font-semibold text-text">{p.fileName}</span>
-                  <span className="text-text-muted"> ({formatSize(p.fileSizeKB)})</span>
+                <div className="flex min-w-[200px] flex-1 flex-col gap-1">
+                  <div>
+                    <span className="font-semibold text-text">{p.fileName}</span>
+                    <span className="text-text-muted"> ({formatSize(p.fileSizeKB)})</span>
+                  </div>
+                  <label htmlFor={`alt-${p.id}`} className="sr-only">
+                    Photo description (alt text) for {p.fileName}
+                  </label>
+                  <input
+                    id={`alt-${p.id}`}
+                    type="text"
+                    placeholder="Photo description (alt text)"
+                    value={p.altText ?? ""}
+                    onChange={(e) => handlePhotoAltTextChange(p.id, e.target.value)}
+                    disabled={isReadOnly}
+                    className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
+                  />
                 </div>
                 {!isReadOnly && (
                   <button
@@ -640,10 +750,23 @@ function IntakeRecordFormContent({
                 className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
               />
             </div>
+            <div className="flex min-w-[240px] flex-1 flex-col gap-1">
+              <label htmlFor="pendingAltText" className="text-xs font-semibold text-text-muted">
+                Photo Description (alt text)
+              </label>
+              <input
+                id="pendingAltText"
+                type="text"
+                placeholder="e.g. Brown dog sitting on grass"
+                value={pendingAltText}
+                onChange={(e) => setPendingAltText(e.target.value)}
+                className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text placeholder:text-text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              />
+            </div>
             <button
               type="button"
               onClick={handleAddPhoto}
-              disabled={!pendingPhotoFile || addingPhoto}
+              disabled={!pendingPhotoFile || !pendingAltText.trim() || addingPhoto}
               className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
             >
               {addingPhoto ? "Adding..." : "Add Photo"}

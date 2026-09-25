@@ -36,6 +36,8 @@ export interface AdoptionApplication {
   animalName: string;
   animalSpecies: Species;
   animalBreed: string;
+  // Locked in at submitApplication() - see prisma/contract.prisma.
+  adoptionFee?: number;
   motivationStatement: string;
   documents: ApplicationDocument[];
   profileSnapshot?: AdopterProfileSnapshot;

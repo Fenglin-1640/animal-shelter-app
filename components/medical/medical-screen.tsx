@@ -528,7 +528,7 @@ function MedicalContent({
 
   const refresh = async () => {
     await reloadMedical();
-    await evaluatePreListingEligibility(animalId);
+    await evaluatePreListingEligibility(animalId, { email, name: displayName });
   };
 
   return (

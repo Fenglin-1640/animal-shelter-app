@@ -2,6 +2,7 @@ import { acceptTransfer, getTransfer } from "@/lib/council-transfers/store";
 import { addAnimal, generateShelterId } from "@/lib/animals/animal-store";
 import { createTasksForAnimal } from "@/lib/adoption-fitness/store";
 import { seedPhotosFromIntake } from "@/lib/photos/store";
+import { getBreedsForSpecies } from "@/lib/options/breeds";
 import type { Animal } from "@/lib/animals/types";
 import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 import {
@@ -20,7 +21,11 @@ async function fetchAll(): Promise<IntakeRecord[]> {
   return result.items as IntakeRecord[];
 }
 
-async function patchIntakeRecord(intakeId: string, patch: Partial<IntakeRecord>): Promise<IntakeRecord | undefined> {
+// adoptionFee also accepts null: JSON.stringify drops undefined keys, so
+// clearing a previously saved fee has to be sent as an explicit null.
+type IntakeRecordPatch = Omit<Partial<IntakeRecord>, "adoptionFee"> & { adoptionFee?: number | null };
+
+async function patchIntakeRecord(intakeId: string, patch: IntakeRecordPatch): Promise<IntakeRecord | undefined> {
   const response = await fetch(`/api/intake-records/${intakeId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -103,7 +108,11 @@ export async function updateIntakeRecord(
   intakeId: string,
   input: IntakeRecordFormInput,
 ): Promise<MutationResult> {
-  const updated = await patchIntakeRecord(intakeId, { ...input, updatedAt: new Date().toISOString() });
+  const updated = await patchIntakeRecord(intakeId, {
+    ...input,
+    adoptionFee: input.adoptionFee ?? null,
+    updatedAt: new Date().toISOString(),
+  });
   if (!updated) return { ok: false, reason: "not_found" };
 
   if (input.councilTransferSubmissionId) {
@@ -118,7 +127,9 @@ export type FinaliseResult =
   | { ok: false; reason: "not_found" | "already_finalised" | "blocked"; blockers?: string[] };
 
 // FR-INT-03: Finalise Intake creates the Animal record (+ initial status
-// fields) from a completed Intake Record, and (FR-INT-04) the 3 parallel
+// fields) from a completed Intake Record - including the Breed, Adoption
+// Fee, Temperaments and General Description captured at intake, so the
+// Animal already has FR-LIST-01's publish fields - and (FR-INT-04) the 3 parallel
 // assessment tasks Review Adoption Fitness gates on. A separate
 // MedicalRecord is not persisted here - nothing in this prototype
 // reads/displays one yet, so an empty shell object would have no
@@ -134,21 +145,25 @@ export async function finaliseIntake(intakeId: string, email: string, name: stri
   const blockers = getFinaliseBlockers(record, linkedTransfer);
   if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
 
+  const species = record.species || "Cat";
+  const breedOption = (await getBreedsForSpecies(species)).find((b) => b.name === record.breed);
+
   const now = new Date().toISOString();
   const animal: Animal = {
     animalId: record.animalId,
     shelterId: generateShelterId(),
     name: record.animalName,
-    species: record.species || "Cat",
-    breed: "Unknown",
-    breedDescription: "",
+    species,
+    breed: record.breed,
+    breedDescription: breedOption?.description ?? "",
     sex: record.sex || "Male",
     dateOfBirth: record.dateOfBirth || undefined,
     estimatedAge: record.estimatedAge || undefined,
     coatColour: record.coatColour,
     coatMarkings: record.coatMarkings,
-    generalDescription: record.arrivalCircumstance,
-    temperaments: [],
+    generalDescription: record.generalDescription,
+    temperaments: record.temperaments,
+    adoptionFee: record.adoptionFee,
     currentStatus: "Under Assessment",
     listingStatus: "Not Fit",
     statusUpdatedAt: now,

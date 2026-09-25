@@ -1,14 +1,16 @@
 import type { Animal } from "@/lib/animals/types";
 
 // FR-INT-04: the three tasks created in parallel once Finalise Intake
-// (FR-INT-03) runs. Recording each task's full result is the job of its
-// own dedicated FR - Scan Microchip (FR-MC-01/02), Health Assessment
-// (FR-MED-01), Temperament Assessment (FR-BEH-01) - none of which are
-// built yet. This module only tracks whether each track has reached the
-// "continuable" state BR-016 requires before Review Adoption Fitness is
-// allowed; "Mark Continuable" here is a scoped stand-in for that not-yet
-// -built detailed recording, same as FR-INT-03's photo capture stood in
-// for full FR-AN-02 Photo management.
+// (FR-INT-03) runs. Each task's full result is recorded by its own
+// dedicated feature, which marks the task Continuable itself via
+// completeTaskByType() (lib/adoption-fitness/store.ts) once it reaches a
+// continuable outcome: Scan Microchip (FR-MC-01/02, lib/microchip), a
+// Health Assessment without urgent treatment or a completed intake
+// treatment (FR-MED-01/02, lib/medical), and a Suitable for Adoption
+// Temperament Assessment (FR-BEH-01, lib/behaviour). This module only
+// tracks whether each track has reached the "continuable" state BR-016
+// requires before Review Adoption Fitness is allowed - there is no
+// manual "Mark Continuable" action.
 export type TaskType = "Microchip Check" | "Temperament Assessment" | "Health Assessment";
 export const TASK_TYPES: TaskType[] = [
   "Microchip Check",
@@ -28,7 +30,7 @@ export interface AssessmentTask {
   markedAt?: string;
 }
 
-// "共同确认" - the joint Shelter Staff Member + Veterinarian confirmation.
+// The joint Shelter Staff Member + Veterinarian confirmation.
 // Review Adoption Fitness itself does not change Animal.currentStatus -
 // no PRD text ties a status transition to this confirmation (Publish
 // Adoption Profile, FR-LIST-01, is what sets Available For Adoption; PRD
@@ -47,7 +49,8 @@ export function isFitnessReviewComplete(review: FitnessReview | undefined): bool
   return Boolean(review?.staffConfirmedAt && review?.vetConfirmedAt);
 }
 
-// PRD: "若存在未结束的 Statutory Hold、未完成的健康检查或未完成的行为评估，系统必须列出阻塞项。"
+// PRD: if there is an unresolved Statutory Hold, an incomplete health
+// check or an incomplete behaviour assessment, list them as blockers.
 export function getFitnessBlockers(animal: Animal, tasks: AssessmentTask[]): string[] {
   const blockers: string[] = [];
   for (const type of TASK_TYPES) {

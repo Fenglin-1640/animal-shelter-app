@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
+import { BreedSelect } from "@/components/animals/breed-select";
 import { EmptySubscreen } from "@/components/animals/empty-subscreen";
 import { ProfilePhotoLightbox } from "@/components/animals/profile-photo-lightbox";
+import { TemperamentCheckboxes } from "@/components/animals/temperament-checkboxes";
 import { AppShell } from "@/components/layout/app-shell";
 import { AttributeChip } from "@/components/shared/attribute-chip";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -14,7 +16,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { getDisplayAge } from "@/lib/animals/age";
 import { getAnimalById, updateAnimal } from "@/lib/animals/animal-store";
 import { CURRENT_STATUS_CATEGORY, LISTING_STATUS_CATEGORY } from "@/lib/animals/status";
-import { getActiveValues } from "@/lib/system-administration/store";
+import { getBreedsForSpecies } from "@/lib/options/breeds";
 import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 import { listApplicationsForAnimal } from "@/lib/applications/store";
@@ -119,8 +121,7 @@ function AnimalDetailContent({
   const [feeInput, setFeeInput] = useState("");
   const [breedInput, setBreedInput] = useState("");
   const [descriptionInput, setDescriptionInput] = useState("");
-  const [temperamentSelection, setTemperamentSelection] = useState<Set<string>>(new Set());
-  const [temperamentOptions, setTemperamentOptions] = useState<string[]>([]);
+  const [temperamentSelection, setTemperamentSelection] = useState<string[]>([]);
 
   const [fitForRelease, setFitForRelease] = useState(false);
   const [publishBlockers, setPublishBlockers] = useState<string[]>([]);
@@ -189,31 +190,30 @@ function AnimalDetailContent({
     };
   }, [animal]);
 
-  useEffect(() => {
-    let cancelled = false;
-    getActiveValues("Temperament").then((result) => {
-      if (!cancelled) setTemperamentOptions(result);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const handleOpenEditAdoption = () => {
     setFeeInput(animal.adoptionFee?.toString() ?? "");
     setBreedInput(animal.breed === "Unknown" ? "" : animal.breed);
     setDescriptionInput(animal.generalDescription);
-    setTemperamentSelection(new Set(animal.temperaments));
+    setTemperamentSelection(animal.temperaments);
     setShowEditAdoption(true);
   };
 
   const handleSaveAdoptionDetails = async () => {
     const fee = feeInput.trim() ? Number(feeInput) : undefined;
+    const breed = breedInput.trim() || "Unknown";
+    const breedPatch =
+      breed === animal.breed
+        ? {}
+        : {
+            breed,
+            breedDescription:
+              (await getBreedsForSpecies(animal.species)).find((b) => b.name === breed)?.description ?? "",
+          };
     await updateAnimal(animal.animalId, {
+      ...breedPatch,
       adoptionFee: fee != null && !Number.isNaN(fee) ? fee : undefined,
-      breed: breedInput.trim() || "Unknown",
       generalDescription: descriptionInput,
-      temperaments: Array.from(temperamentSelection),
+      temperaments: temperamentSelection,
     });
     setAnimal((await getAnimalById(animal.animalId)) ?? animal);
     setShowEditAdoption(false);
@@ -561,29 +561,27 @@ function AnimalDetailContent({
               onClick={handleOpenEditAdoption}
               className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
             >
-              Edit Adoption Details
+              Edit Breed and Adoption Details
             </button>
           </div>
         )}
         {["Administrator", "Shelter Staff Member"].includes(role) && showEditAdoption && (
           <div className="sm:col-span-2 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
             <p className="text-xs text-text-muted">
-              Breed, Adoption Fee, Temperaments and General Description have no dedicated intake
-              step (Finalise Intake leaves Breed as &quot;Unknown&quot; and Temperaments/Adoption
-              Fee unset) - this is the minimal edit surface needed to fill in FR-LIST-01&apos;s
-              Publish prerequisites, not a general Animal Profile editor.
+              These are captured at Intake. Edit them here to correct details after the fact,
+              e.g. a misidentified breed or a revised adoption fee.
             </p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
                 <label htmlFor="edit-breed" className="text-xs font-semibold text-text-muted">
                   Breed
                 </label>
-                <input
+                <BreedSelect
                   id="edit-breed"
-                  type="text"
+                  species={animal.species}
                   value={breedInput}
-                  onChange={(e) => setBreedInput(e.target.value)}
-                  className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  onChange={setBreedInput}
+                  className="h-9 rounded-[12px] border border-border bg-surface px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -614,26 +612,7 @@ function AnimalDetailContent({
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-xs font-semibold text-text-muted">Temperaments</span>
-              <div className="flex flex-wrap gap-2">
-                {temperamentOptions.map((option) => (
-                  <label key={option} className="flex items-center gap-1.5 text-sm text-text">
-                    <input
-                      type="checkbox"
-                      checked={temperamentSelection.has(option)}
-                      onChange={() =>
-                        setTemperamentSelection((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(option)) next.delete(option);
-                          else next.add(option);
-                          return next;
-                        })
-                      }
-                      className="h-4 w-4 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                    />
-                    {option}
-                  </label>
-                ))}
-              </div>
+              <TemperamentCheckboxes selected={temperamentSelection} onChange={setTemperamentSelection} />
             </div>
             <div className="flex gap-2">
               <button
@@ -751,7 +730,7 @@ function AnimalDetailLoader({
 
   useEffect(() => {
     let cancelled = false;
-    evaluatePreListingEligibility(animalId)
+    evaluatePreListingEligibility(animalId, { email, name: displayName })
       .then(() => getAnimalById(animalId))
       .then((result) => {
         if (!cancelled) setAnimal(result ?? null);
@@ -759,7 +738,7 @@ function AnimalDetailLoader({
     return () => {
       cancelled = true;
     };
-  }, [animalId]);
+  }, [animalId, email, displayName]);
 
   if (animal === undefined) {
     return (

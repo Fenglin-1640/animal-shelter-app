@@ -29,7 +29,7 @@ import {
   issueMedicalClearance,
 } from "@/lib/medical/store";
 import { publishAdoptionProfile } from "@/lib/adoption-listings/publish";
-import { updateAnimal } from "@/lib/animals/animal-store";
+import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 
 import type { TestCaseBundle } from "./animal-workflow";
 import { getNegative, setAnimalId, setId, getId } from "../lib/runlog";
@@ -86,7 +86,11 @@ async function intakeFreshAnimal(
     sex: intake.sex as "Male" | "Female",
     coatColour: intake.coatColour,
     coatMarkings: intake.coatMarkings,
-    photos: [{ id: `PH-${negKey}`, fileName: `${negKey.toLowerCase()}_main.jpg`, fileSizeKB: photo.fileSizeKB, uploadedAt: new Date().toISOString() }],
+    breed: intake.breed,
+    adoptionFee: 150,
+    temperaments: ["Calm"],
+    generalDescription: `Negative-path test animal (${label}).`,
+    photos: [{ id: `PH-${negKey}`, fileName: `${negKey.toLowerCase()}_main.jpg`, fileSizeKB: photo.fileSizeKB, uploadedAt: new Date().toISOString(), altText: `${label} - negative-path test photo` }],
   });
   setId(entry, "intakeId", intakeId);
 
@@ -97,22 +101,6 @@ async function intakeFreshAnimal(
   const animal = await getAnimalById(record.animalId);
   if (!animal) return undefined;
   setAnimalId(entry, animal.animalId, animal.shelterId);
-
-  // getPublishBlockers requires a primary photo (getPrimaryPhoto) - set
-  // the intake-seeded photo as the public listing photo with alt text,
-  // same as the main animal-workflow's intake_finalise step.
-  const photosRes = await fetch(`/api/photos`);
-  const photosJson = await photosRes.json();
-  const seededPhoto = (photosJson.items as { id: string; animalId: string }[]).find(
-    (p) => p.animalId === animal.animalId,
-  );
-  if (seededPhoto) {
-    await fetch(`/api/photos/${seededPhoto.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ altText: `${label} - negative-path test photo`, useOnAdoptionListing: true }),
-    });
-  }
   return animal.animalId;
 }
 
@@ -215,7 +203,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
       await completeDesexing(animalId, VET.email, VET.name);
     }
     await issueMedicalClearance(animalId, VET.email, VET.name);
-    await updateAnimal(animalId, { breed: template.intake.breed, adoptionFee: 150, temperaments: ["Calm"], generalDescription: "Negative-path test animal (Incompatible Meet and Greet)." });
+    await evaluatePreListingEligibility(animalId, VET);
     const publishResult = await publishAdoptionProfile(animalId, STAFF.email, STAFF.name);
     if (!ok(publishResult)) return fail(`publishAdoptionProfile failed: ${(publishResult as { reason: string }).reason}`);
     const final = await getAnimalById(animalId);
