@@ -70,10 +70,12 @@ export async function addPhoto(
 }
 
 // Once Finalise Intake (FR-INT-03) creates the Animal, the photos
-// uploaded at intake become real Photo records here, carrying the alt
-// text Staff entered for each at upload. The first one is selected as the
-// default public listing photo (FR-LIST-01 condition 5); Staff can pick a
-// different one, or edit its alt text, on the Photos screen (FR-AN-02).
+// uploaded at intake become real Photo records here, carrying any alt
+// text Staff entered at upload (optional at Intake). The first one is
+// selected as the default public listing photo; if it has no alt text
+// yet, Publish (FR-LIST-01 condition 5) stays blocked until Staff add it
+// on the Photos screen (FR-AN-02), where they can also pick a different
+// public photo.
 export async function seedPhotosFromIntake(
   animalId: string,
   photos: AnimalPhoto[],
@@ -92,8 +94,9 @@ export async function seedPhotosFromIntake(
       ),
     );
   }
-  const first = created.find((p) => p.altText);
-  if (first) await setPrimaryPhoto(first.id, first.altText);
+  // Set directly rather than via setPrimaryPhoto(), which refuses a photo
+  // without alt text - nothing else can be public yet for a new Animal.
+  if (created[0]) await patchPhoto(created[0].id, { useOnAdoptionListing: true });
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: string };

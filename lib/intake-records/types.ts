@@ -107,8 +107,6 @@ export function getFinaliseBlockers(
   }
   if (record.photos.length === 0) {
     blockers.push("At least one animal photo must be uploaded.");
-  } else if (record.photos.some((p) => !p.altText?.trim())) {
-    blockers.push("Every photo needs a description (alt text).");
   }
   if (!record.breed.trim()) blockers.push("Breed is required.");
   if (record.adoptionFee == null) blockers.push("Adoption Fee is required.");

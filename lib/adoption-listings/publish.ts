@@ -37,7 +37,12 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
   }
   if (!animal.sex) blockers.push("Sex must be filled in.");
   if (animal.temperaments.length === 0) blockers.push("At least one Temperament must be filled in.");
-  if (!(await getPrimaryPhoto(animalId))) blockers.push("A public photo with alt text must be selected.");
+  // Checks the alt text itself, not just that a public photo exists: an
+  // intake photo becomes the default public photo even when no alt text
+  // was entered at Intake (it's optional there).
+  if (!(await getPrimaryPhoto(animalId))?.altText.trim()) {
+    blockers.push("A public photo with alt text must be selected.");
+  }
 
   return blockers;
 }

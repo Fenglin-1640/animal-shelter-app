@@ -197,6 +197,44 @@ function PhotosContent({
     }
   };
 
+  // Shared by "Set as Public Photo" and the public photo's own
+  // "Add/Edit Alt Text" - both end at setPrimaryPhoto(), which requires alt
+  // text (an intake photo can become the public photo without any).
+  const renderAltTextForm = (photoId: string) => (
+    <div className="flex flex-col gap-2 rounded-[12px] border border-border bg-page p-3">
+      <label htmlFor={`alt-text-${photoId}`} className="text-xs font-semibold text-text-muted">
+        Alt Text (required)
+      </label>
+      <input
+        id={`alt-text-${photoId}`}
+        type="text"
+        value={altTextDraft}
+        onChange={(e) => setAltTextDraft(e.target.value)}
+        placeholder="Describe the photo for screen readers"
+        className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      />
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => handleConfirmPrimary(photoId)}
+          className="h-8 rounded-[12px] bg-primary px-3 text-xs font-semibold text-page hover:opacity-90"
+        >
+          Confirm
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setSettingPrimaryId(null);
+            setAltTextDraft("");
+          }}
+          className="h-8 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+
   const handleRemove = async (photoId: string) => {
     const result = await removePhoto(photoId);
     if (result.ok) {
@@ -316,47 +354,35 @@ function PhotosContent({
               {photo.useOnAdoptionListing ? (
                 <div className="flex flex-col gap-1">
                   <StatusChip label="Public Listing Photo" category="success" />
-                  <p className="text-xs text-text-muted">Alt text: {photo.altText}</p>
+                  {photo.altText ? (
+                    <p className="text-xs text-text-muted">Alt text: {photo.altText}</p>
+                  ) : (
+                    <p className="text-xs text-danger">No alt text yet - required before Publish.</p>
+                  )}
+                  {canAct &&
+                    (settingPrimaryId === photo.id ? (
+                      renderAltTextForm(photo.id)
+                    ) : (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSettingPrimaryId(photo.id);
+                            setAltTextDraft(photo.altText);
+                            setMessage(null);
+                          }}
+                          className="h-8 rounded-[12px] border border-border bg-page px-3 text-xs font-semibold text-text hover:bg-surface-active"
+                        >
+                          {photo.altText ? "Edit Alt Text" : "Add Alt Text"}
+                        </button>
+                      </div>
+                    ))}
                 </div>
               ) : (
                 canAct && (
                   <div className="flex flex-col gap-2">
                     {settingPrimaryId === photo.id ? (
-                      <div className="flex flex-col gap-2 rounded-[12px] border border-border bg-page p-3">
-                        <label
-                          htmlFor={`alt-text-${photo.id}`}
-                          className="text-xs font-semibold text-text-muted"
-                        >
-                          Alt Text (required)
-                        </label>
-                        <input
-                          id={`alt-text-${photo.id}`}
-                          type="text"
-                          value={altTextDraft}
-                          onChange={(e) => setAltTextDraft(e.target.value)}
-                          placeholder="Describe the photo for screen readers"
-                          className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleConfirmPrimary(photo.id)}
-                            className="h-8 rounded-[12px] bg-primary px-3 text-xs font-semibold text-page hover:opacity-90"
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSettingPrimaryId(null);
-                              setAltTextDraft("");
-                            }}
-                            className="h-8 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
+                      renderAltTextForm(photo.id)
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         <button

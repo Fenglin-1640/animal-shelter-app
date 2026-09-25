@@ -251,7 +251,7 @@ function IntakeRecordFormContent({
   const liveBlockers = getFinaliseBlockers(buildInput(), linkedTransfer);
 
   const handleAddPhoto = async () => {
-    if (!pendingPhotoFile || !pendingAltText.trim()) return;
+    if (!pendingPhotoFile) return;
     setPhotoError(null);
     setAddingPhoto(true);
     try {
@@ -270,7 +270,7 @@ function IntakeRecordFormContent({
         fileSizeKB: Math.max(1, Math.round(pendingPhotoFile.size / 1024)),
         uploadedAt: new Date().toISOString(),
         imageData: converted.dataUrl,
-        altText: pendingAltText.trim(),
+        altText: pendingAltText.trim() || undefined,
       };
       setPhotos((prev) => [...prev, photo]);
       setPendingPhotoFile(null);
@@ -686,8 +686,10 @@ function IntakeRecordFormContent({
           Photos <span aria-hidden="true">*</span>
         </h2>
         <p className="mt-1 text-sm text-text-muted">
-          At least one photo, each with a short description for screen readers, is required
-          before Finalise Intake. The first photo becomes the default public listing photo.
+          At least one photo is required before Finalise Intake. The first photo becomes the
+          default public listing photo. A description for screen readers (alt text) is
+          optional here, but the public photo needs one before the animal can be published -
+          it can also be added later on the Photos screen.
         </p>
         {photoError && (
           <p role="status" className="mt-2 text-sm text-danger">
@@ -714,7 +716,7 @@ function IntakeRecordFormContent({
                   <input
                     id={`alt-${p.id}`}
                     type="text"
-                    placeholder="Photo description (alt text)"
+                    placeholder="Photo description (alt text, optional)"
                     value={p.altText ?? ""}
                     onChange={(e) => handlePhotoAltTextChange(p.id, e.target.value)}
                     disabled={isReadOnly}
@@ -752,7 +754,7 @@ function IntakeRecordFormContent({
             </div>
             <div className="flex min-w-[240px] flex-1 flex-col gap-1">
               <label htmlFor="pendingAltText" className="text-xs font-semibold text-text-muted">
-                Photo Description (alt text)
+                Photo Description (alt text, optional)
               </label>
               <input
                 id="pendingAltText"
@@ -766,7 +768,7 @@ function IntakeRecordFormContent({
             <button
               type="button"
               onClick={handleAddPhoto}
-              disabled={!pendingPhotoFile || !pendingAltText.trim() || addingPhoto}
+              disabled={!pendingPhotoFile || addingPhoto}
               className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
             >
               {addingPhoto ? "Adding..." : "Add Photo"}
