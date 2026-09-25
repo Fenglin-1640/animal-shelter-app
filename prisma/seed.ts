@@ -143,9 +143,9 @@ async function seedRubyPrerequisites() {
   const vaccination = {
     id: "VX-SEED-A-0006",
     animalId,
-    // Same species-appropriate value the test data uses for birds and
-    // reptiles, which have no core vaccine in the Vaccine Type list.
-    vaccineType: "Other / Species-appropriate preventive record",
+    // Reptiles have no routine vaccines - this Vaccine Type option records
+    // the preventive health check that stands in for one.
+    vaccineType: "Reptile Preventive Health Check",
     administrationDate: "2024-06-22T10:00:00.000Z",
     doseOrChipId: "N/A",
     nextBoosterDueDate: "2025-06-22T10:00:00.000Z",

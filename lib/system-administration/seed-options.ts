@@ -95,6 +95,7 @@ const SEED_ENTRIES: SeedEntry[] = [
   { category: "Vaccine Type", value: "C5", description: "C3 plus parainfluenza and bordetella." },
   { category: "Vaccine Type", value: "C7", description: "C5 plus additional leptospirosis strains." },
   { category: "Vaccine Type", value: "Kennel Cough (Bordetella)", description: "Intranasal vaccine for canine infectious tracheobronchitis." },
+  { category: "Vaccine Type", value: "Reptile Preventive Health Check", description: "Reptiles have no routine vaccines; records the preventive health check (parasite screen and husbandry review) that stands in for vaccination before Medical Clearance." },
 
   // Temperament - PRD 12.4, exactly 20 values.
   { category: "Temperament", value: "Calm", description: "Settled and relaxed disposition." },
