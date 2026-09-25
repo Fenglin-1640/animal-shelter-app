@@ -128,6 +128,10 @@ export const MOCK_ANIMALS: Animal[] = [
     generalDescription:
       "Ruby has been medically cleared and is awaiting her adoption listing.",
     temperaments: ["Calm", "Curious"],
+    // Ruby's full prerequisite history (assessments, fitness sign-off,
+    // Medical Clearance, public photo) is seeded by prisma/seed.ts's
+    // seedRubyPrerequisites() so she can genuinely be published.
+    adoptionFee: 120,
     currentStatus: "Under Assessment",
     listingStatus: "Pre-Listing",
     statusUpdatedAt: "2024-06-25T09:00:00.000Z",

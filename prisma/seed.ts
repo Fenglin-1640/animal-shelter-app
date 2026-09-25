@@ -34,6 +34,168 @@ const DEMO_ADOPTER_PROFILE: AdopterProfile = {
   refereeConsentAt: "2023-11-20T09:00:00.000Z",
 };
 
+function demoActor(role: string): { email: string; name: string } {
+  const account = DEMO_ACCOUNTS.find((a) => a.role === role);
+  if (!account) throw new Error(`No demo account for role ${role}`);
+  return { email: account.email, name: `${account.title} ${account.firstName} ${account.lastName}` };
+}
+
+// Ruby (A-0006) is PRD 12.1's "Vet cleared, waiting for Staff to publish"
+// scenario, and the one seed animal meant to be actionable in the demo
+// (Staff can actually publish her). So unlike the other PRD 12.1 animals,
+// she gets the full history a real animal would have to reach
+// Pre-Listing: the 3 FR-INT-04 assessment tasks completed (backed by a
+// No Chip microchip lookup - she has no chip - a Health Assessment and a
+// Suitable Temperament Assessment), the Review Adoption Fitness Staff +
+// Veterinarian confirmation, Medical Clearance backed by a vaccination
+// and a species desexing exemption (the same "Exempt (Species)" record
+// the Medical screen writes for reptiles), and a public photo with alt
+// text. Her fee comes from lib/animals/mock-animals.ts. Dates sit between
+// her enteredAt (2024-06-18) and statusUpdatedAt (2024-06-25).
+async function seedRubyPrerequisites() {
+  const animalId = "A-0006";
+  const staff = demoActor("Shelter Staff Member");
+  const vet = demoActor("Veterinarian");
+  const at = (day: string, time = "10:00:00") => toTimestamptz(`2024-06-${day}T${time}.000Z`);
+
+  const microchip = {
+    id: "ML-SEED-A-0006",
+    animalId,
+    microchipNumber: "",
+    result: "No Chip",
+    ownerContactName: null,
+    ownerContactPhone: null,
+    ownerContactAddress: null,
+    performedByEmail: staff.email,
+    performedByName: staff.name,
+    performedAt: at("18", "11:00:00"),
+  };
+  await db.orm.MicrochipLookup.upsert({ create: microchip, update: microchip });
+
+  const health = {
+    id: "HA-SEED-A-0006",
+    animalId,
+    examinationObservations: "Alert and responsive; clear eyes; healthy skin and shed.",
+    sampleTestResults: "Faecal float negative for parasites.",
+    diagnosedConditions: "None",
+    bodyCondition: "Ideal",
+    urgentTreatmentRequired: 0,
+    urgentTreatmentNotes: "",
+    treatmentPathway: null,
+    healthRecheckRequired: 0,
+    assessmentDate: "2024-06-19T10:00:00.000Z",
+    veterinarianEmail: vet.email,
+    veterinarianName: vet.name,
+    createdAt: at("19"),
+  };
+  await db.orm.HealthAssessment.upsert({ create: health, update: health });
+
+  const temperament = {
+    id: "TA-SEED-A-0006",
+    animalId,
+    handlingResponse: "Calm when picked up; tolerates handling well.",
+    reactionToStrangers: "Curious and relaxed with new people.",
+    foodBehaviour: "Eats readily; no defensive behaviour at feeding.",
+    interactionWithOtherAnimals: "Not applicable - housed alone.",
+    socialisationScore: 4,
+    observations: "Docile and settled in her enclosure.",
+    recommendations: "Suitable for a first-time reptile owner with a correctly set-up enclosure.",
+    assessmentDate: "2024-06-20T10:00:00.000Z",
+    assessorEmail: staff.email,
+    assessorName: staff.name,
+    followUpRequired: 0,
+    reassessmentDate: null,
+    outcome: "Suitable for Adoption",
+    createdAt: at("20"),
+    programReassessmentOf: null,
+  };
+  await db.orm.TemperamentAssessment.upsert({ create: temperament, update: temperament });
+
+  const tasks = [
+    { id: "AT-SEED-A-0006-MC", taskType: "Microchip Check", actor: staff, markedAt: at("18", "11:00:00") },
+    { id: "AT-SEED-A-0006-HA", taskType: "Health Assessment", actor: vet, markedAt: at("19") },
+    { id: "AT-SEED-A-0006-TA", taskType: "Temperament Assessment", actor: staff, markedAt: at("20") },
+  ];
+  for (const task of tasks) {
+    const row = {
+      id: task.id,
+      animalId,
+      taskType: task.taskType,
+      status: "Continuable",
+      markedByEmail: task.actor.email,
+      markedByName: task.actor.name,
+      markedAt: task.markedAt,
+    };
+    await db.orm.AssessmentTask.upsert({ create: row, update: row });
+  }
+
+  const fitnessReview = {
+    animalId,
+    staffConfirmedByEmail: staff.email,
+    staffConfirmedByName: staff.name,
+    staffConfirmedAt: at("21", "09:00:00"),
+    vetConfirmedByEmail: vet.email,
+    vetConfirmedByName: vet.name,
+    vetConfirmedAt: at("21", "11:00:00"),
+  };
+  await db.orm.FitnessReview.upsert({ create: fitnessReview, update: fitnessReview });
+
+  const vaccination = {
+    id: "VX-SEED-A-0006",
+    animalId,
+    // Same species-appropriate value the test data uses for birds and
+    // reptiles, which have no core vaccine in the Vaccine Type list.
+    vaccineType: "Other / Species-appropriate preventive record",
+    administrationDate: "2024-06-22T10:00:00.000Z",
+    doseOrChipId: "N/A",
+    nextBoosterDueDate: "2025-06-22T10:00:00.000Z",
+    veterinarianEmail: vet.email,
+    veterinarianName: vet.name,
+    createdAt: at("22"),
+  };
+  await db.orm.VaccinationRecord.upsert({ create: vaccination, update: vaccination });
+
+  const desexing = {
+    id: "DX-SEED-A-0006",
+    animalId,
+    scheduledDate: "2024-06-22T10:00:00.000Z",
+    status: "Exempt (Species)",
+    completedAt: null,
+    completedByEmail: null,
+    completedByName: null,
+    veterinarianEmail: vet.email,
+    veterinarianName: vet.name,
+    createdAt: at("22"),
+  };
+  await db.orm.DesexingSchedule.upsert({ create: desexing, update: desexing });
+
+  const clearance = {
+    id: "MC-SEED-A-0006",
+    animalId,
+    issuedByEmail: vet.email,
+    issuedByName: vet.name,
+    issuedAt: at("25", "09:00:00"),
+  };
+  await db.orm.MedicalClearance.upsert({ create: clearance, update: clearance });
+
+  const photo = {
+    id: "PH-SEED-A-0006",
+    animalId,
+    fileName: "ruby_main.jpg",
+    fileSizeKB: 240,
+    dateTaken: "2024-06-18T10:00:00.000Z",
+    takenByEmail: staff.email,
+    takenByName: staff.name,
+    useOnAdoptionListing: 1,
+    altText: "Ruby, a tan bearded dragon with darker stripes, resting on a branch",
+    uploadedAt: at("18"),
+    imageData: null,
+  };
+  await db.orm.Photo.upsert({ create: photo, update: photo });
+
+  console.log("Seeded Ruby's (A-0006) Pre-Listing prerequisite history");
+}
+
 // Recreates the PRD 4.2 demo accounts and PRD 12.1 seed animals in the
 // database. Run with `npm run db:seed`. Safe to re-run: existing rows are
 // replaced.
@@ -68,6 +230,14 @@ async function main() {
     console.log(`Seeded ${account.role}: ${account.email}`);
   }
 
+  // The PRD 12.1 animals are written straight into the lifecycle state
+  // each one demonstrates (Pre-Listing, Current, Adopted, Removed...). For
+  // Luna, Charlie, Daisy, Rocky and Oliver that is a status-only snapshot:
+  // none of the history a real animal would have passed through to reach
+  // that state (assessment tasks, Review Adoption Fitness sign-off,
+  // Medical Clearance, and so on) is seeded, so they don't satisfy every
+  // gate that state implies. Ruby is the exception - see
+  // seedRubyPrerequisites().
   for (const animal of MOCK_ANIMALS) {
     const row = {
       animalId: animal.animalId,
@@ -101,6 +271,7 @@ async function main() {
     });
     console.log(`Seeded animal: ${animal.name} (${animal.animalId})`);
   }
+  await seedRubyPrerequisites();
 
   const adopterProfileRow = {
     email: "adopter@asams.demo",

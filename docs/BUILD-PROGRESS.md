@@ -14,6 +14,8 @@ _Last updated: 2026-09-15, after adding Archive, Search and Export (FR-REC-01) -
 
 **Storage-layer note (2026-09-19):** every "no real backend" / `localStorage` / "client-side" detail in the Notes column below (e.g. FR-AUTH-01, FR-SA-01, FR-ADP-01, FR-MC-02, FR-NOT-01) describes the implementation as of this file's last FR-completion update. A later migration moved every domain-data store off localStorage onto a real Prisma + SQLite backend; that migration is now complete - see `prisma/README.md`'s "Migration status" section for the current source of truth. None of this affects the functional Status below, only the persistence mechanism, so the FR rows themselves haven't been rewritten to match.
 
+**Seed-data note (2026-09-26):** the PRD 12.1 seed animals (`lib/animals/mock-animals.ts`, written by `prisma/seed.ts`) demonstrate specific lifecycle states, not a full history. Luna, Charlie, Daisy, Rocky and Oliver are seeded straight into their states with none of the records a real animal would have passed through to get there (assessment tasks, Review Adoption Fitness sign-off, Medical Clearance, etc.), so they don't satisfy every gate that state implies. Ruby (A-0006, "Vet cleared, waiting for Staff to publish") is the exception: `seedRubyPrerequisites()` seeds her complete Pre-Listing history (3 completed assessment tasks backed by a No Chip lookup, a Health Assessment and a Suitable Temperament Assessment; the Staff + Veterinarian Review Adoption Fitness confirmation; Medical Clearance backed by a vaccination and a species desexing exemption; an adoption fee; and a public photo with alt text), so Staff can actually publish her in the demo.
+
 ## Summary
 
 | Status | Count |
