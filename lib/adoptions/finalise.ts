@@ -12,15 +12,19 @@ export type FinaliseResult = { ok: true } | { ok: false; reason: string; blocker
 
 export async function getFinaliseBlockers(applicationId: string): Promise<string[]> {
   const blockers: string[] = [];
-  const application = await getApplication(applicationId);
+  // Independent lookups run together; only the payment depends on the
+  // agreement. The blocker order below is unchanged.
+  const [application, meetAndGreet, agreement] = await Promise.all([
+    getApplication(applicationId),
+    getMeetAndGreetForApplication(applicationId),
+    getActiveAgreementForApplication(applicationId),
+  ]);
   if (!application) return ["Application not found."];
 
-  const meetAndGreet = await getMeetAndGreetForApplication(applicationId);
   if (meetAndGreet?.status !== "Compatible") {
     blockers.push("Meet and Greet outcome must be Compatible.");
   }
 
-  const agreement = await getActiveAgreementForApplication(applicationId);
   if (!agreement?.isSigned) {
     blockers.push("Adoption Agreement must be signed.");
   }

@@ -33,14 +33,17 @@ function generateHoldId(): string {
 // holdPeriodExpired) is resolved lazily whenever holds are read: any
 // Active hold whose holdEndAt has passed is flipped to Expired and, if
 // the Animal is still On Statutory Hold (nothing else has moved it on),
-// reverted to Under Assessment.
-async function resolveExpiredHolds() {
+// reverted to Under Assessment. Returns the holds as they stand after
+// that, re-reading only when something actually expired.
+async function fetchHoldsResolvingExpiry(): Promise<StatutoryHold[]> {
   const all = await fetchAllHolds();
   const now = new Date();
+  let changed = false;
 
   for (const hold of all) {
     if (hold.status !== "Active" || new Date(hold.holdEndAt) > now) continue;
 
+    changed = true;
     const expiredAt = now.toISOString();
     await patchHold(hold.id, { status: "Expired", expiredAt });
 
@@ -54,11 +57,11 @@ async function resolveExpiredHolds() {
       );
     }
   }
+  return changed ? fetchAllHolds() : all;
 }
 
 export async function listHoldsForAnimal(animalId: string): Promise<StatutoryHold[]> {
-  await resolveExpiredHolds();
-  const all = await fetchAllHolds();
+  const all = await fetchHoldsResolvingExpiry();
   return all
     .filter((h) => h.animalId === animalId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -190,10 +193,9 @@ export async function confirmCustodyTransfer(
 // FR-MC-02 step 4 / FR-NOT-01 "Statutory Hold approaching end date" -
 // holds within the reminder window that haven't ended yet.
 export async function listHoldsNeedingReminder(): Promise<StatutoryHold[]> {
-  await resolveExpiredHolds();
+  const [all, settings] = await Promise.all([fetchHoldsResolvingExpiry(), getSystemSettings()]);
   const now = new Date();
-  const reminderLeadDays = (await getSystemSettings()).reminderLeadDays;
-  const all = await fetchAllHolds();
+  const reminderLeadDays = settings.reminderLeadDays;
   return all.filter((h) => {
     if (h.status !== "Active") return false;
     const reminderFrom = new Date(h.holdEndAt);

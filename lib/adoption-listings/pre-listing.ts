@@ -17,13 +17,20 @@ import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 // Listed as unmet-condition messages (like getPublishBlockers) so the
 // Animal Profile can show Staff what's still missing.
 export async function getPreListingBlockers(animalId: string): Promise<string[]> {
+  // The 4 lookups are independent, so fetch them together; the blocker
+  // order below is unchanged.
+  const [clearance, unresolvedHold, latestAssessment, review] = await Promise.all([
+    getMedicalClearance(animalId),
+    hasUnresolvedHold(animalId),
+    getLatestTemperamentAssessment(animalId),
+    getFitnessReview(animalId),
+  ]);
   const blockers: string[] = [];
-  if (!(await getMedicalClearance(animalId))) blockers.push("Medical Clearance has not been issued.");
-  if (await hasUnresolvedHold(animalId)) blockers.push("There is an unresolved Statutory Hold on this animal.");
-  if ((await getLatestTemperamentAssessment(animalId))?.outcome !== "Suitable for Adoption") {
+  if (!clearance) blockers.push("Medical Clearance has not been issued.");
+  if (unresolvedHold) blockers.push("There is an unresolved Statutory Hold on this animal.");
+  if (latestAssessment?.outcome !== "Suitable for Adoption") {
     blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
   }
-  const review = await getFitnessReview(animalId);
   if (!review?.staffConfirmedAt || !review?.vetConfirmedAt) {
     const missing = [
       !review?.staffConfirmedAt && "Shelter Staff Member",

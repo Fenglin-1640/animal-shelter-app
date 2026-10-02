@@ -15,7 +15,15 @@ import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 // new hold or a later assessment); the fitness review has no undo path,
 // so it isn't re-checked.
 export async function getPublishBlockers(animalId: string): Promise<string[]> {
-  const animal = await getAnimalById(animalId);
+  // The lookups are independent, so fetch them together; the blocker
+  // order below is unchanged.
+  const [animal, clearance, latestAssessment, unresolvedHold, primaryPhoto] = await Promise.all([
+    getAnimalById(animalId),
+    getMedicalClearance(animalId),
+    getLatestTemperamentAssessment(animalId),
+    hasUnresolvedHold(animalId),
+    getPrimaryPhoto(animalId),
+  ]);
   if (!animal) return ["Animal not found."];
 
   const blockers: string[] = [];
@@ -24,11 +32,11 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
       `Listing status must be Pre-Listing to publish (currently ${animal.listingStatus}, ${animal.currentStatus}).`,
     );
   }
-  if (!(await getMedicalClearance(animalId))) blockers.push("Medical Clearance has not been issued.");
-  if ((await getLatestTemperamentAssessment(animalId))?.outcome !== "Suitable for Adoption") {
+  if (!clearance) blockers.push("Medical Clearance has not been issued.");
+  if (latestAssessment?.outcome !== "Suitable for Adoption") {
     blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
   }
-  if (await hasUnresolvedHold(animalId)) blockers.push("There is an unresolved Statutory Hold on this animal.");
+  if (unresolvedHold) blockers.push("There is an unresolved Statutory Hold on this animal.");
   if (animal.adoptionFee == null) blockers.push("Adoption Fee must be filled in.");
   if (!animal.generalDescription.trim()) blockers.push("General Description must be filled in.");
   if (!animal.breed.trim() || animal.breed === "Unknown") {
@@ -42,7 +50,7 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
   // Checks the alt text itself, not just that a public photo exists: an
   // intake photo becomes the default public photo even when no alt text
   // was entered at Intake (it's optional there).
-  if (!(await getPrimaryPhoto(animalId))?.altText.trim()) {
+  if (!primaryPhoto?.altText.trim()) {
     blockers.push("A public photo with alt text must be selected.");
   }
 
