@@ -56,10 +56,15 @@ export async function getActiveBehaviourProgram(animalId: string): Promise<Behav
 // form whenever a Behaviour Program continues - see
 // recordTemperamentAssessment below).
 export async function listAssessmentsNeedingReassessment(): Promise<TemperamentAssessment[]> {
-  const animals = await getAllAnimals();
-  const latest = await Promise.all(
-    animals.map((animal) => getLatestTemperamentAssessment(animal.animalId)),
-  );
+  // One read of each collection, then the same newest-first pick per
+  // animal getLatestTemperamentAssessment() makes - instead of one
+  // assessments request per animal.
+  const [animals, all] = await Promise.all([
+    getAllAnimals(),
+    fetchAll<TemperamentAssessment>("/api/behaviour/temperament-assessments"),
+  ]);
+  const newestFirst = all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const latest = animals.map((animal) => newestFirst.find((a) => a.animalId === animal.animalId));
   return latest.filter(
     (a): a is TemperamentAssessment => !!a?.followUpRequired && !!a.reassessmentDate,
   );

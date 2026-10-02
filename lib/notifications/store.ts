@@ -1,4 +1,5 @@
-import { getAllAnimals, getAnimalById } from "@/lib/animals/animal-store";
+import { getAllAnimals } from "@/lib/animals/animal-store";
+import type { Animal } from "@/lib/animals/types";
 import { listAllApplications } from "@/lib/applications/store";
 import { listAssessmentsNeedingReassessment } from "@/lib/behaviour/store";
 import { listActiveFollowUpVisits } from "@/lib/follow-up-visits/store";
@@ -32,14 +33,22 @@ function daysSince(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / (24 * 60 * 60 * 1000));
 }
 
+// Each notification type below names the animal it is about. Look them
+// up from one shared all-animals request rather than awaiting
+// getAnimalById() once per item, which made the Notifications screen a
+// long chain of sequential requests.
+async function getAnimalsById(): Promise<Map<string, Animal>> {
+  return new Map((await getAllAnimals()).map((animal) => [animal.animalId, animal]));
+}
+
 // FR-MC-02 step 4 / FR-NOT-01 "Statutory Hold approaching end date".
 // Computed live from StatutoryHold records rather than persisted as its
 // own record, since it's fully derived from data that already exists.
 async function getStatutoryHoldNotifications(): Promise<NotificationItem[]> {
-  const holds = await listHoldsNeedingReminder();
+  const [holds, animalsById] = await Promise.all([listHoldsNeedingReminder(), getAnimalsById()]);
   const items: NotificationItem[] = [];
   for (const hold of holds) {
-    const animal = await getAnimalById(hold.animalId);
+    const animal = animalsById.get(hold.animalId);
     if (!animal) continue;
     const remaining = daysUntil(hold.holdEndAt);
     items.push({
@@ -58,11 +67,11 @@ async function getStatutoryHoldNotifications(): Promise<NotificationItem[]> {
 
 // FR-NOT-01 "Behaviour reassessment due".
 async function getBehaviourReassessmentNotifications(): Promise<NotificationItem[]> {
-  const assessments = await listAssessmentsNeedingReassessment();
+  const [assessments, animalsById] = await Promise.all([listAssessmentsNeedingReassessment(), getAnimalsById()]);
   const items: NotificationItem[] = [];
   for (const assessment of assessments) {
     if (!assessment.reassessmentDate || daysUntil(assessment.reassessmentDate) > REMINDER_LEAD_DAYS) continue;
-    const animal = await getAnimalById(assessment.animalId);
+    const animal = animalsById.get(assessment.animalId);
     if (!animal) continue;
     items.push({
       id: `behaviour-reassessment-${assessment.id}`,
@@ -82,8 +91,9 @@ async function getBehaviourReassessmentNotifications(): Promise<NotificationItem
 // (animal, vaccine type) is checked, so a booster already given doesn't
 // leave a stale reminder pointing at the superseded record.
 async function getVaccineBoosterNotifications(): Promise<NotificationItem[]> {
+  const [vaccinations, animalsById] = await Promise.all([listAllVaccinations(), getAnimalsById()]);
   const latestByAnimalAndType = new Map<string, VaccinationRecord>();
-  for (const v of await listAllVaccinations()) {
+  for (const v of vaccinations) {
     const key = `${v.animalId}::${v.vaccineType}`;
     const existing = latestByAnimalAndType.get(key);
     if (!existing || new Date(v.administrationDate) > new Date(existing.administrationDate)) {
@@ -94,7 +104,7 @@ async function getVaccineBoosterNotifications(): Promise<NotificationItem[]> {
   const items: NotificationItem[] = [];
   for (const v of latestByAnimalAndType.values()) {
     if (daysUntil(v.nextBoosterDueDate) > REMINDER_LEAD_DAYS) continue;
-    const animal = await getAnimalById(v.animalId);
+    const animal = animalsById.get(v.animalId);
     if (!animal) continue;
     items.push({
       id: `vaccine-booster-${v.id}`,
@@ -112,10 +122,11 @@ async function getVaccineBoosterNotifications(): Promise<NotificationItem[]> {
 
 // FR-NOT-01 "Desexing appointment due".
 async function getDesexingAppointmentNotifications(): Promise<NotificationItem[]> {
+  const [scheduled, animalsById] = await Promise.all([listScheduledDesexing(), getAnimalsById()]);
   const items: NotificationItem[] = [];
-  for (const d of await listScheduledDesexing()) {
+  for (const d of scheduled) {
     if (daysUntil(d.scheduledDate) > REMINDER_LEAD_DAYS) continue;
-    const animal = await getAnimalById(d.animalId);
+    const animal = animalsById.get(d.animalId);
     if (!animal) continue;
     items.push({
       id: `desexing-${d.id}`,
@@ -195,11 +206,18 @@ async function getMeetAndGreetNotifications(): Promise<NotificationItem[]> {
 // with no Fit for Release check on file yet (the same condition the
 // Pre-Release Checks queue, FR-REL-01, uses to show "Check Needed").
 async function getPreReleaseCheckNotifications(): Promise<NotificationItem[]> {
-  const animals = await getAllAnimals();
+  const awaiting = (await getAllAnimals()).filter((animal) => animal.currentStatus === "Awaiting Release");
+  // Checked in parallel; results keep the animals' original order.
+  const checked = await Promise.all(
+    awaiting.map(async (animal) => ({
+      animal,
+      fit: await isFitForRelease(animal.animalId),
+      latest: await getLatestPreReleaseCheck(animal.animalId),
+    })),
+  );
   const items: NotificationItem[] = [];
-  for (const animal of animals) {
-    if (animal.currentStatus !== "Awaiting Release" || (await isFitForRelease(animal.animalId))) continue;
-    const latest = await getLatestPreReleaseCheck(animal.animalId);
+  for (const { animal, fit, latest } of checked) {
+    if (fit) continue;
     items.push({
       id: `pre-release-${animal.animalId}`,
       type: "Pre-Release Check",
