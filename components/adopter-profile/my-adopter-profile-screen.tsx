@@ -360,7 +360,7 @@ function MyAdopterProfileContent({ email }: { email: string }) {
                   <button
                     type="button"
                     disabled
-                    title="Uploading proof of landlord permission is not built yet"
+                    title="Uploading proof of landlord permission is not available yet"
                     className="h-8 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text-muted disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Upload Proof

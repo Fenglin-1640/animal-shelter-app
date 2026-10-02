@@ -260,8 +260,8 @@ export function NotificationsScreen() {
           <h1 className="text-2xl font-bold text-text">Notifications</h1>
           <p className="mt-1 text-sm text-text-muted">
             Live notifications computed from real records for your role.
-            Only Backup Job failures remain simulated, since this
-            prototype has no real backup subsystem to fail.
+            Backup Job failure notifications are simulated, since no real
+            backup runs exist.
           </p>
         </div>
 

@@ -53,9 +53,8 @@ function ArchiveSearchContent() {
       <div>
         <h1 className="text-2xl font-bold text-text">Archive Search</h1>
         <p className="mt-1 text-sm text-text-muted">
-          Search Archived animal records. Records here are read-only - this prototype provides no
-          permanent delete function by design (PRD 6.15: permanent deletion requires two-step
-          confirmation and an audit trail, out of scope for this prototype).
+          Search Archived animal records. Records here are read-only and cannot be permanently
+          deleted from the application.
         </p>
       </div>
 

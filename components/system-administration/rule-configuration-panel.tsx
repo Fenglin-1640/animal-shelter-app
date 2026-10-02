@@ -137,9 +137,8 @@ export function RuleConfigurationPanel() {
       </div>
 
       <p className="mt-3 text-xs text-text-muted">
-        Attachment rules are stored for reference only: every attachment in this prototype records
-        file name and size metadata, not real file content, so there is nothing to enforce a byte
-        limit or file type against.
+        Attachment rules are stored for reference only: attachments record the file name and
+        size, not the file content, so size and file type limits are not enforced.
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">

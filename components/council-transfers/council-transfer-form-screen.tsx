@@ -389,8 +389,8 @@ function CouncilTransferFormContent({
         </h2>
         <p className="mt-1 text-sm text-text-muted">
           Attach the seizure notice, complaint history, found-animal report
-          or other council paperwork. This prototype records the file name
-          and type only; file content is not stored.
+          or other council paperwork. Only the file name and type are
+          recorded; file content is not stored.
         </p>
 
         {attachments.length > 0 && (

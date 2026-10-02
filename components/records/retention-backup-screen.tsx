@@ -166,18 +166,18 @@ function RetentionBackupContent() {
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Retention Policy</h2>
         <p className="mt-2 text-sm text-text">
-          AuditLog entries are retained indefinitely and are never editable or deletable from this
-          application (FR-AUD-01). Permanent deletion of any record is not implemented in this
-          prototype: PRD 6.15 requires it to go through two-step confirmation with its own audit
-          trail, which this prototype deliberately provides no button for.
+          Audit Log entries are retained indefinitely and can never be edited or deleted from this
+          application. Records cannot be permanently deleted from the application; permanent
+          deletion requires two-step confirmation with its own audit trail and is not available
+          here.
         </p>
       </section>
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Backup Job Status</h2>
         <p className="mt-1 text-sm text-text-muted">
-          Simulated: this prototype has no real backup subsystem (scheduled backups, offsite
-          storage, recovery testing) to actually run. Shown for demonstration only.
+          Simulated: backup runs shown here are sample data. No real scheduled backups, offsite
+          storage or recovery tests are run. Shown for demonstration only.
         </p>
         <ul className="mt-3 flex flex-col gap-2">
           {backupRuns.map((run) => (

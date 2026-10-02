@@ -406,9 +406,8 @@ function AnimalsContent() {
         <div>
           <h1 className="text-2xl font-bold text-text">Animals</h1>
           <p className="mt-1 text-sm text-text-muted">
-            Showing PRD sample records (docs/PRD.md 12.1). Intake, Photos,
-            Medical History and Behavioural Assessment are built in later
-            steps.
+            Every animal in the shelter&apos;s care. Open an animal to see its profile,
+            photos, medical history and behaviour records.
           </p>
         </div>
 

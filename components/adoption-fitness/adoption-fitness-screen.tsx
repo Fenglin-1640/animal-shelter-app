@@ -145,8 +145,8 @@ function AdoptionFitnessContent({
           {animal.name} &middot; {animal.shelterId}
         </p>
         <p className="mt-2 text-sm text-text-muted">
-          Each task is completed via its own feature: Scan Microchip (FR-MC-01), Health
-          Assessment (FR-MED-01) and Temperament Assessment (FR-BEH-01).
+          Complete each task from its own screen: Scan Microchip, Medical Record (Health
+          Assessment) and Behaviour Record (Temperament Assessment).
         </p>
       </div>
 
@@ -279,7 +279,7 @@ function AdoptionFitnessContent({
                   blockers.length > 0
                     ? "Resolve the blocking items above before confirming."
                     : role !== "Veterinarian"
-                      ? "Only Veterinarian can give this confirmation - Administrator does not inherit clinical authority (BR-005), and allowing one person to give both sign-offs would defeat the point of a joint confirmation."
+                      ? "Only a Veterinarian can give this confirmation. Clinical sign-off is reserved for Veterinarians, and the joint confirmation needs two different people."
                       : undefined
                 }
                 className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
@@ -294,9 +294,9 @@ function AdoptionFitnessContent({
           <p className="mt-4 text-sm text-text">
             Adoption fitness has been jointly confirmed. This does not change the animal&apos;s
             current status by itself, but it is one of the four Pre-Listing conditions, along
-            with Medical Clearance (FR-MED-03), no unresolved Statutory Hold and a Suitable latest
+            with Medical Clearance, no unresolved Statutory Hold and a Suitable latest
             Behavioural Assessment. Once all four hold, the animal moves to Pre-Listing
-            automatically. Publish Adoption Profile (FR-LIST-01) remains a separate Staff step.
+            automatically. Publishing the Adoption Profile remains a separate Staff step.
           </p>
         )}
         {complete && animal.listingStatus === "Pre-Listing" && (

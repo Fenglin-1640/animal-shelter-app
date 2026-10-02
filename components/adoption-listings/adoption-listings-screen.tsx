@@ -282,9 +282,8 @@ export function AdoptionListingsScreen() {
         <div>
           <h1 className="text-2xl font-bold text-text">Adoption Listings</h1>
           <p className="mt-1 text-sm text-text-muted">
-            Animals currently available for adoption. Submitting an
-            application is a future step; PRD sample data (docs/PRD.md
-            12.1) is shown here.
+            Animals currently available for adoption. Open a listing to
+            learn more and apply.
           </p>
         </div>
 

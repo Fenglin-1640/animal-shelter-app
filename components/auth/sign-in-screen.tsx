@@ -263,7 +263,7 @@ export function SignInScreen({
           </p>
 
           <div className="mt-4 rounded-[12px] border border-border bg-surface p-4 text-xs text-text-muted">
-            <p className="font-semibold text-text">Prototype demo accounts</p>
+            <p className="font-semibold text-text">Demo accounts</p>
             <p className="mt-1">
               Shared password for every account:{" "}
               <span className="font-mono">{DEMO_PASSWORD}</span>

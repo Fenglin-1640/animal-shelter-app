@@ -823,7 +823,7 @@ function MedicalContent({
                     refresh();
                   }}
                   className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-                  title="For species this prototype's desexing flow doesn't apply to (e.g. birds, reptiles)"
+                  title="For species that are not desexed (e.g. birds, reptiles)"
                 >
                   Record Exempt (Species)
                 </button>
@@ -863,9 +863,9 @@ function MedicalContent({
                   ))}
                 </ul>
                 <p className="mt-1 text-xs text-text-muted">
-                  This prototype treats at least one recorded vaccination as satisfying
-                  &quot;required vaccines complete&quot;, since System Administration has no
-                  configurable list of required vaccine types.
+                  At least one recorded vaccination counts as &quot;required vaccines
+                  complete&quot;, since there is no configurable list of required vaccine
+                  types.
                 </p>
               </div>
             )}

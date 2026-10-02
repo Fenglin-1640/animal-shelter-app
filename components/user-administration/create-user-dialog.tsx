@@ -123,7 +123,7 @@ export function CreateUserDialog({
       <div className="relative w-full max-w-[440px] rounded-[12px] border border-border bg-surface p-6 shadow-[0_8px_28px_rgba(20,18,32,0.25)]">
         <h2 className="text-lg font-bold text-text">Add User</h2>
         <p className="mt-1 text-sm text-text-muted">
-          Creates an Active account with the shared prototype password.
+          Creates an Active account with the shared demo password.
         </p>
 
         {formError && (

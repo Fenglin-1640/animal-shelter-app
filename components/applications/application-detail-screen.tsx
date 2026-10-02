@@ -189,7 +189,7 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Supporting Documents</h2>
         <p className="mt-1 text-sm text-text-muted">
-          This prototype records the file name only; file content is not stored.
+          Only the file name is recorded; file content is not stored.
         </p>
         {documents.length > 0 && (
           <ul className="mt-3 flex flex-col gap-2">

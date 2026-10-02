@@ -70,14 +70,14 @@ function AuditLogContent() {
       <div>
         <h1 className="text-2xl font-bold text-text">Audit Log</h1>
         <p className="mt-1 text-sm text-text-muted">
-          Every significant status transition and state-changing action recorded by this
-          prototype. Immutable - nothing here can be edited or deleted from the UI (FR-AUD-01).
+          Every significant status change and state-changing action. Entries are permanent -
+          nothing here can be edited or deleted.
         </p>
         <p className="mt-2 text-sm text-text-muted">
-          Coverage note: this prototype audits Animal status/listing transitions, Medical
-          Clearance issuance, and Statutory Hold placement/reclamation/custody-transfer/expiry.
-          Actions belonging to not-yet-built features (SuitabilityCheck decisions, payment
-          verification, document generation) cannot be audited since they don&apos;t exist yet.
+          Recorded: animal status and listing changes, intake, medical clearance, statutory
+          holds, adoption fitness confirmations, application decisions, agreements, payments,
+          follow-up visits, and user and system settings changes. Suitability check decisions
+          appear through the status change they cause; sign-in attempts are not recorded here.
         </p>
       </div>
 
