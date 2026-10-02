@@ -7,10 +7,10 @@ import { usePendingCount } from "@/lib/pending-actions/use-pending-count";
 import { ROLE_FUNCTIONS, type Role } from "@/lib/roles/roles";
 
 // Small badge next to a nav item's label for whatever that role has
-// concretely actionable right now (lib/pending-actions/registry.ts) - a
-// submitted Payment awaiting verification, an Application awaiting
-// decision, and so on. Renders nothing when the label has no registered
-// fetcher or its count is 0.
+// concretely actionable right now (lib/pending-actions/counts.ts, served
+// by GET /api/pending-counts) - a submitted Payment awaiting
+// verification, an Application awaiting decision, and so on. Renders
+// nothing when the label has no badge or its count is 0.
 function PendingBadge({ label }: { label: string }) {
   const count = usePendingCount(label);
   if (count <= 0) return null;

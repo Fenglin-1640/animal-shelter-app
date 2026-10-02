@@ -2,21 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
-import { PENDING_ACTION_FETCHERS } from "@/lib/pending-actions/registry";
+import { getJson } from "@/lib/shared/http";
 
 // A nav item (RoleSidebar) subscribes to its own pending count by label.
-// Returns 0 for any label with no registered fetcher, or while the
-// signed-in user is unknown - RoleSidebar only shows a badge for
-// count > 0, so both cases render identically to "nothing pending".
+// Every badge on the page asks GET /api/pending-counts for the same
+// role/email, so they share one request (lib/shared/http.ts) and the
+// server returns only the counts (lib/pending-actions/counts.ts).
+// Returns 0 for any label with no badge, or while the signed-in user is
+// unknown - RoleSidebar only shows a badge for count > 0, so both cases
+// render identically to "nothing pending".
 export function usePendingCount(label: string): number {
   const { user } = useAuth();
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const fetcher = PENDING_ACTION_FETCHERS[label];
+    if (!user) return;
     let cancelled = false;
-    (fetcher && user ? fetcher(user) : Promise.resolve(0)).then((result) => {
-      if (!cancelled) setCount(result);
+    const params = new URLSearchParams({ role: user.role, email: user.email });
+    getJson<{ counts?: Record<string, number> }>(`/api/pending-counts?${params}`).then((result) => {
+      if (!cancelled) setCount(result.counts?.[label] ?? 0);
     });
     return () => {
       cancelled = true;

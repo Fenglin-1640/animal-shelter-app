@@ -41,11 +41,6 @@ export async function listChecksForApplication(applicationId: string): Promise<S
   return all.filter((c) => c.applicationId === applicationId);
 }
 
-export async function allChecksComplete(applicationId: string): Promise<boolean> {
-  const checks = await listChecksForApplication(applicationId);
-  return checks.length === CHECK_TYPES.length && checks.every((c) => c.outcome !== "Pending");
-}
-
 export async function allChecksPass(applicationId: string): Promise<boolean> {
   const checks = await listChecksForApplication(applicationId);
   return (

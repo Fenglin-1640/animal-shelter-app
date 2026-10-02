@@ -41,19 +41,6 @@ export async function getMeetAndGreet(meetAndGreetId: string): Promise<MeetAndGr
   return (await fetchAll()).find((m) => m.meetAndGreetId === meetAndGreetId);
 }
 
-// For the Adopter "My Meet and Greets" nav badge
-// (lib/pending-actions/registry.ts) - a slot the Adopter still needs to
-// pick (Proposed), or a scheduled visit they haven't yet confirmed
-// attendance for (Scheduled, attendanceConfirmed false). Matches the two
-// action states meet-and-greet-detail-screen.tsx actually renders a
-// button for.
-export async function countPendingForAdopter(email: string): Promise<number> {
-  const mine = await listMyMeetAndGreets(email);
-  return mine.filter(
-    (m) => m.status === "Proposed" || (m.status === "Scheduled" && !m.attendanceConfirmed),
-  ).length;
-}
-
 // FR-NOT-01 "Meet and Greet scheduled": every Meet and Greet with a
 // confirmed date (Adopter has picked a slot), across all applicants.
 export async function listScheduledMeetAndGreets(): Promise<MeetAndGreet[]> {

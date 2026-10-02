@@ -39,12 +39,6 @@ export async function getLatestPaymentForAgreement(agreementId: string): Promise
   return (await listPaymentsForAgreement(agreementId))[0];
 }
 
-// For the "Adoptions" nav badge (lib/pending-actions/registry.ts) - a
-// submitted payment Staff/Administrator haven't yet verified.
-export async function countPendingVerification(): Promise<number> {
-  return (await fetchAll()).filter((p) => p.paymentStatus === "Pending").length;
-}
-
 export async function getPayment(paymentId: string): Promise<AdoptionPayment | undefined> {
   return (await fetchAll()).find((p) => p.paymentId === paymentId);
 }

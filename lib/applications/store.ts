@@ -2,7 +2,6 @@ import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { getAdopterProfile } from "@/lib/adopter-profile/store";
 import { getAdopterProfileSubmissionBlockers } from "@/lib/adopter-profile/types";
 import { writeAuditLog } from "@/lib/audit/store";
-import { allChecksComplete } from "@/lib/checks/store";
 import type { AdoptionApplication, ApplicationDocument } from "@/lib/applications/types";
 import { getJson, send } from "@/lib/shared/http";
 
@@ -45,18 +44,6 @@ export async function listApplicationsForAnimal(animalId: string): Promise<Adopt
 export async function listAllApplications(): Promise<AdoptionApplication[]> {
   const all = await fetchAll();
   return all.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-}
-
-// For the "Adoption Applications" nav badge
-// (lib/pending-actions/registry.ts) - matches the Decision section's own
-// allow-list gate (adoption-application-detail-screen.tsx's canDecide):
-// "Under Review" is the one status a decision is actually pending in,
-// and all 3 SuitabilityChecks must be complete before that decision can
-// be made.
-export async function countAwaitingDecision(): Promise<number> {
-  const underReview = (await fetchAll()).filter((a) => a.applicationStatus === "Under Review");
-  const completeFlags = await Promise.all(underReview.map((a) => allChecksComplete(a.applicationId)));
-  return completeFlags.filter(Boolean).length;
 }
 
 export async function getApplication(applicationId: string): Promise<AdoptionApplication | undefined> {
