@@ -116,6 +116,7 @@ function AnimalDetailContent({
   displayName: string;
 }) {
   const [animal, setAnimal] = useState(initialAnimal);
+  const animalId = initialAnimal.animalId;
 
   const [showEditAdoption, setShowEditAdoption] = useState(false);
   const [feeInput, setFeeInput] = useState("");
@@ -139,6 +140,24 @@ function AnimalDetailContent({
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [primaryPhoto, setPrimaryPhoto] = useState<Photo | undefined>(undefined);
 
+  // The profile renders as soon as the animal itself has loaded; the
+  // Pre-Listing re-evaluation runs in the background and only replaces
+  // the animal if it actually moved listingStatus.
+  useEffect(() => {
+    let cancelled = false;
+    evaluatePreListingEligibility(animalId, { email, name: displayName })
+      .then(() => getAnimalById(animalId))
+      .then((result) => {
+        if (cancelled || !result) return;
+        setAnimal((current) => (result.listingStatus !== current.listingStatus ? result : current));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [animalId, email, displayName]);
+
+  // Checks that depend on the animal's own fields (status, listing
+  // fields) - re-run whenever the animal is replaced after an action.
   useEffect(() => {
     let cancelled = false;
     isFitForRelease(animal.animalId).then((result) => {
@@ -150,28 +169,38 @@ function AnimalDetailContent({
     getPreListingBlockers(animal.animalId).then((result) => {
       if (!cancelled) setPreListingBlockers(result);
     });
-    listHealthAssessments(animal.animalId).then((result) => {
+    return () => {
+      cancelled = true;
+    };
+  }, [animal]);
+
+  // Records keyed only by animalId - none of the actions on this screen
+  // that replace the animal (edit listing fields, publish, withdraw,
+  // archive) change them, so they load once per animal.
+  useEffect(() => {
+    let cancelled = false;
+    listHealthAssessments(animalId).then((result) => {
       if (!cancelled) setHealthAssessments(result);
     });
-    getMedicalClearance(animal.animalId).then((result) => {
+    getMedicalClearance(animalId).then((result) => {
       if (!cancelled) setMedicalClearance(result);
     });
-    getDesexingSchedule(animal.animalId).then((result) => {
+    getDesexingSchedule(animalId).then((result) => {
       if (!cancelled) setDesexing(result);
     });
-    listVaccinations(animal.animalId).then((result) => {
+    listVaccinations(animalId).then((result) => {
       if (!cancelled) setVaccinations(result);
     });
-    getLatestPreReleaseCheck(animal.animalId).then((result) => {
+    getLatestPreReleaseCheck(animalId).then((result) => {
       if (!cancelled) setLatestPreReleaseCheck(result);
     });
-    listTemperamentAssessments(animal.animalId).then((result) => {
+    listTemperamentAssessments(animalId).then((result) => {
       if (!cancelled) setLatestBehaviour(result[0]);
     });
-    getActiveBehaviourProgram(animal.animalId).then((result) => {
+    getActiveBehaviourProgram(animalId).then((result) => {
       if (!cancelled) setActiveProgram(result);
     });
-    listApplicationsForAnimal(animal.animalId).then(async (applications) => {
+    listApplicationsForAnimal(animalId).then(async (applications) => {
       if (cancelled) return;
       const proposed = applications.filter((a) => a.applicationStatus !== "Draft");
       setProposedApplications(proposed);
@@ -180,19 +209,19 @@ function AnimalDetailContent({
       );
       if (!cancelled) setChecksByApplication(Object.fromEntries(checksEntries));
     });
-    getLatestFollowUpVisitForAnimal(animal.animalId).then((result) => {
+    getLatestFollowUpVisitForAnimal(animalId).then((result) => {
       if (!cancelled) setFollowUpVisit(result);
     });
-    listPhotosForAnimal(animal.animalId).then((result) => {
+    listPhotosForAnimal(animalId).then((result) => {
       if (!cancelled) setPhotos(result);
     });
-    getPrimaryPhoto(animal.animalId).then((result) => {
+    getPrimaryPhoto(animalId).then((result) => {
       if (!cancelled) setPrimaryPhoto(result);
     });
     return () => {
       cancelled = true;
     };
-  }, [animal]);
+  }, [animalId]);
 
   const handleOpenEditAdoption = () => {
     setFeeInput(animal.adoptionFee?.toString() ?? "");
@@ -742,17 +771,17 @@ function AnimalDetailLoader({
 }) {
   const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
 
+  // Render the profile as soon as the animal loads - AnimalDetailContent
+  // runs the Pre-Listing re-evaluation in the background.
   useEffect(() => {
     let cancelled = false;
-    evaluatePreListingEligibility(animalId, { email, name: displayName })
-      .then(() => getAnimalById(animalId))
-      .then((result) => {
-        if (!cancelled) setAnimal(result ?? null);
-      });
+    getAnimalById(animalId).then((result) => {
+      if (!cancelled) setAnimal(result ?? null);
+    });
     return () => {
       cancelled = true;
     };
-  }, [animalId, email, displayName]);
+  }, [animalId]);
 
   if (animal === undefined) {
     return (
