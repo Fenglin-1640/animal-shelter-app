@@ -1,7 +1,7 @@
 // Falls back to a neutral placeholder graphic (PRD 5.10) when no real
-// Photo (FR-AN-02) image is available yet. When `photoDataUrl` is
-// supplied (a Photo's base64 imageData, or a listing's/card's
-// precomputed equivalent), that real image renders instead - the
+// Photo (FR-AN-02) image is available yet. When `photoSrc` is
+// supplied (a Photo's imageUrl, or a not-yet-saved intake photo's base64
+// data URL), that real image renders instead - the
 // placeholder graphic is only ever a stand-in for "no photo uploaded",
 // not a permanent design choice. Pass `altText` (from the Photo record)
 // so the accessible description is truthful either way.
@@ -15,19 +15,20 @@
 export function PlaceholderThumbnail({
   species,
   altText,
-  photoDataUrl,
+  photoSrc,
   className = "w-full sm:w-40",
 }: {
   species: string;
   altText?: string;
-  photoDataUrl?: string;
+  photoSrc?: string;
   className?: string;
 }) {
-  if (photoDataUrl) {
+  if (photoSrc) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- a base64 data URL, not a static asset next/image can optimise
+      // eslint-disable-next-line @next/next/no-img-element -- an API-served or base64 image, not a static asset next/image can optimise
       <img
-        src={photoDataUrl}
+        src={photoSrc}
+        loading="lazy"
         alt={altText || `Photo of this ${species}`}
         className={`aspect-[4/3] shrink-0 rounded-[12px] border border-border object-cover ${className}`}
       />

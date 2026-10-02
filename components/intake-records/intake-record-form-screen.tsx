@@ -704,7 +704,7 @@ function IntakeRecordFormContent({
                 key={p.id}
                 className="flex flex-wrap items-center gap-3 rounded-[12px] border border-border bg-page px-3 py-2 text-sm"
               >
-                <PlaceholderThumbnail species={species || "animal"} photoDataUrl={p.imageData} className="w-16" />
+                <PlaceholderThumbnail species={species || "animal"} photoSrc={p.imageData} className="w-16" />
                 <div className="flex min-w-[200px] flex-1 flex-col gap-1">
                   <div>
                     <span className="font-semibold text-text">{p.fileName}</span>

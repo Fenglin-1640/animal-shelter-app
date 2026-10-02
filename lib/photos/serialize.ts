@@ -6,12 +6,16 @@ export interface PhotoRow extends Omit<Photo, "useOnAdoptionListing" | "uploaded
   imageData: string | null;
 }
 
+// The base64 image itself is left out of every API response so photo
+// lists stay small; clients load it from imageUrl, which is served
+// separately with HTTP caching.
 export function toPhoto(row: PhotoRow): Photo {
+  const { imageData, ...rest } = row;
   return {
-    ...row,
+    ...rest,
     useOnAdoptionListing: row.useOnAdoptionListing === 1,
     uploadedAt: row.uploadedAt,
-    imageData: row.imageData ?? undefined,
+    imageUrl: imageData ? `/api/photos/${encodeURIComponent(row.id)}/image` : undefined,
   };
 }
 

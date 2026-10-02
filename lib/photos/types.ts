@@ -20,7 +20,11 @@ export interface Photo {
   // The actual uploaded image, as a base64 data URL (downscaled
   // client-side before upload - see lib/photos/upload.ts). No real
   // filesystem storage is used since this app deploys to Vercel, which
-  // has no writable/persistent filesystem. Undefined for rows uploaded
-  // before this field existed, or if a data URL was never provided.
+  // has no writable/persistent filesystem. Only ever sent on upload -
+  // API responses never include it (see imageUrl).
   imageData?: string;
+  // Where to load the image from (GET /api/photos/:id/image), set by the
+  // API whenever the row has image data. Undefined for rows uploaded
+  // without an image.
+  imageUrl?: string;
 }

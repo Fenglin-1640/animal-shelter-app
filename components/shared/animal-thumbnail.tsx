@@ -10,7 +10,7 @@ import { getPrimaryPhoto } from "@/lib/photos/store";
 // (FR-AN-02) itself and renders the real image, falling back to
 // PlaceholderThumbnail's placeholder graphic if none is set yet. When a
 // screen already has the relevant Photo in hand (e.g. the Animal
-// Profile header, or the Photos tab's own list), pass photoDataUrl to
+// Profile header, or the Photos tab's own list), pass photoSrc to
 // PlaceholderThumbnail directly instead of using this wrapper - no need
 // for a second fetch of data the screen already loaded.
 export function AnimalThumbnail({
@@ -22,12 +22,12 @@ export function AnimalThumbnail({
   species: string;
   className?: string;
 }) {
-  const [photo, setPhoto] = useState<{ dataUrl?: string; altText?: string } | undefined>(undefined);
+  const [photo, setPhoto] = useState<{ src?: string; altText?: string } | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
     getPrimaryPhoto(animalId).then((result) => {
-      if (!cancelled) setPhoto({ dataUrl: result?.imageData, altText: result?.altText });
+      if (!cancelled) setPhoto({ src: result?.imageUrl, altText: result?.altText });
     });
     return () => {
       cancelled = true;
@@ -38,7 +38,7 @@ export function AnimalThumbnail({
     <PlaceholderThumbnail
       species={species}
       altText={photo?.altText}
-      photoDataUrl={photo?.dataUrl}
+      photoSrc={photo?.src}
       className={className}
     />
   );

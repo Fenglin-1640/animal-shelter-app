@@ -25,7 +25,7 @@ export async function getPublicListings(): Promise<PublicListing[]> {
         generalDescription: animal.generalDescription,
         acceptingApplications: animal.currentStatus === "Available For Adoption",
         photoAltText: photo?.altText,
-        photoDataUrl: photo?.imageData,
+        photoUrl: photo?.imageUrl,
       };
     }),
   );

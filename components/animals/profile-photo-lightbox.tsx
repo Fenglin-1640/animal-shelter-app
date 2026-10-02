@@ -109,7 +109,7 @@ export function ProfilePhotoLightbox({
         <PlaceholderThumbnail
           species={species}
           altText={primaryPhoto?.altText}
-          photoDataUrl={primaryPhoto?.imageData}
+          photoSrc={primaryPhoto?.imageUrl}
           className="w-full sm:w-48"
         />
       </button>
@@ -139,7 +139,7 @@ export function ProfilePhotoLightbox({
             <PlaceholderThumbnail
               species={species}
               altText={primaryPhoto?.altText}
-              photoDataUrl={primaryPhoto?.imageData}
+              photoSrc={primaryPhoto?.imageUrl}
               className="w-full"
             />
 
@@ -198,7 +198,7 @@ export function ProfilePhotoLightbox({
                             photo.id === primaryPhoto?.id ? "ring-2 ring-primary" : ""
                           }`}
                         >
-                          <PlaceholderThumbnail species={species} photoDataUrl={photo.imageData} className="w-24" />
+                          <PlaceholderThumbnail species={species} photoSrc={photo.imageUrl} className="w-24" />
                         </button>
                       ))}
                     </div>

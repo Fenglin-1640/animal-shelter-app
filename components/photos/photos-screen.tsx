@@ -339,7 +339,7 @@ function PhotosContent({
               <PlaceholderThumbnail
                 species={animal.species}
                 altText={photo.altText}
-                photoDataUrl={photo.imageData}
+                photoSrc={photo.imageUrl}
                 className="w-full select-none"
               />
               <div className="min-w-0">

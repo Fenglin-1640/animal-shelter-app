@@ -6,9 +6,15 @@ import { getJson, send } from "@/lib/shared/http";
 // behind /api/photos - see prisma/README.md for this Prisma toolchain's
 // quirks.
 
-async function fetchAll(): Promise<Photo[]> {
-  const result = await getJson("/api/photos");
+// Photo responses carry metadata plus imageUrl only (never the image
+// itself), so the full list stays small.
+async function fetchAll(animalId?: string): Promise<Photo[]> {
+  const result = await getJson(animalId ? `/api/photos?animalId=${encodeURIComponent(animalId)}` : "/api/photos");
   return result.items as Photo[];
+}
+
+function newestFirst(photos: Photo[]): Photo[] {
+  return photos.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
 }
 
 async function patchPhoto(photoId: string, patch: Partial<Photo>): Promise<Photo | undefined> {
@@ -27,13 +33,14 @@ function generateId(): string {
 }
 
 export async function listPhotosForAnimal(animalId: string): Promise<Photo[]> {
-  return (await fetchAll())
-    .filter((p) => p.animalId === animalId)
-    .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+  return newestFirst(await fetchAll(animalId));
 }
 
+// Reads the shared all-animals list rather than ?animalId=, so a screen
+// rendering many thumbnails at once (Animals, Adoption Listings, card
+// lists) shares one request instead of issuing one per animal.
 export async function getPrimaryPhoto(animalId: string): Promise<Photo | undefined> {
-  return (await listPhotosForAnimal(animalId)).find((p) => p.useOnAdoptionListing);
+  return newestFirst((await fetchAll()).filter((p) => p.animalId === animalId)).find((p) => p.useOnAdoptionListing);
 }
 
 export interface PhotoInput {

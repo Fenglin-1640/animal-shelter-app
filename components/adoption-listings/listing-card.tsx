@@ -36,7 +36,7 @@ export function ListingCard({
       <PlaceholderThumbnail
         species={listing.species}
         altText={listing.photoAltText}
-        photoDataUrl={listing.photoDataUrl}
+        photoSrc={listing.photoUrl}
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">

@@ -4,8 +4,10 @@ import { toPhoto } from "@/lib/photos/serialize";
 import type { Photo } from "@/lib/photos/types";
 import { toTimestamptz } from "@/lib/db/temporal";
 
-export async function GET() {
-  const rows = await db.orm.Photo.where({}).all();
+// ?animalId= narrows the list to one animal's photos.
+export async function GET(request: Request) {
+  const animalId = new URL(request.url).searchParams.get("animalId");
+  const rows = await db.orm.Photo.where(animalId ? { animalId } : {}).all();
   return NextResponse.json({ items: rows.map(toPhoto) });
 }
 
