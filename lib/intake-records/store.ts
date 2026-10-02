@@ -40,8 +40,12 @@ export async function listIntakeRecords(): Promise<IntakeRecord[]> {
   return fetchAll();
 }
 
+// The list (fetchAll) leaves out intake photos' imageData; the single-
+// record endpoint returns it, which the Intake Record form's previews
+// and Finalise Intake's copy into Photo records both need.
 export async function getIntakeRecord(intakeId: string): Promise<IntakeRecord | undefined> {
-  return (await fetchAll()).find((r) => r.intakeId === intakeId);
+  const result = await getJson(`/api/intake-records/${encodeURIComponent(intakeId)}`);
+  return result.ok ? (result.item as IntakeRecord) : undefined;
 }
 
 // Council Transfer submissions already linked to some intake record,

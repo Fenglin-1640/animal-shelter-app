@@ -4,9 +4,16 @@ import { toIntakeRecord } from "@/lib/intake-records/serialize";
 import type { IntakeRecord } from "@/lib/intake-records/types";
 import { toTimestamptz } from "@/lib/db/temporal";
 
+// The list leaves out each intake photo's base64 imageData (the
+// photo metadata stays); GET /api/intake-records/:id returns the full
+// record for the Intake Record form and Finalise Intake.
 export async function GET() {
   const rows = await db.orm.IntakeRecord.where({}).all();
-  return NextResponse.json({ items: rows.map(toIntakeRecord) });
+  const items = rows.map(toIntakeRecord).map((record) => ({
+    ...record,
+    photos: record.photos.map((photo) => ({ ...photo, imageData: undefined })),
+  }));
+  return NextResponse.json({ items });
 }
 
 export async function POST(request: Request) {
