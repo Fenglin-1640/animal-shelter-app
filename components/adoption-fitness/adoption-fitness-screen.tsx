@@ -107,12 +107,14 @@ function AdoptionFitnessContent({
 
   // A completed review is one of the Pre-Listing conditions, so re-check
   // eligibility after each confirmation (the other conditions may
-  // already hold).
+  // already hold), then re-fetch the animal so an automatic move to
+  // Pre-Listing is shown rather than silent.
   const handleConfirmStaff = async () => {
     const result = await confirmAsStaff(animalId, email, displayName);
     if (!result.ok) return;
     setReview(await getFitnessReview(animalId));
     await evaluatePreListingEligibility(animalId, { email, name: displayName });
+    setAnimal((await getAnimalById(animalId)) ?? null);
   };
 
   const handleConfirmVet = async () => {
@@ -120,6 +122,7 @@ function AdoptionFitnessContent({
     if (!result.ok) return;
     setReview(await getFitnessReview(animalId));
     await evaluatePreListingEligibility(animalId, { email, name: displayName });
+    setAnimal((await getAnimalById(animalId)) ?? null);
   };
 
   return (
@@ -289,9 +292,22 @@ function AdoptionFitnessContent({
 
         {complete && (
           <p className="mt-4 text-sm text-text">
-            Adoption fitness has been jointly confirmed. This does not by itself change the
-            animal&apos;s status - Medical Clearance (FR-MED-03) and Publish Adoption Profile
-            (FR-LIST-01) are separate later steps.
+            Adoption fitness has been jointly confirmed. This does not change the animal&apos;s
+            current status by itself, but it is one of the four Pre-Listing conditions, along
+            with Medical Clearance (FR-MED-03), no unresolved Statutory Hold and a Suitable latest
+            Behavioural Assessment. Once all four hold, the animal moves to Pre-Listing
+            automatically. Publish Adoption Profile (FR-LIST-01) remains a separate Staff step.
+          </p>
+        )}
+        {complete && animal.listingStatus === "Pre-Listing" && (
+          <p role="status" className="mt-2 text-sm font-semibold text-text">
+            This animal is now Pre-Listing and ready for Staff to publish.{" "}
+            <Link
+              href={`/animals/${animalId}`}
+              className="text-secondary underline underline-offset-2 hover:no-underline"
+            >
+              Go to {animal.name}&apos;s Profile
+            </Link>
           </p>
         )}
       </section>

@@ -31,10 +31,14 @@ export interface AssessmentTask {
 }
 
 // The joint Shelter Staff Member + Veterinarian confirmation.
-// Review Adoption Fitness itself does not change Animal.currentStatus -
-// no PRD text ties a status transition to this confirmation (Publish
-// Adoption Profile, FR-LIST-01, is what sets Available For Adoption; PRD
-// 12.1's Ruby stays Under Assessment/Pre-Listing even once Vet-cleared).
+// Review Adoption Fitness itself does not change Animal.currentStatus
+// (Publish Adoption Profile, FR-LIST-01, is what sets Available For
+// Adoption; PRD 12.1's Ruby stays Under Assessment/Pre-Listing even once
+// Vet-cleared). It is, however, a required Pre-Listing condition
+// (getPreListingBlockers() in lib/adoption-listings/pre-listing.ts) - a
+// deliberate tightening beyond FR-MED-03's literal three conditions - so
+// completing it can trigger the automatic listingStatus move to
+// Pre-Listing when the other conditions already hold.
 export interface FitnessReview {
   animalId: string;
   staffConfirmedByEmail?: string;
