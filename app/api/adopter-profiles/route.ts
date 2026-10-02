@@ -4,8 +4,10 @@ import { toTimestamptz } from "@/lib/db/temporal";
 import { toAdopterProfile, toAdopterProfileRow } from "@/lib/adopter-profile/serialize";
 import type { AdopterProfile } from "@/lib/adopter-profile/types";
 
-export async function GET() {
-  const rows = await db.orm.AdopterProfile.where({}).all();
+// ?email= narrows the list to that one account's profile.
+export async function GET(request: Request) {
+  const email = new URL(request.url).searchParams.get("email");
+  const rows = await db.orm.AdopterProfile.where(email ? { email } : {}).all();
   return NextResponse.json({ items: rows.map((row) => ({ email: row.email, ...toAdopterProfile(row) })) });
 }
 

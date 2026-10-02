@@ -9,20 +9,16 @@ import { getJson, send } from "@/lib/shared/http";
 // not as a runtime fallback here - any other Adopter with no saved row
 // yet still falls back to EMPTY_ADOPTER_PROFILE below.
 
-async function fetchAll(): Promise<Record<string, AdopterProfile>> {
-  const result = await getJson("/api/adopter-profiles");
-  const items = result.items as (AdopterProfile & { email: string })[];
-  const map: Record<string, AdopterProfile> = {};
-  for (const { email, ...profile } of items) {
-    map[email] = profile;
-  }
-  return map;
-}
-
+// Fetches only the requested account's profile (?email=) rather than
+// every Adopter's.
 export async function getAdopterProfile(email: string): Promise<AdopterProfile> {
   const normalized = email.trim().toLowerCase();
-  const all = await fetchAll();
-  return all[normalized] ?? EMPTY_ADOPTER_PROFILE;
+  const result = await getJson(`/api/adopter-profiles?email=${encodeURIComponent(normalized)}`);
+  const items = result.items as (AdopterProfile & { email: string })[];
+  for (const { email: profileEmail, ...profile } of items) {
+    if (profileEmail === normalized) return profile;
+  }
+  return EMPTY_ADOPTER_PROFILE;
 }
 
 export async function saveAdopterProfile(email: string, profile: AdopterProfile): Promise<void> {
