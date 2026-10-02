@@ -8,6 +8,7 @@ import {
   type TaskType,
 } from "@/lib/adoption-fitness/types";
 import type { Role } from "@/lib/roles/roles";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-INT-04: AssessmentTask and the joint FitnessReview confirmation
 // now live in the database (see prisma/contract.prisma) behind
@@ -15,14 +16,12 @@ import type { Role } from "@/lib/roles/roles";
 // prisma/README.md for this Prisma toolchain's quirks.
 
 async function fetchAllTasks(): Promise<AssessmentTask[]> {
-  const response = await fetch("/api/assessment-tasks");
-  const result = await response.json();
+  const result = await getJson("/api/assessment-tasks");
   return result.items as AssessmentTask[];
 }
 
 async function fetchAllReviews(): Promise<FitnessReview[]> {
-  const response = await fetch("/api/fitness-reviews");
-  const result = await response.json();
+  const result = await getJson("/api/fitness-reviews");
   return result.items as FitnessReview[];
 }
 
@@ -42,7 +41,7 @@ export async function createTasksForAnimal(animalId: string): Promise<void> {
       taskType,
       status: "Pending",
     };
-    await fetch("/api/assessment-tasks", {
+    await send("/api/assessment-tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(task),
@@ -65,7 +64,7 @@ export async function markTaskContinuable(
   email: string,
   name: string,
 ): Promise<MutationResult> {
-  const response = await fetch(`/api/assessment-tasks/${taskId}`, {
+  const response = await send(`/api/assessment-tasks/${taskId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -100,7 +99,7 @@ export async function getFitnessReview(animalId: string): Promise<FitnessReview 
 }
 
 async function upsertReview(review: FitnessReview): Promise<void> {
-  await fetch("/api/fitness-reviews", {
+  await send("/api/fitness-reviews", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(review),

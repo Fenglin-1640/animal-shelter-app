@@ -3,6 +3,7 @@ import { getApplication } from "@/lib/applications/store";
 import { getMeetAndGreetForApplication } from "@/lib/meet-and-greets/store";
 import { getSystemSettings } from "@/lib/system-administration/settings-store";
 import type { AdoptionAgreement } from "@/lib/agreements/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-AGR-01: AdoptionAgreement now lives in the database (see
 // prisma/contract.prisma) behind /api/agreements - see
@@ -13,8 +14,7 @@ const STANDARD_CONDITIONS =
 const STANDARD_RETURN_POLICY = "14 days";
 
 async function fetchAll(): Promise<AdoptionAgreement[]> {
-  const response = await fetch("/api/agreements");
-  const result = await response.json();
+  const result = await getJson("/api/agreements");
   return result.items as AdoptionAgreement[];
 }
 
@@ -110,7 +110,7 @@ export async function generateAgreement(applicationId: string, email: string, na
     createdAt: now,
     updatedAt: now,
   };
-  await fetch("/api/agreements", {
+  await send("/api/agreements", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(agreement),
@@ -139,7 +139,7 @@ export async function signAgreement(agreementId: string, email: string, name: st
   if (agreement.isSigned) return { ok: false, reason: "already_signed" };
 
   const now = new Date().toISOString();
-  const response = await fetch(`/api/agreements/${agreementId}`, {
+  const response = await send(`/api/agreements/${agreementId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ isSigned: true, signedDate: now, updatedAt: now }),

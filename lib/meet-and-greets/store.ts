@@ -1,18 +1,18 @@
 import { closeApplicationIncompatible, getApplication } from "@/lib/applications/store";
 import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-MG-01: MeetAndGreet now lives in the database (see
 // prisma/contract.prisma) behind /api/meet-and-greets - see
 // prisma/README.md for this Prisma toolchain's quirks.
 
 async function fetchAll(): Promise<MeetAndGreet[]> {
-  const response = await fetch("/api/meet-and-greets");
-  const result = await response.json();
+  const result = await getJson("/api/meet-and-greets");
   return result.items as MeetAndGreet[];
 }
 
 async function patchMeetAndGreet(meetAndGreetId: string, patch: Partial<MeetAndGreet>): Promise<MutationResult> {
-  const response = await fetch(`/api/meet-and-greets/${meetAndGreetId}`, {
+  const response = await send(`/api/meet-and-greets/${meetAndGreetId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -95,7 +95,7 @@ export async function proposeSlots(
     createdAt: now,
     updatedAt: now,
   };
-  await fetch("/api/meet-and-greets", {
+  await send("/api/meet-and-greets", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(meetAndGreet),

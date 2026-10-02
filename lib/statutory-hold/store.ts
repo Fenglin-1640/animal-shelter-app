@@ -4,6 +4,7 @@ import { linkRegisteredOwnerContact } from "@/lib/intake-records/store";
 import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 import { getSystemSettings } from "@/lib/system-administration/settings-store";
 import type { StatutoryHold } from "@/lib/statutory-hold/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-MC-02: StatutoryHold now lives in the database (see
 // prisma/contract.prisma) behind /api/statutory-holds - see
@@ -12,13 +13,12 @@ import type { StatutoryHold } from "@/lib/statutory-hold/types";
 // has a hold does not create a second one).
 
 async function fetchAllHolds(): Promise<StatutoryHold[]> {
-  const response = await fetch("/api/statutory-holds");
-  const result = await response.json();
+  const result = await getJson("/api/statutory-holds");
   return result.items as StatutoryHold[];
 }
 
 async function patchHold(id: string, patch: Partial<StatutoryHold>): Promise<void> {
-  await fetch(`/api/statutory-holds/${id}`, {
+  await send(`/api/statutory-holds/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -109,7 +109,7 @@ export async function createHoldForOwnerMatch(
     status: "Active",
     createdAt: now,
   };
-  const response = await fetch("/api/statutory-holds", {
+  const response = await send("/api/statutory-holds", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(hold),

@@ -1,5 +1,6 @@
 import type { Animal } from "@/lib/animals/types";
 import { writeAuditLog } from "@/lib/audit/store";
+import { getJson, send } from "@/lib/shared/http";
 
 // Animals now live in the database (see prisma/contract.prisma) behind
 // /api/animals - see prisma/README.md for what's different about this
@@ -17,7 +18,7 @@ export interface StatusActor {
 }
 
 export async function addAnimal(animal: Animal, actor?: StatusActor): Promise<void> {
-  await fetch("/api/animals", {
+  await send("/api/animals", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(animal),
@@ -40,7 +41,7 @@ export async function addAnimal(animal: Animal, actor?: StatusActor): Promise<vo
 }
 
 export async function updateAnimal(animalId: string, patch: Partial<Animal>): Promise<void> {
-  await fetch(`/api/animals/${animalId}`, {
+  await send(`/api/animals/${animalId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -68,7 +69,7 @@ export async function changeAnimalStatus(
   actor: StatusActor,
   action: string,
 ): Promise<ChangeStatusResult> {
-  const response = await fetch(`/api/animals/${animalId}/status`, {
+  const response = await send(`/api/animals/${animalId}/status`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -93,15 +94,14 @@ export async function changeAnimalStatus(
 }
 
 export async function getAllAnimals(): Promise<Animal[]> {
-  const response = await fetch("/api/animals");
-  const result = await response.json();
+  const result = await getJson("/api/animals");
   return result.animals as Animal[];
 }
 
 export async function getAnimalById(animalId: string): Promise<Animal | undefined> {
-  const response = await fetch(`/api/animals/${animalId}`);
-  if (!response.ok) return undefined;
-  const result = await response.json();
+  // A missing animal comes back as { ok: false } (404), as does any
+  // non-JSON error response - both map to undefined, as before.
+  const result = await getJson(`/api/animals/${animalId}`);
   return result.ok ? (result.animal as Animal) : undefined;
 }
 

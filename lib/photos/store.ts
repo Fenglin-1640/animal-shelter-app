@@ -1,18 +1,18 @@
 import type { AnimalPhoto } from "@/lib/animals/types";
 import type { Photo } from "@/lib/photos/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-AN-02: Photo now lives in the database (see prisma/contract.prisma)
 // behind /api/photos - see prisma/README.md for this Prisma toolchain's
 // quirks.
 
 async function fetchAll(): Promise<Photo[]> {
-  const response = await fetch("/api/photos");
-  const result = await response.json();
+  const result = await getJson("/api/photos");
   return result.items as Photo[];
 }
 
 async function patchPhoto(photoId: string, patch: Partial<Photo>): Promise<Photo | undefined> {
-  const response = await fetch(`/api/photos/${photoId}`, {
+  const response = await send(`/api/photos/${photoId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -61,7 +61,7 @@ export async function addPhoto(
     altText: input.altText?.trim() ?? "",
     uploadedAt,
   };
-  await fetch("/api/photos", {
+  await send("/api/photos", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(photo),
@@ -108,7 +108,7 @@ export async function removePhoto(photoId: string): Promise<MutationResult> {
   if (photo.useOnAdoptionListing) {
     return { ok: false, reason: "is_primary" };
   }
-  const deleteResponse = await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
+  const deleteResponse = await send(`/api/photos/${photoId}`, { method: "DELETE" });
   const result = await deleteResponse.json();
   if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
   return { ok: true };

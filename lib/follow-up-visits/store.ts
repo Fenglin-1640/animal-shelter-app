@@ -5,14 +5,14 @@ import { writeAuditLog } from "@/lib/audit/store";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { isFitForRelease } from "@/lib/medical/store";
 import type { FollowUpType, FollowUpVisit, WelfareOutcome } from "@/lib/follow-up-visits/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-REL-02: FollowUpVisit now lives in the database (see
 // prisma/contract.prisma) behind /api/follow-up-visits - see
 // prisma/README.md for this Prisma toolchain's quirks.
 
 async function fetchAll(): Promise<FollowUpVisit[]> {
-  const response = await fetch("/api/follow-up-visits");
-  const result = await response.json();
+  const result = await getJson("/api/follow-up-visits");
   return result.items as FollowUpVisit[];
 }
 
@@ -133,7 +133,7 @@ export async function releaseAnimal(
     outcomeNotes: "",
     createdAt: now,
   };
-  await fetch("/api/follow-up-visits", {
+  await send("/api/follow-up-visits", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(visit),
@@ -177,7 +177,7 @@ export async function completeFollowUpVisit(
   if (visit.status !== "Scheduled") return { ok: false, reason: "already_completed" };
 
   const now = new Date().toISOString();
-  const response = await fetch(`/api/follow-up-visits/${followUpVisitId}`, {
+  const response = await send(`/api/follow-up-visits/${followUpVisitId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

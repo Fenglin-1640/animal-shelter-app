@@ -4,19 +4,19 @@ import type {
   BehaviourProgram,
   TemperamentAssessment,
 } from "@/lib/behaviour/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-BEH-01/02: TemperamentAssessment and BehaviourProgram now live in
 // the database (see prisma/contract.prisma) behind /api/behaviour/** -
 // see prisma/README.md for this Prisma toolchain's quirks.
 
 async function fetchAll<T>(url: string): Promise<T[]> {
-  const response = await fetch(url);
-  const result = await response.json();
+  const result = await getJson(url);
   return result.items as T[];
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const response = await fetch(url, {
+  const response = await send(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -167,7 +167,7 @@ async function resolveProgram(
   status: BehaviourProgram["status"],
   resolvedAt: string,
 ) {
-  await fetch(`/api/behaviour/programs/${programId}`, {
+  await send(`/api/behaviour/programs/${programId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status, resolvedAt }),

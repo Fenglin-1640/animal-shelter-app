@@ -2,19 +2,19 @@ import type {
   CouncilTransferSubmission,
   TransferFormInput,
 } from "@/lib/council-transfers/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-INT-01: CouncilTransferSubmission now lives in the database (see
 // prisma/contract.prisma) behind /api/council-transfers - see
 // prisma/README.md for this Prisma toolchain's quirks.
 
 async function fetchAll(): Promise<CouncilTransferSubmission[]> {
-  const response = await fetch("/api/council-transfers");
-  const result = await response.json();
+  const result = await getJson("/api/council-transfers");
   return result.items as CouncilTransferSubmission[];
 }
 
 async function patchTransfer(id: string, patch: Partial<CouncilTransferSubmission>): Promise<MutationResult> {
-  const response = await fetch(`/api/council-transfers/${id}`, {
+  const response = await send(`/api/council-transfers/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -63,7 +63,7 @@ export async function createDraft(
     createdAt: now,
     updatedAt: now,
   };
-  await fetch("/api/council-transfers", {
+  await send("/api/council-transfers", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(record),

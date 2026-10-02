@@ -1,5 +1,6 @@
 import { writeAuditLog } from "@/lib/audit/store";
 import { DEFAULT_SYSTEM_SETTINGS, type SystemSettings } from "@/lib/system-administration/settings-types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-SA-02: the single shelter-wide configuration record now lives in
 // the database (see prisma/contract.prisma) behind /api/system-settings
@@ -8,8 +9,7 @@ import { DEFAULT_SYSTEM_SETTINGS, type SystemSettings } from "@/lib/system-admin
 // configuration is one singleton record covering the whole shelter.
 
 export async function getSystemSettings(): Promise<SystemSettings> {
-  const response = await fetch("/api/system-settings");
-  const result = await response.json();
+  const result = await getJson("/api/system-settings");
   return (result.item as SystemSettings | null) ?? DEFAULT_SYSTEM_SETTINGS;
 }
 
@@ -20,7 +20,7 @@ function formatSettings(settings: SystemSettings): string {
 // PRD: "所有配置变化写入 AuditLog."
 export async function updateSystemSettings(next: SystemSettings, email: string, name: string): Promise<void> {
   const previous = await getSystemSettings();
-  await fetch("/api/system-settings", {
+  await send("/api/system-settings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(next),

@@ -3,6 +3,7 @@ import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import { createHoldForOwnerMatch } from "@/lib/statutory-hold/store";
 import { queryNationalPetRegistry } from "@/lib/microchip/mock-registry";
 import type { MicrochipLookup } from "@/lib/microchip/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-MC-01: MicrochipLookup now lives in the database (see
 // prisma/contract.prisma) behind /api/microchip-lookups - see
@@ -11,8 +12,7 @@ import type { MicrochipLookup } from "@/lib/microchip/types";
 // ever appends.
 
 async function fetchAll(): Promise<MicrochipLookup[]> {
-  const response = await fetch("/api/microchip-lookups");
-  const result = await response.json();
+  const result = await getJson("/api/microchip-lookups");
   return result.items as MicrochipLookup[];
 }
 
@@ -55,7 +55,7 @@ export async function performScan(
     performedByName: name,
     performedAt: new Date().toISOString(),
   };
-  await fetch("/api/microchip-lookups", {
+  await send("/api/microchip-lookups", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(lookup),

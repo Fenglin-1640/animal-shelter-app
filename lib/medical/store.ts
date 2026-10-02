@@ -11,6 +11,7 @@ import type {
   TreatmentEvent,
   VaccinationRecord,
 } from "@/lib/medical/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-MED-01/02/03/FR-REL-01: these 6 event kinds now live in the
 // database (see prisma/contract.prisma) behind /api/medical/** - see
@@ -20,13 +21,12 @@ import type {
 // converted in the previous pilot slice) keep the same signature.
 
 async function fetchAll<T>(url: string): Promise<T[]> {
-  const response = await fetch(url);
-  const result = await response.json();
+  const result = await getJson(url);
   return result.items as T[];
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const response = await fetch(url, {
+  const response = await send(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -293,7 +293,7 @@ export async function updateDesexingScheduledDate(
   if (!schedule) return { ok: false, reason: "not_found" };
   if (schedule.status === "Completed") return { ok: false, reason: "already_completed" };
 
-  const response = await fetch(`/api/medical/desexing-schedules/${schedule.id}`, {
+  const response = await send(`/api/medical/desexing-schedules/${schedule.id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ scheduledDate }),
@@ -308,7 +308,7 @@ export async function completeDesexing(animalId: string, email: string, name: st
   if (!schedule) return { ok: false, reason: "not_found" };
   if (schedule.status === "Completed") return { ok: false, reason: "already_completed" };
 
-  const response = await fetch(`/api/medical/desexing-schedules/${schedule.id}`, {
+  const response = await send(`/api/medical/desexing-schedules/${schedule.id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

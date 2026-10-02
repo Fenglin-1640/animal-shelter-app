@@ -3,6 +3,7 @@ import { writeAuditLog } from "@/lib/audit/store";
 import { getAgreement } from "@/lib/agreements/store";
 import { getApplication } from "@/lib/applications/store";
 import type { AdoptionPayment, PaymentStatus } from "@/lib/payments/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-PAY-01: AdoptionPayment now lives in the database (see
 // prisma/contract.prisma) behind /api/payments - see prisma/README.md
@@ -14,8 +15,7 @@ import type { AdoptionPayment, PaymentStatus } from "@/lib/payments/types";
 // action.
 
 async function fetchAll(): Promise<AdoptionPayment[]> {
-  const response = await fetch("/api/payments");
-  const result = await response.json();
+  const result = await getJson("/api/payments");
   return result.items as AdoptionPayment[];
 }
 
@@ -94,7 +94,7 @@ export async function initiatePayment(
     createdAt: now,
     updatedAt: now,
   };
-  await fetch("/api/payments", {
+  await send("/api/payments", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payment),
@@ -128,7 +128,7 @@ export async function verifyPayment(
   if (outcome === "Failed" && !failureReason?.trim()) return { ok: false, reason: "reason_required" };
 
   const now = new Date().toISOString();
-  const response = await fetch(`/api/payments/${paymentId}`, {
+  const response = await send(`/api/payments/${paymentId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

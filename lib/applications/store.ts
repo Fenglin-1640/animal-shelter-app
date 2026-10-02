@@ -4,19 +4,19 @@ import { getAdopterProfileSubmissionBlockers } from "@/lib/adopter-profile/types
 import { writeAuditLog } from "@/lib/audit/store";
 import { allChecksComplete } from "@/lib/checks/store";
 import type { AdoptionApplication, ApplicationDocument } from "@/lib/applications/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-APP-01: AdoptionApplication now lives in the database (see
 // prisma/contract.prisma) behind /api/applications - see
 // prisma/README.md for this Prisma toolchain's quirks.
 
 async function fetchAll(): Promise<AdoptionApplication[]> {
-  const response = await fetch("/api/applications");
-  const result = await response.json();
+  const result = await getJson("/api/applications");
   return result.items as AdoptionApplication[];
 }
 
 async function patchApplication(applicationId: string, patch: Partial<AdoptionApplication>): Promise<void> {
-  await fetch(`/api/applications/${applicationId}`, {
+  await send(`/api/applications/${applicationId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -106,7 +106,7 @@ export async function startOrContinueDraft(
     createdAt: now,
     updatedAt: now,
   };
-  await fetch("/api/applications", {
+  await send("/api/applications", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(application),

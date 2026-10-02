@@ -1,12 +1,12 @@
 import { CHECK_TYPES, type CheckOutcome, type SuitabilityCheck } from "@/lib/checks/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-CHK-01: SuitabilityCheck now lives in the database (see
 // prisma/contract.prisma) behind /api/checks - see prisma/README.md for
 // this Prisma toolchain's quirks.
 
 async function fetchAll(): Promise<SuitabilityCheck[]> {
-  const response = await fetch("/api/checks");
-  const result = await response.json();
+  const result = await getJson("/api/checks");
   return result.items as SuitabilityCheck[];
 }
 
@@ -28,7 +28,7 @@ export async function createChecksForApplication(applicationId: string): Promise
       outcome: "Pending",
       checkNotes: "",
     };
-    await fetch("/api/checks", {
+    await send("/api/checks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(check),
@@ -69,7 +69,7 @@ export async function completeCheck(
   if (!check) return { ok: false, reason: "not_found" };
   if (check.outcome !== "Pending") return { ok: false, reason: "already_completed" };
 
-  const response = await fetch(`/api/checks/${checkId}`, {
+  const response = await send(`/api/checks/${checkId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

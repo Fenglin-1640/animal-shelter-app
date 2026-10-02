@@ -1,5 +1,6 @@
 import type { Species } from "@/lib/animals/types";
 import type { DropdownCategory, DropdownOption } from "@/lib/system-administration/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-SA-01: Administrator-maintained dropdown options now live in the
 // database (see prisma/contract.prisma) behind /api/dropdown-options -
@@ -11,13 +12,12 @@ import type { DropdownCategory, DropdownOption } from "@/lib/system-administrati
 // keep displaying their original value.
 
 async function fetchAll(): Promise<DropdownOption[]> {
-  const response = await fetch("/api/dropdown-options");
-  const result = await response.json();
+  const result = await getJson("/api/dropdown-options");
   return result.items as DropdownOption[];
 }
 
 async function patchOption(id: string, patch: Partial<DropdownOption>): Promise<DropdownOption | undefined> {
-  const response = await fetch(`/api/dropdown-options/${id}`, {
+  const response = await send(`/api/dropdown-options/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -99,7 +99,7 @@ export async function createOption(input: CreateOptionInput): Promise<MutationRe
     createdAt: now,
     updatedAt: now,
   };
-  await fetch("/api/dropdown-options", {
+  await send("/api/dropdown-options", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(option),

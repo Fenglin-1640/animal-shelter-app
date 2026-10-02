@@ -1,11 +1,11 @@
 // Per-account "mark as read" state for the Notification list.
 import type { NotificationReadOverride } from "@/lib/notifications/serialize";
+import { getJson, send } from "@/lib/shared/http";
 
 export async function loadReadOverrides(
   normalizedEmail: string,
 ): Promise<Record<string, boolean>> {
-  const response = await fetch("/api/notification-read-overrides");
-  const { items } = (await response.json()) as { items: NotificationReadOverride[] };
+  const { items } = await getJson<{ items: NotificationReadOverride[] }>("/api/notification-read-overrides");
   const overrides: Record<string, boolean> = {};
   for (const item of items) {
     if (item.email === normalizedEmail) {
@@ -20,7 +20,7 @@ export async function setReadOverride(
   notificationId: string,
   isRead: boolean,
 ) {
-  await fetch("/api/notification-read-overrides", {
+  await send("/api/notification-read-overrides", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: normalizedEmail, notificationId, isRead }),

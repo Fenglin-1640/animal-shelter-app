@@ -1,6 +1,7 @@
 import { writeAuditLog } from "@/lib/audit/store";
 import type { Role } from "@/lib/roles/roles";
 import type { DirectoryUser } from "@/lib/user-administration/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // User Administration (FR-UA-01/02) against the database-backed
 // /api/users routes - see prisma/contract.prisma. AuditLog is also
@@ -8,8 +9,7 @@ import type { DirectoryUser } from "@/lib/user-administration/types";
 // after a successful API call, same as before.
 
 export async function listDirectoryUsers(): Promise<DirectoryUser[]> {
-  const response = await fetch("/api/users");
-  const result = await response.json();
+  const result = await getJson("/api/users");
   return result.users as DirectoryUser[];
 }
 
@@ -32,7 +32,7 @@ export type CreateUserResult =
 // describes becoming Administrator via transferring from an existing
 // Active user (updateUserRoleStatus below), never by direct creation.
 export async function createDirectoryUser(input: CreateUserInput): Promise<CreateUserResult> {
-  const response = await fetch("/api/users", {
+  const response = await send("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -60,7 +60,7 @@ export interface UpdateRoleStatusInput {
 // read and so live server-side. This wrapper's job is just the request
 // and recording the resulting AuditLog entries.
 export async function updateUserRoleStatus(input: UpdateRoleStatusInput): Promise<UpdateRoleStatusResult> {
-  const response = await fetch(`/api/users/${input.targetUserId}/role-status`, {
+  const response = await send(`/api/users/${input.targetUserId}/role-status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

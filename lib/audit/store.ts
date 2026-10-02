@@ -1,4 +1,5 @@
 import type { AuditEntityType, AuditLogEntry } from "@/lib/audit/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-AUD-01: immutable AuditLog now lives in the database (see
 // prisma/contract.prisma) behind /api/audit-log - see prisma/README.md
@@ -18,7 +19,7 @@ export async function writeAuditLog(entry: Omit<AuditLogEntry, "auditId" | "time
     auditId: generateAuditId(),
     timestamp: new Date().toISOString(),
   };
-  await fetch("/api/audit-log", {
+  await send("/api/audit-log", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(full),
@@ -26,8 +27,7 @@ export async function writeAuditLog(entry: Omit<AuditLogEntry, "auditId" | "time
 }
 
 export async function listAuditLog(): Promise<AuditLogEntry[]> {
-  const response = await fetch("/api/audit-log");
-  const result = await response.json();
+  const result = await getJson("/api/audit-log");
   const items = result.items as AuditLogEntry[];
   return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }

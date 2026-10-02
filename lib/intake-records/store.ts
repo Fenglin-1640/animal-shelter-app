@@ -10,14 +10,14 @@ import {
   type IntakeRecord,
   type IntakeRecordFormInput,
 } from "@/lib/intake-records/types";
+import { getJson, send } from "@/lib/shared/http";
 
 // FR-INT-02: IntakeRecord now lives in the database (see
 // prisma/contract.prisma) behind /api/intake-records - see
 // prisma/README.md for this Prisma toolchain's quirks.
 
 async function fetchAll(): Promise<IntakeRecord[]> {
-  const response = await fetch("/api/intake-records");
-  const result = await response.json();
+  const result = await getJson("/api/intake-records");
   return result.items as IntakeRecord[];
 }
 
@@ -26,7 +26,7 @@ async function fetchAll(): Promise<IntakeRecord[]> {
 type IntakeRecordPatch = Omit<Partial<IntakeRecord>, "adoptionFee"> & { adoptionFee?: number | null };
 
 async function patchIntakeRecord(intakeId: string, patch: IntakeRecordPatch): Promise<IntakeRecord | undefined> {
-  const response = await fetch(`/api/intake-records/${intakeId}`, {
+  const response = await send(`/api/intake-records/${intakeId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -89,7 +89,7 @@ export async function createIntakeRecord(
     createdAt: now,
     updatedAt: now,
   };
-  await fetch("/api/intake-records", {
+  await send("/api/intake-records", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(record),
