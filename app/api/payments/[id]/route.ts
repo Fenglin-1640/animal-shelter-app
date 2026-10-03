@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toAdoptionPayment, toPaymentRowPatch } from "@/lib/payments/serialize";
 import type { AdoptionPayment } from "@/lib/payments/types";
+import { requireRole } from "@/lib/auth/server-session";
+import { STAFF } from "@/lib/auth/api-roles";
 
 // Generic patch - mirrors AdoptionAgreement's PATCH route. The only
 // call site today (verifyPayment) just patches
@@ -12,6 +14,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as Partial<AdoptionPayment>;
 

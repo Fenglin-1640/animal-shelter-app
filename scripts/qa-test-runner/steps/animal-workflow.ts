@@ -45,7 +45,8 @@ import type { AdoptionRow, AssessmentRow, IntakeRow, ReleaseRow } from "../lib/s
 import { getAdopter, getCase, getId, setAnimalId, setId } from "../lib/runlog";
 import { step, pass, fail, blockedExpected, type StepOutcome } from "../lib/step";
 import { generatePlaceholderPhoto } from "../lib/placeholder-image";
-import { COUNCIL, STAFF, VET } from "../lib/actors";
+import { ADMIN, COUNCIL, QA_ADOPTER_PASSWORD, STAFF, VET } from "../lib/actors";
+import { actAs } from "../lib/fetch-shim";
 
 export interface TestCaseBundle {
   intake: IntakeRow;
@@ -81,6 +82,7 @@ export async function runAnimalWorkflow(
 
   // 1. Council Officer submits the transfer.
   await step(entry, "council_transfer_submit", "Transfer status is Submitted.", async () => {
+    await actAs(COUNCIL.email);
     let transferId = getId(entry, "transferId");
     if (!transferId) {
       const transferPhoto = await generatePlaceholderPhoto(
@@ -117,6 +119,7 @@ export async function runAnimalWorkflow(
     "intake_finalise",
     `${intake.expectedCurrentStatus} / ${intake.expectedListingStatus}`,
     async () => {
+      await actAs(STAFF.email);
       if (entry.animalId) return pass(`already have AnimalId ${entry.animalId}`);
 
       const transferId = getId(entry, "transferId");
@@ -183,13 +186,15 @@ export async function runAnimalWorkflow(
   }
   const animalId = entry.animalId;
 
-  // 3. Veterinarian scans the microchip - all 60 sheet rows use a
+  // 3. Staff scans the microchip (a Staff/Administrator action - PRD 9
+  // gives the Veterinarian read-only microchip access) - all 60 sheet rows use a
   // synthetic number that isn't the hardcoded Owner Match test number,
   // so every one of these is expected to resolve No Match by design
   // (see mock-registry.ts) - Owner Match is exercised only by the
   // separate negative-path run.
   await step(entry, "microchip_scan", assessment.expectedResult, async () => {
-    const result = await performScan(animalId, assessment.microchipNumber, VET.email, VET.name);
+    await actAs(STAFF.email);
+    const result = await performScan(animalId, assessment.microchipNumber, STAFF.email, STAFF.name);
     if (!ok(result)) return fail("performScan returned not_found");
     const actualResult = (result as { lookup: { result: string } }).lookup.result;
     return actualResult === assessment.expectedResult
@@ -199,6 +204,7 @@ export async function runAnimalWorkflow(
 
   // 4. Veterinarian records the Health Assessment (+ recheck if flagged).
   await step(entry, "health_assessment", assessment.finalHealthTask, async () => {
+    await actAs(VET.email);
     const result = await recordHealthAssessment(
       animalId,
       {
@@ -220,6 +226,7 @@ export async function runAnimalWorkflow(
 
   if (assessment.healthRecheckRequired) {
     await step(entry, "health_recheck", "Recheck findings recorded, task remains/becomes Continuable.", async () => {
+      await actAs(VET.email);
       const result = await recordHealthAssessment(
         animalId,
         {
@@ -248,6 +255,7 @@ export async function runAnimalWorkflow(
 
   // 5. Staff records the Temperament Assessment.
   await step(entry, "temperament_assessment", assessment.expectedStopOrNextStep, async () => {
+    await actAs(STAFF.email);
     const result = await recordTemperamentAssessment(
       animalId,
       {
@@ -280,6 +288,7 @@ export async function runAnimalWorkflow(
       ? "Blocked - cannot complete (expected)."
       : "Both confirmations recorded; review becomes read-only/complete.",
     async () => {
+      await actAs(STAFF.email);
       const animal = await getAnimalById(animalId);
       const tasks = await listTasksForAnimal(animalId);
       const blockers = animal ? getFitnessBlockers(animal, tasks) : ["animal not found"];
@@ -290,6 +299,7 @@ export async function runAnimalWorkflow(
           : fail(`Blocked: ${blockers.join("; ")}`);
       }
       const staffResult = await confirmAsStaff(animalId, STAFF.email, STAFF.name);
+      await actAs(VET.email);
       const vetResult = await confirmAsVet(animalId, VET.email, VET.name);
       if (!ok(staffResult) || !ok(vetResult)) return fail("staff/vet confirmation rejected after blockers were empty");
       const review = await getFitnessReview(animalId);
@@ -310,6 +320,7 @@ export async function runAnimalWorkflow(
 
   // 7. Veterinarian records vaccination.
   await step(entry, "vaccination", "listingStatus = Pre-Listing (after clearance).", async () => {
+    await actAs(VET.email);
     const result = await recordVaccination(
       animalId,
       {
@@ -328,6 +339,7 @@ export async function runAnimalWorkflow(
   // 8. Desexing - mammals get Schedule+Complete, birds/reptiles get the
   // new species Exemption path (see lib/medical/types.ts DesexingStatus).
   await step(entry, "desexing", adoption.desexingStatus, async () => {
+    await actAs(VET.email);
     const isExempt = intake.species === "Bird" || intake.species === "Reptile";
     if (isExempt) {
       const result = await recordDesexingExemption(animalId, "Exempt (Species)", VET.email, VET.name);
@@ -348,6 +360,7 @@ export async function runAnimalWorkflow(
 
   // 9. Medical Clearance.
   const clearanceOutcome = await step(entry, "medical_clearance", adoption.clearanceExpected, async () => {
+    await actAs(VET.email);
     const blockers = await getMedicalClearanceBlockers(animalId);
     if (blockers.length > 0) return fail(`Blocked: ${blockers.join("; ")}`);
     const result = await issueMedicalClearance(animalId, VET.email, VET.name);
@@ -365,6 +378,7 @@ export async function runAnimalWorkflow(
   // 10. Staff publishes. Breed/Adoption Fee/Temperaments/General
   // Description were already captured at Intake (step 2).
   await step(entry, "publish", `${adoption.currentStatusAfterPublish} / ${adoption.listingStatusAfterPublish}`, async () => {
+    await actAs(STAFF.email);
     const blockers = await getPublishBlockers(animalId);
     if (blockers.length > 0) return fail(`Blocked: ${blockers.join("; ")}`);
     const result = await publishAdoptionProfile(animalId, STAFF.email, STAFF.name);
@@ -391,6 +405,7 @@ export async function runAnimalWorkflow(
   const adopterEmail = adopterEntry.email;
 
   await step(entry, "application_submit", "Application is submitted.", async () => {
+    await actAs(adopterEmail, QA_ADOPTER_PASSWORD);
     let applicationId = getId(entry, "applicationId");
     if (!applicationId) {
       const draftResult = await startOrContinueDraft(animalId, adopterEmail, adopterEntry.fullName);
@@ -421,6 +436,7 @@ export async function runAnimalWorkflow(
   // sheet's "all pass" intent onto all 3 real check types rather than
   // trying to align individual labels 1:1), then approves.
   await step(entry, "application_approve", adoption.currentStatusAfterApproval, async () => {
+    await actAs(STAFF.email);
     await markUnderReview(applicationId);
     const checks = await listChecksForApplication(applicationId);
     for (const check of checks) {
@@ -440,6 +456,7 @@ export async function runAnimalWorkflow(
   // outcome from the sheet (Compatible for all 60 standard rows -
   // Incompatible is exercised only by the isolated negative-path run).
   await step(entry, "meet_and_greet", "Meet and Greet prerequisite is complete.", async () => {
+    await actAs(STAFF.email);
     let mgId = getId(entry, "meetAndGreetId");
     if (!mgId) {
       const proposeResult = await proposeSlots(
@@ -461,6 +478,7 @@ export async function runAnimalWorkflow(
     const mg = await getMeetAndGreetForApplication(applicationId);
     if (!mg) return fail("meet-and-greet disappeared");
 
+    await actAs(adopterEmail, QA_ADOPTER_PASSWORD);
     if (mg.status === "Proposed") {
       const slotId = mg.slotOptions[0]?.id;
       if (!slotId) return fail("no slot options to select");
@@ -472,6 +490,7 @@ export async function runAnimalWorkflow(
       const confirmResult = await confirmAttendance(mgId);
       if (!ok(confirmResult)) return fail(`confirmAttendance failed: ${(confirmResult as { reason: string }).reason}`);
     }
+    await actAs(STAFF.email);
     const afterConfirm = await getMeetAndGreetForApplication(applicationId);
     if (afterConfirm?.status === "Scheduled") {
       const outcomeResult = await recordOutcome(mgId, "Compatible", "", "Recorded per QA test data.", STAFF.email, STAFF.name);
@@ -483,6 +502,7 @@ export async function runAnimalWorkflow(
 
   // 14. Staff + Adopter: generate and sign the Agreement.
   await step(entry, "agreement", "Agreement status = Signed.", async () => {
+    await actAs(STAFF.email);
     let agreement = await getActiveAgreementForApplication(applicationId);
     if (!agreement) {
       const genResult = await generateAgreement(applicationId, STAFF.email, STAFF.name);
@@ -492,6 +512,7 @@ export async function runAnimalWorkflow(
     if (!agreement) return fail("agreement not found after generation");
     setId(entry, "agreementId", agreement.agreementId);
     if (!agreement.isSigned) {
+      await actAs(adopterEmail, QA_ADOPTER_PASSWORD);
       const signResult = await signAgreement(agreement.agreementId, adopterEmail, adopterEntry.fullName);
       if (!ok(signResult)) return fail(`signAgreement failed: ${(signResult as { reason: string }).reason}`);
     }
@@ -501,6 +522,7 @@ export async function runAnimalWorkflow(
 
   // 15. Adopter initiates payment; Staff verifies Cleared.
   await step(entry, "payment", "Payment status = Cleared.", async () => {
+    await actAs(adopterEmail, QA_ADOPTER_PASSWORD);
     const agreementId = getId(entry, "agreementId");
     if (!agreementId) return fail("no agreementId recorded");
     let payment = await getLatestPaymentForAgreement(agreementId);
@@ -513,6 +535,7 @@ export async function runAnimalWorkflow(
     }
     if (!payment) return fail("payment not found after initiation");
     if (payment.paymentStatus === "Pending") {
+      await actAs(STAFF.email);
       const verifyResult = await verifyPayment(payment.paymentId, "Cleared", STAFF.email, STAFF.name);
       if (!ok(verifyResult)) return fail(`verifyPayment failed: ${(verifyResult as { reason: string }).reason}`);
     }
@@ -525,6 +548,7 @@ export async function runAnimalWorkflow(
 
   // 16. Staff finalises the adoption record.
   await step(entry, "finalise_adoption", adoption.expectedStatusAfterFinalise, async () => {
+    await actAs(STAFF.email);
     const result = await finaliseAdoption(applicationId, STAFF.email, STAFF.name);
     if (!ok(result)) return fail(`finaliseAdoption failed: ${(result as { reason: string; blockers: string[] }).blockers.join("; ")}`);
     const animal = await getAnimalById(animalId);
@@ -533,6 +557,7 @@ export async function runAnimalWorkflow(
 
   // 17. Veterinarian Pre-Release Check.
   await step(entry, "pre_release_check", release.preReleaseCheckStatus, async () => {
+    await actAs(VET.email);
     const result = await recordPreReleaseCheck(
       animalId,
       {
@@ -551,6 +576,7 @@ export async function runAnimalWorkflow(
 
   // 18. Staff releases the animal to the (same, per sheet) adopter.
   await step(entry, "release", "currentStatus = inFollowUpPeriod. Follow-Up Visit is created.", async () => {
+    await actAs(STAFF.email);
     const result = await releaseAnimal(
       animalId,
       {
@@ -570,6 +596,7 @@ export async function runAnimalWorkflow(
 
   // 19. Staff completes the Follow-Up Visit.
   await step(entry, "follow_up_visit", release.expectedTerminalStatus, async () => {
+    await actAs(STAFF.email);
     const visit = await getLatestFollowUpVisitForAnimal(animalId);
     if (!visit) return fail("no follow-up visit found");
     const result = await completeFollowUpVisit(visit.followUpVisitId, release.welfareOutcome as "Settling Well" | "Concerns Noted" | "Unable to Contact Adopter", release.followUpNotes, STAFF.email, STAFF.name);
@@ -582,6 +609,7 @@ export async function runAnimalWorkflow(
 
   // 20. Administrator checks the Audit Log for the expected key events.
   await step(entry, "audit_log_check", release.expectedAuditEvents, async () => {
+    await actAs(ADMIN.email);
     // Matches components/audit/audit-log-screen.tsx's own search exactly
     // (a free-text filter over action/entityId/userName/userId/oldValue/
     // newValue, lowercased). Some actions (e.g. Release, Follow-Up) also

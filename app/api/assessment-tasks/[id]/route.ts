@@ -3,6 +3,8 @@ import { db } from "@/lib/db/client";
 import { toAssessmentTask } from "@/lib/adoption-fitness/serialize";
 import type { AssessmentTask } from "@/lib/adoption-fitness/types";
 import { toTimestamptz } from "@/lib/db/temporal";
+import { requireRole } from "@/lib/auth/server-session";
+import { CARE_TEAM } from "@/lib/auth/api-roles";
 
 // Generic patch - mirrors CouncilTransferSubmission's/DropdownOption's
 // PATCH routes. The only call site today (markTaskContinuable, via
@@ -13,6 +15,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(CARE_TEAM);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as Partial<AssessmentTask>;
   const row: Record<string, unknown> = {};

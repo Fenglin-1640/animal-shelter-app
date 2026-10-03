@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toFollowUpVisit, toFollowUpVisitRowPatch } from "@/lib/follow-up-visits/serialize";
 import type { FollowUpVisit } from "@/lib/follow-up-visits/types";
+import { requireRole } from "@/lib/auth/server-session";
+import { STAFF } from "@/lib/auth/api-roles";
 
 // Generic patch - mirrors AdoptionAgreement's/AdoptionPayment's PATCH
 // routes. The only call site today (completeFollowUpVisit) just
@@ -12,6 +14,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as Partial<FollowUpVisit>;
 

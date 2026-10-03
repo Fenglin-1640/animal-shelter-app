@@ -3,6 +3,8 @@ import { db } from "@/lib/db/client";
 import { toAnimalRowPatch } from "@/lib/animals/serialize";
 import { isValidListingTransition, isValidStatusTransition } from "@/lib/animals/status-rules";
 import type { Animal } from "@/lib/animals/types";
+import { requireRole } from "@/lib/auth/server-session";
+import { CARE_TEAM } from "@/lib/auth/api-roles";
 
 type StatusPatch = Partial<
   Pick<Animal, "currentStatus" | "listingStatus" | "statusUpdatedAt" | "linkedPerson">
@@ -19,6 +21,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(CARE_TEAM);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as StatusPatch;
 

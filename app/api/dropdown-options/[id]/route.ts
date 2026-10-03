@@ -3,6 +3,8 @@ import { db } from "@/lib/db/client";
 import { toDropdownOption } from "@/lib/system-administration/serialize";
 import type { DropdownOption } from "@/lib/system-administration/types";
 import { toTimestamptz } from "@/lib/db/temporal";
+import { requireRole } from "@/lib/auth/server-session";
+import { ADMINISTRATOR } from "@/lib/auth/api-roles";
 
 // Generic patch - mirrors AdoptionAgreement's/CouncilTransferSubmission's
 // PATCH routes. Call sites (updateOption, setRetired) each patch a
@@ -13,6 +15,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(ADMINISTRATOR);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as Partial<DropdownOption>;
   const row: Record<string, unknown> = {};

@@ -3,13 +3,19 @@ import { db } from "@/lib/db/client";
 import { toTemperamentAssessment } from "@/lib/behaviour/serialize";
 import type { TemperamentAssessment } from "@/lib/behaviour/types";
 import { toTimestamptz } from "@/lib/db/temporal";
+import { requireRole } from "@/lib/auth/server-session";
+import { CARE_TEAM, STAFF } from "@/lib/auth/api-roles";
 
 export async function GET() {
+  const auth = await requireRole(CARE_TEAM);
+  if (auth instanceof Response) return auth;
   const rows = await db.orm.TemperamentAssessment.where({}).all();
   return NextResponse.json({ items: rows.map(toTemperamentAssessment) });
 }
 
 export async function POST(request: Request) {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const body = (await request.json()) as TemperamentAssessment;
   const created = await db.orm.TemperamentAssessment.create({
     id: body.id,

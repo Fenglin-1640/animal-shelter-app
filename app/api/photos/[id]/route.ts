@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toPhoto, toPhotoRowPatch } from "@/lib/photos/serialize";
 import type { Photo } from "@/lib/photos/types";
+import { requireRole } from "@/lib/auth/server-session";
+import { STAFF } from "@/lib/auth/api-roles";
 
 // Generic patch - mirrors CouncilTransferSubmission's/IntakeRecord's
 // PATCH routes. Call sites (setPrimaryPhoto, clearPrimaryPhoto) each
@@ -11,6 +13,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as Partial<Photo>;
 
@@ -25,6 +29,8 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const deleted = await db.orm.Photo.where({ id }).delete();
   if (!deleted) {

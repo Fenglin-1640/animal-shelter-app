@@ -3,15 +3,25 @@ import { db } from "@/lib/db/client";
 import { toTimestamptz } from "@/lib/db/temporal";
 import { toAdoptionApplication } from "@/lib/applications/serialize";
 import type { AdoptionApplication } from "@/lib/applications/types";
+import { forbidden, requireRole } from "@/lib/auth/server-session";
+import { ADOPTER, ALL_ROLES, isOwnRecord, seesAllRecords } from "@/lib/auth/api-roles";
 
 export async function GET() {
+  const auth = await requireRole(ALL_ROLES);
+  if (auth instanceof Response) return auth;
   const rows = await db.orm.AdoptionApplication.where({}).all();
-  return NextResponse.json({ items: rows.map(toAdoptionApplication) });
+  // Adopters see only their own records; the care team sees all.
+  const items = rows.map(toAdoptionApplication).filter((item) => seesAllRecords(auth.role) || isOwnRecord(auth, item.adopterEmail));
+  return NextResponse.json({ items });
 }
 
 // FR-APP-01: startOrContinueDraft() creates a new Draft application.
 export async function POST(request: Request) {
+  const auth = await requireRole(ADOPTER);
+  if (auth instanceof Response) return auth;
   const body = (await request.json()) as AdoptionApplication;
+  // An Adopter can only start an application in their own name.
+  if (!isOwnRecord(auth, body.adopterEmail)) return forbidden();
   const created = await db.orm.AdoptionApplication.create({
     applicationId: body.applicationId,
     adopterEmail: body.adopterEmail,

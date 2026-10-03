@@ -9,9 +9,8 @@ import { HOUSEHOLD_TYPES, HOME_OWNERSHIP_OPTIONS, HOURS_ALONE_OPTIONS } from "@/
 import type { Species } from "@/lib/animals/types";
 import { getAdopterRows, type AdopterRow } from "../lib/sheet";
 import { getAdopter, setAdopter } from "../lib/runlog";
-import { installFetchShim } from "../lib/fetch-shim";
-
-const SIGNUP_PASSWORD = "QaTest123!";
+import { actAs, installFetchShim } from "../lib/fetch-shim";
+import { QA_ADOPTER_PASSWORD as SIGNUP_PASSWORD } from "../lib/actors";
 
 function splitName(fullName: string): { firstName: string; lastName: string } {
   const parts = fullName.trim().split(/\s+/);
@@ -131,6 +130,7 @@ export async function runAdoptersPhase(force = false): Promise<void> {
     }
 
     const profile = buildProfile(row, rows.indexOf(row));
+    await actAs(row.email, SIGNUP_PASSWORD);
     await saveAdopterProfile(row.email, profile);
 
     setAdopter(row.adopterId, { email: row.email, fullName: row.fullName, signedUp: true, profileSaved: true });

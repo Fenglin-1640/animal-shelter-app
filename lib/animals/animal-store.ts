@@ -57,12 +57,12 @@ export type ChangeStatusResult =
 // recorded in the AuditLog (BR-014), instead of every feature module
 // calling updateAnimal() directly with its own ad hoc status literal.
 // Role authorization for WHO may trigger a given transition is enforced
-// at the point of action (each screen/store function already gates this
-// per its FR's named actor, e.g. Veterinarian-only for Medical actions);
-// this function validates the state machine shape and writes the audit
-// trail, not a second parallel role check, since a prototype without
-// real server-side sessions has nowhere else for that check to live than
-// the call site that already has the signed-in user's role in scope.
+// at the point of action (each screen/store function gates this per its
+// FR's named actor, e.g. Veterinarian-only for Medical actions) and by
+// the API route guards (lib/auth/server-session.ts: the status route
+// admits the care-team roles, and the action's own route - e.g. a
+// Veterinarian-only medical write - rejects anyone else); this function
+// validates the state machine shape and writes the audit trail.
 export async function changeAnimalStatus(
   animalId: string,
   patch: Partial<Pick<Animal, "currentStatus" | "listingStatus" | "statusUpdatedAt" | "linkedPerson">>,

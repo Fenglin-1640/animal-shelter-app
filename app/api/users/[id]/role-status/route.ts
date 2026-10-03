@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toTimestamptz } from "@/lib/db/temporal";
+import { requireRole } from "@/lib/auth/server-session";
+import { ADMINISTRATOR } from "@/lib/auth/api-roles";
 
 // FR-UA-02: role/status rules - a single concurrent Active Administrator
 // (auto-demoting the outgoing one to Shelter Staff Member as part of a
@@ -14,6 +16,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(ADMINISTRATOR);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const body = await request.json();
   const newRole = String(body.newRole ?? "");

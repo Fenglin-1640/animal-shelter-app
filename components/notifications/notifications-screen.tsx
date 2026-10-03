@@ -131,8 +131,11 @@ export function NotificationsScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Wait for the signed-in role - only that role's notification types
+    // are computed (and only their records fetched).
+    if (!role) return;
     let cancelled = false;
-    getAllNotifications().then((result) => {
+    getAllNotifications(role).then((result) => {
       if (cancelled) return;
       setRawItems(result);
       setIsLoading(false);
@@ -140,7 +143,7 @@ export function NotificationsScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [role]);
 
   const allItems = useMemo(
     () =>

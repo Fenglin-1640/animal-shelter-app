@@ -3,11 +3,15 @@ import { db } from "@/lib/db/client";
 import { toIntakeRecord } from "@/lib/intake-records/serialize";
 import type { IntakeRecord } from "@/lib/intake-records/types";
 import { toTimestamptz } from "@/lib/db/temporal";
+import { requireRole } from "@/lib/auth/server-session";
+import { STAFF } from "@/lib/auth/api-roles";
 
 // The list leaves out each intake photo's base64 imageData (the
 // photo metadata stays); GET /api/intake-records/:id returns the full
 // record for the Intake Record form and Finalise Intake.
 export async function GET() {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const rows = await db.orm.IntakeRecord.where({}).all();
   const items = rows.map(toIntakeRecord).map((record) => ({
     ...record,
@@ -17,6 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const body = (await request.json()) as IntakeRecord;
   const created = await db.orm.IntakeRecord.create({
     intakeId: body.intakeId,

@@ -3,6 +3,8 @@ import { db } from "@/lib/db/client";
 import { toDirectoryUser } from "@/lib/user-administration/serialize";
 import { DEMO_PASSWORD } from "@/lib/auth/demo-accounts";
 import { toTimestamptz } from "@/lib/db/temporal";
+import { requireRole } from "@/lib/auth/server-session";
+import { ADMINISTRATOR } from "@/lib/auth/api-roles";
 
 function generateAccountId(): string {
   return `U-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -10,6 +12,8 @@ function generateAccountId(): string {
 
 // FR-UA-01: User Administration's list.
 export async function GET() {
+  const auth = await requireRole(ADMINISTRATOR);
+  if (auth instanceof Response) return auth;
   const rows = await db.orm.User.where({}).all();
   return NextResponse.json({ users: rows.map(toDirectoryUser) });
 }
@@ -17,6 +21,8 @@ export async function GET() {
 // FR-UA-02: Administrator creates a user directly with any role except
 // Administrator (PRD 4.1 - Administrator is only reachable via transfer).
 export async function POST(request: Request) {
+  const auth = await requireRole(ADMINISTRATOR);
+  if (auth instanceof Response) return auth;
   const body = await request.json();
   const email = String(body.email ?? "").trim().toLowerCase();
   const title = String(body.title ?? "");

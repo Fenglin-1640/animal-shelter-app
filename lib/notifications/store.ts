@@ -13,6 +13,7 @@ import {
 import type { VaccinationRecord } from "@/lib/medical/types";
 import { getMockNotifications } from "@/lib/notifications/mock-notifications";
 import type { NotificationItem } from "@/lib/notifications/types";
+import type { Role } from "@/lib/roles/roles";
 import { listHoldsNeedingReminder } from "@/lib/statutory-hold/store";
 
 // FR-NOT-01: 8 of the 9 event types are now dynamically computed from
@@ -249,35 +250,26 @@ async function getFollowUpVisitNotifications(): Promise<NotificationItem[]> {
   });
 }
 
-export async function getAllNotifications(): Promise<NotificationItem[]> {
-  const [
-    statutoryHold,
-    behaviourReassessment,
-    vaccineBooster,
-    desexingAppointment,
-    preReleaseCheck,
-    applicationDecision,
-    meetAndGreet,
-    followUpVisit,
-  ] = await Promise.all([
-    getStatutoryHoldNotifications(),
-    getBehaviourReassessmentNotifications(),
-    getVaccineBoosterNotifications(),
-    getDesexingAppointmentNotifications(),
-    getPreReleaseCheckNotifications(),
-    getApplicationDecisionNotifications(),
-    getMeetAndGreetNotifications(),
-    getFollowUpVisitNotifications(),
-  ]);
-  return [
-    ...statutoryHold,
-    ...behaviourReassessment,
-    ...vaccineBooster,
-    ...desexingAppointment,
-    ...applicationDecision,
-    ...meetAndGreet,
-    ...preReleaseCheck,
-    ...followUpVisit,
-    ...getMockNotifications(),
-  ];
+// The roles each notification type is for (matches the roles each
+// generator stamps on its items). getAllNotifications(role) runs only the
+// types that role can receive - besides saving work, an Adopter or Council
+// Officer then never reads staff-only collections (holds, medical
+// records, ...), which the API no longer serves to those roles.
+const STAFF_AND_ADMIN: Role[] = ["Shelter Staff Member", "Administrator"];
+const VET_AND_ADMIN: Role[] = ["Veterinarian", "Administrator"];
+const GENERATORS: { roles: Role[]; run: () => Promise<NotificationItem[]> }[] = [
+  { roles: STAFF_AND_ADMIN, run: getStatutoryHoldNotifications },
+  { roles: STAFF_AND_ADMIN, run: getBehaviourReassessmentNotifications },
+  { roles: VET_AND_ADMIN, run: getVaccineBoosterNotifications },
+  { roles: VET_AND_ADMIN, run: getDesexingAppointmentNotifications },
+  { roles: ["Adopter"], run: getApplicationDecisionNotifications },
+  { roles: [...STAFF_AND_ADMIN, "Adopter"], run: getMeetAndGreetNotifications },
+  { roles: VET_AND_ADMIN, run: getPreReleaseCheckNotifications },
+  { roles: STAFF_AND_ADMIN, run: getFollowUpVisitNotifications },
+];
+
+export async function getAllNotifications(role?: Role): Promise<NotificationItem[]> {
+  const generators = GENERATORS.filter((g) => !role || g.roles.includes(role));
+  const results = await Promise.all(generators.map((g) => g.run()));
+  return [...results.flat(), ...getMockNotifications()];
 }

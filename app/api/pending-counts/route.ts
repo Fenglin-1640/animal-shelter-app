@@ -16,11 +16,12 @@ import {
   pendingCountLabelsForRole,
   type PendingCountLabel,
 } from "@/lib/pending-actions/counts";
-import { ROLE_FUNCTIONS, type Role } from "@/lib/roles/roles";
+import { requireRole } from "@/lib/auth/server-session";
+import { ALL_ROLES } from "@/lib/auth/api-roles";
 
-// Sidebar badge counts for one signed-in user: ?role= picks which badges
-// that role's sidebar shows (only those are computed), ?email= is needed
-// for the Adopter's own Meet and Greets. Returns { counts: { label: n } }
+// Sidebar badge counts for the signed-in user: only the badges in their
+// role's sidebar are computed, and the Adopter's Meet and Greet count is
+// their own. Returns { counts: { label: n } }
 // - numbers only, instead of every page downloading the payments,
 // applications, checks, transfers, intake records and Meet and Greets
 // collections to count them client-side.
@@ -67,15 +68,11 @@ const COUNTERS: Record<PendingCountLabel, (email: string) => Promise<number>> = 
   },
 };
 
-export async function GET(request: Request) {
-  const params = new URL(request.url).searchParams;
-  const role = params.get("role") as Role | null;
-  const email = params.get("email") ?? "";
-  if (!role || !(role in ROLE_FUNCTIONS)) {
-    return NextResponse.json({ ok: false, reason: "invalid_role" }, { status: 400 });
-  }
-  const labels = pendingCountLabelsForRole(role);
-  const values = await Promise.all(labels.map((label) => COUNTERS[label](email)));
+export async function GET() {
+  const auth = await requireRole(ALL_ROLES);
+  if (auth instanceof Response) return auth;
+  const labels = pendingCountLabelsForRole(auth.role);
+  const values = await Promise.all(labels.map((label) => COUNTERS[label](auth.email)));
   return NextResponse.json({
     ok: true,
     counts: Object.fromEntries(labels.map((label, i) => [label, values[i]])),

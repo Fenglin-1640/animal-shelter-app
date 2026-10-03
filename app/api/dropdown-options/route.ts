@@ -3,6 +3,8 @@ import { db } from "@/lib/db/client";
 import { toDropdownOption } from "@/lib/system-administration/serialize";
 import type { DropdownOption } from "@/lib/system-administration/types";
 import { toTimestamptz } from "@/lib/db/temporal";
+import { requireRole } from "@/lib/auth/server-session";
+import { ADMINISTRATOR } from "@/lib/auth/api-roles";
 
 export async function GET() {
   const rows = await db.orm.DropdownOption.where({}).all();
@@ -10,6 +12,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireRole(ADMINISTRATOR);
+  if (auth instanceof Response) return auth;
   const body = (await request.json()) as DropdownOption;
   const created = await db.orm.DropdownOption.create({
     id: body.id,

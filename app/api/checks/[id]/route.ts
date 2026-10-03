@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toSuitabilityCheck } from "@/lib/checks/serialize";
+import { requireRole } from "@/lib/auth/server-session";
+import { STAFF } from "@/lib/auth/api-roles";
 
 // completeCheck(): records a Pass/Concern/Fail outcome for one check.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(STAFF);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const body = (await request.json()) as {
     outcome: string;

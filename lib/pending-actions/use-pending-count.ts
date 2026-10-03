@@ -5,8 +5,8 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { getJson } from "@/lib/shared/http";
 
 // A nav item (RoleSidebar) subscribes to its own pending count by label.
-// Every badge on the page asks GET /api/pending-counts for the same
-// role/email, so they share one request (lib/shared/http.ts) and the
+// Every badge on the page asks GET /api/pending-counts (which answers for
+// the signed-in user's session), so they share one request (lib/shared/http.ts) and the
 // server returns only the counts (lib/pending-actions/counts.ts).
 // Returns 0 for any label with no badge, or while the signed-in user is
 // unknown - RoleSidebar only shows a badge for count > 0, so both cases
@@ -18,8 +18,7 @@ export function usePendingCount(label: string): number {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    const params = new URLSearchParams({ role: user.role, email: user.email });
-    getJson<{ counts?: Record<string, number> }>(`/api/pending-counts?${params}`).then((result) => {
+    getJson<{ counts?: Record<string, number> }>("/api/pending-counts").then((result) => {
       if (!cancelled) setCount(result.counts?.[label] ?? 0);
     });
     return () => {

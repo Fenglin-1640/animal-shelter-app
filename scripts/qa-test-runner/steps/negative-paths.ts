@@ -35,7 +35,8 @@ import type { TestCaseBundle } from "./animal-workflow";
 import { getNegative, setAnimalId, setId, getId } from "../lib/runlog";
 import { step, pass, fail } from "../lib/step";
 import { generatePlaceholderPhoto } from "../lib/placeholder-image";
-import { COUNCIL, STAFF, VET } from "../lib/actors";
+import { COUNCIL, QA_ADOPTER_PASSWORD, STAFF, VET } from "../lib/actors";
+import { actAs } from "../lib/fetch-shim";
 import { getAdopter } from "../lib/runlog";
 
 const OWNER_MATCH_CHIP = "985141000111111";
@@ -54,6 +55,7 @@ async function intakeFreshAnimal(
 
   const { intake } = bundle;
   const photo = await generatePlaceholderPhoto(`${negKey.toLowerCase()}_${label}.jpg`, label, intake.species);
+  await actAs(COUNCIL.email);
   const transferId = await createDraft(COUNCIL.email, COUNCIL.name, {
     source: intake.transferSource,
     arrivalCircumstance: `[Negative-path test: ${negKey}] ${intake.arrivalCircumstance}`,
@@ -73,6 +75,7 @@ async function intakeFreshAnimal(
   const submitResult = await submitTransfer(transferId);
   if (!ok(submitResult)) return undefined;
 
+  await actAs(STAFF.email);
   const intakeId = await createIntakeRecord(STAFF.email, STAFF.name, {
     animalName: label,
     arrivalCircumstance: intake.arrivalCircumstance,
@@ -123,7 +126,9 @@ export async function runOwnerMatchNegative(template: TestCaseBundle): Promise<v
   }
 
   await step(entry, "microchip_scan_owner_match", "A Statutory Hold is created and publishing is blocked.", async () => {
-    const scanResult = await performScan(animalId, OWNER_MATCH_CHIP, VET.email, VET.name);
+    // Scan Microchip is a Staff/Administrator action (PRD 9).
+    await actAs(STAFF.email);
+    const scanResult = await performScan(animalId, OWNER_MATCH_CHIP, STAFF.email, STAFF.name);
     if (!ok(scanResult)) return fail("performScan returned not_found");
     const lookupResult = (scanResult as { lookup: { result: string } }).lookup.result;
     if (lookupResult !== "Owner Match") return fail(`Expected Owner Match, got ${lookupResult}`);
@@ -175,13 +180,16 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
     const { recordHealthAssessment } = await import("@/lib/medical/store");
     const { recordTemperamentAssessment } = await import("@/lib/behaviour/store");
 
-    await performScan(animalId, `985141${Math.floor(Math.random() * 900000 + 100000)}`, VET.email, VET.name);
+    await actAs(STAFF.email);
+    await performScan(animalId, `985141${Math.floor(Math.random() * 900000 + 100000)}`, STAFF.email, STAFF.name);
+    await actAs(VET.email);
     await recordHealthAssessment(
       animalId,
       { examinationObservations: "Healthy.", sampleTestResults: "Normal.", diagnosedConditions: "None", bodyCondition: "Ideal", urgentTreatmentRequired: false, urgentTreatmentNotes: "", healthRecheckRequired: false, assessmentDate: new Date().toISOString() },
       VET.email,
       VET.name,
     );
+    await actAs(STAFF.email);
     await recordTemperamentAssessment(
       animalId,
       { handlingResponse: "Calm.", reactionToStrangers: "Approaches calmly.", foodBehaviour: "No guarding.", interactionWithOtherAnimals: "Neutral.", socialisationScore: 4, observations: "Well-socialised.", recommendations: "Standard home.", assessmentDate: new Date().toISOString(), followUpRequired: false, outcome: "Suitable for Adoption" },
@@ -192,8 +200,10 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
     const tasks = await listTasksForAnimal(animalId);
     if (animal && getFitnessBlockers(animal, tasks).length === 0) {
       await confirmAsStaff(animalId, STAFF.email, STAFF.name);
+      await actAs(VET.email);
       await confirmAsVet(animalId, VET.email, VET.name);
     }
+    await actAs(VET.email);
     await recordVaccination(animalId, { vaccineType: template.adoption.vaccineType || "Core Vaccination", administrationDate: new Date().toISOString(), doseOrChipId: "1.0 mL", nextBoosterDueDate: new Date(Date.now() + 365 * 86400000).toISOString() }, VET.email, VET.name);
     if (template.intake.species === "Bird" || template.intake.species === "Reptile") {
       const { recordDesexingExemption } = await import("@/lib/medical/store");
@@ -204,6 +214,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
     }
     await issueMedicalClearance(animalId, VET.email, VET.name);
     await evaluatePreListingEligibility(animalId, VET);
+    await actAs(STAFF.email);
     const publishResult = await publishAdoptionProfile(animalId, STAFF.email, STAFF.name);
     if (!ok(publishResult)) return fail(`publishAdoptionProfile failed: ${(publishResult as { reason: string }).reason}`);
     const final = await getAnimalById(animalId);
@@ -219,6 +230,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
   }
 
   const applicationId = await step(entry, "application_and_approval", "Application approved, currentStatus = Application In Progress.", async () => {
+    await actAs(adopterEntry.email, QA_ADOPTER_PASSWORD);
     let appId = getId(entry, "applicationId");
     if (!appId) {
       const draftResult = await startOrContinueDraft(animalId, adopterEntry.email, adopterEntry.fullName);
@@ -230,6 +242,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
     const submitResult = await submitApplication(appId);
     if (!ok(submitResult)) return fail(`submitApplication failed: ${(submitResult as { reason: string }).reason}`, (submitResult as { blockers?: string[] }).blockers?.join("; "));
     await createChecksForApplication(appId);
+    await actAs(STAFF.email);
     await markUnderReview(appId);
     for (const check of await listChecksForApplication(appId)) {
       if (check.outcome === "Pending") await completeCheck(check.checkId, "Pass", "Recorded per QA test data.", new Date().toISOString(), STAFF.email, STAFF.name);
@@ -249,6 +262,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
     "meet_and_greet_incompatible",
     "Agreement generation and finalisation remain blocked.",
     async () => {
+      await actAs(STAFF.email);
       let mgId = getId(entry, "meetAndGreetId");
       if (!mgId) {
         const proposeResult = await proposeSlots(
@@ -267,6 +281,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
         mgId = mg.meetAndGreetId;
         setId(entry, "meetAndGreetId", mgId);
       }
+      await actAs(adopterEntry.email, QA_ADOPTER_PASSWORD);
       let mg = await getMeetAndGreetForApplication(applicationId);
       if (mg?.status === "Proposed") {
         const slotId = mg.slotOptions[0]?.id;
@@ -276,6 +291,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
       if (mg?.status === "Scheduled" && !mg.attendanceConfirmed) {
         await confirmAttendance(mgId);
       }
+      await actAs(STAFF.email);
       mg = await getMeetAndGreetForApplication(applicationId);
       if (mg?.status === "Scheduled") {
         const outcomeResult = await recordOutcome(

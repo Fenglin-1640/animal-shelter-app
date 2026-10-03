@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toDesexingSchedule, toDesexingScheduleRowPatch } from "@/lib/medical/serialize";
 import type { DesexingSchedule } from "@/lib/medical/types";
+import { requireRole } from "@/lib/auth/server-session";
+import { VETERINARIAN } from "@/lib/auth/api-roles";
 
 // Generic patch - mirrors Photo's PATCH route. Call sites (completeDesexing,
 // updateDesexingScheduledDate in lib/medical/store.ts) each patch a
@@ -11,6 +13,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireRole(VETERINARIAN);
+  if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as Partial<DesexingSchedule>;
 
