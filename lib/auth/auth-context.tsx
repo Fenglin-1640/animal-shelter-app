@@ -8,7 +8,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { formatDisplayName } from "@/lib/auth/format-name";
+import { SESSION_EXPIRED_EVENT } from "@/lib/shared/http";
 import type { Role } from "@/lib/roles/roles";
 
 // Prototype auth per PRD FR-AUTH-01 / section 4.1: 6 failed attempts locks
@@ -17,6 +19,9 @@ import type { Role } from "@/lib/roles/roles";
 // prisma/contract.prisma - instead of the localStorage overlays this
 // module used to read/write directly.
 const STORAGE_KEY = "asams-session";
+
+// Pages reachable without signing in.
+const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
 
 export interface SessionUser {
   id: string;
@@ -133,13 +138,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // sessionStorage only exists in the browser, so the real session state
-    // can't be known during the server-rendered "loading" pass.
+    // can't be known during the server-rendered "loading" pass. The stored
+    // user is only trusted while the server's session cookie (which is
+    // what actually authorises API requests) belongs to the same account;
+    // the server's copy of the role wins, so a role changed by an
+    // Administrator shows up on the next load.
     const stored = loadSession();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration of client-only sessionStorage into React state.
-    setSession({
-      status: stored.user ? "authenticated" : "unauthenticated",
-      user: stored.user,
-    });
+    const storedUser = stored.user;
+    if (!storedUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration of client-only sessionStorage into React state.
+      setSession({ status: "unauthenticated", user: null });
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/auth/session")
+      .then((response) => (response.ok ? response.json() : null))
+      .catch(() => null)
+      .then((result: { ok?: boolean; user?: { id: string; role: Role } } | null) => {
+        if (cancelled) return;
+        if (result?.ok && result.user?.id === storedUser.id) {
+          const user = { ...storedUser, role: result.user.role };
+          saveSession({ user });
+          setSession({ status: "authenticated", user });
+        } else {
+          saveSession({ user: null });
+          setSession({ status: "unauthenticated", user: null });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Signed out on any page other than Sign In / Sign Up -> go to Sign In.
+  // Done here because AuthProvider is always mounted; most screens render
+  // nothing until a user exists, so AppShell's own redirect never mounts
+  // for them.
+  const pathname = usePathname();
+  const router = useRouter();
+  useEffect(() => {
+    if (session.status === "unauthenticated" && !PUBLIC_PATHS.includes(pathname)) {
+      router.replace("/sign-in");
+    }
+  }, [session.status, pathname, router]);
+
+  // Any API request answered 401 means the server session is gone (expired,
+  // signed out elsewhere, account deactivated) - sign out here too, which
+  // sends the user back to Sign In.
+  useEffect(() => {
+    const handleExpired = () => {
+      saveSession({ user: null });
+      setSession({ status: "unauthenticated", user: null });
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleExpired);
   }, []);
 
   const signIn = useCallback(async (rawEmail: string, password: string): Promise<SignInResult> => {
@@ -164,6 +216,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(() => {
     setSession((prev) => ({ ...prev, status: "unauthenticated", user: null }));
     saveSession({ user: null });
+    // End the server session too, so the cookie stops authorising requests.
+    void fetch("/api/auth/sign-out", { method: "POST" }).catch(() => {});
   }, []);
 
   const signUp = useCallback(async (input: SignUpInput): Promise<SignUpResult> => {

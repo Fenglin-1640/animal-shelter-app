@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toTimestamptz } from "@/lib/db/temporal";
 import { LOCKOUT_THRESHOLD } from "@/lib/auth/lockout-config";
+import { setSessionCookie } from "@/lib/auth/server-session";
 
 // FR-AUTH-01 / PRD 4.1: 6 failed attempts locks the account; Inactive
 // accounts are rejected before the password is even checked. Credential
@@ -52,7 +53,9 @@ export async function POST(request: Request) {
     lastLoginAt: toTimestamptz(lastLoginAt),
   });
 
-  return NextResponse.json({
+  // The signed session cookie is what authorises this browser's API
+  // requests from here on (lib/auth/server-session.ts).
+  const response = NextResponse.json({
     ok: true,
     user: {
       id: account.id,
@@ -67,4 +70,6 @@ export async function POST(request: Request) {
       lastLoginAt,
     },
   });
+  setSessionCookie(response, request, account.id);
+  return response;
 }

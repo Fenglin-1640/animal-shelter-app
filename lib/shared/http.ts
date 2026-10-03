@@ -15,8 +15,19 @@
 let generation = 0;
 const inflight = new Map<string, Promise<unknown>>();
 
+// Fired when an API request is answered 401 (no valid server session);
+// AuthProvider (lib/auth/auth-context.tsx) listens and signs out.
+export const SESSION_EXPIRED_EVENT = "asams:session-expired";
+
+function noteUnauthorized(response: Response) {
+  if (response.status === 401 && typeof window !== "undefined") {
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+  }
+}
+
 async function readJson(url: string): Promise<unknown> {
   const response = await fetch(url);
+  noteUnauthorized(response);
   try {
     return await response.json();
   } catch (error) {
@@ -40,8 +51,10 @@ export async function getJson<T = Record<string, unknown>>(url: string): Promise
   return structuredClone(await pending) as T;
 }
 
-export function send(url: string, init: RequestInit): Promise<Response> {
+export async function send(url: string, init: RequestInit): Promise<Response> {
   generation++;
   inflight.clear();
-  return fetch(url, init);
+  const response = await fetch(url, init);
+  noteUnauthorized(response);
+  return response;
 }
