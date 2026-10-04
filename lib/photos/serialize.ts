@@ -1,3 +1,4 @@
+import { signedPhotoImageUrl } from "@/lib/auth/server-session";
 import type { Photo } from "@/lib/photos/types";
 
 export interface PhotoRow extends Omit<Photo, "useOnAdoptionListing" | "uploadedAt" | "imageData"> {
@@ -7,15 +8,15 @@ export interface PhotoRow extends Omit<Photo, "useOnAdoptionListing" | "uploaded
 }
 
 // The base64 image itself is left out of every API response so photo
-// lists stay small; clients load it from imageUrl, which is served
-// separately with HTTP caching.
+// lists stay small; clients load it from imageUrl, a signed, expiring URL
+// served separately with HTTP caching (see signedPhotoImageUrl).
 export function toPhoto(row: PhotoRow): Photo {
   const { imageData, ...rest } = row;
   return {
     ...rest,
     useOnAdoptionListing: row.useOnAdoptionListing === 1,
     uploadedAt: row.uploadedAt,
-    imageUrl: imageData ? `/api/photos/${encodeURIComponent(row.id)}/image` : undefined,
+    imageUrl: imageData ? signedPhotoImageUrl(row.id) : undefined,
   };
 }
 

@@ -1,19 +1,23 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { formatDisplayName } from "@/lib/auth/format-name";
 import { db } from "@/lib/db/client";
 import type { Role } from "@/lib/roles/roles";
 
-// Server-verified sign-in session for the API routes. Sign In sets an
-// httpOnly cookie holding the account id and an expiry, signed with
-// HMAC-SHA256; every API request verifies it and re-reads the account,
-// so a role change or deactivation by an Administrator applies to the
-// very next request. (The browser's sessionStorage copy of the user
-// still drives the UI - lib/auth/auth-context.tsx - but grants nothing
-// on its own.)
+// Server-verified sign-in session for the API routes. Sign In returns a
+// token holding the account id and an expiry, signed with HMAC-SHA256.
+// The browser keeps it per tab (sessionStorage) and sends it as
+// "Authorization: Bearer <token>" on every API request - deliberately not
+// a cookie, which the whole browser profile would share: each tab can be
+// signed in as a different account, and signing in or out in one tab
+// never affects another. Every request verifies the token and re-reads
+// the account, so a role change or deactivation by an Administrator
+// applies to the very next request.
 
-export const SESSION_COOKIE = "asams_session";
+// Pre-per-tab-token sessions used this cookie; Sign In clears any that is
+// left so it can't linger. Nothing authenticates from it.
+export const LEGACY_SESSION_COOKIE = "asams_session";
 // Sliding session: it ends after this long without any API activity, and
 // is re-issued (at most once an hour) while the user keeps using the app,
 // so an active user is never cut off mid-session by a fixed expiry.
@@ -63,41 +67,34 @@ function readSessionToken(token: string | undefined): { userId: string; expiresA
   return { userId, expiresAt };
 }
 
-function sessionCookieOptions(secure: boolean) {
-  return { httpOnly: true, sameSite: "lax" as const, secure, path: "/", maxAge: SESSION_TTL_SECONDS };
+export function clearLegacySessionCookie(response: NextResponse) {
+  response.cookies.set(LEGACY_SESSION_COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
 }
 
-export function setSessionCookie(response: NextResponse, request: Request, userId: string) {
-  response.cookies.set(SESSION_COOKIE, createSessionToken(userId), sessionCookieOptions(new URL(request.url).protocol === "https:"));
-}
-
-export function clearSessionCookie(response: NextResponse) {
-  response.cookies.set(SESSION_COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
-}
-
-// The signed-in account row for this request, or null when there is no
-// valid session or the account is no longer Active (or is locked). Renews
-// the session cookie when it was issued more than RENEW_AFTER_SECONDS ago.
+// The signed-in account row and token for this request, or null when
+// there is no valid session or the account is no longer Active (or is
+// locked).
 async function getSessionAccount() {
-  const cookieStore = await cookies();
-  const session = readSessionToken(cookieStore.get(SESSION_COOKIE)?.value);
+  const authorization = (await headers()).get("authorization") ?? "";
+  const session = readSessionToken(authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : undefined);
   if (!session) return null;
   const account = await db.orm.User.where({ id: session.userId }).first();
   if (!account || account.status !== "Active" || account.lockedAt) return null;
-  const issuedAt = session.expiresAt - SESSION_TTL_SECONDS;
-  if (Date.now() / 1000 - issuedAt > RENEW_AFTER_SECONDS) {
-    const secure = (await headers()).get("x-forwarded-proto") === "https";
-    cookieStore.set(SESSION_COOKIE, createSessionToken(account.id), sessionCookieOptions(secure));
-  }
-  return account;
+  return { account, session };
 }
 
 // The signed-in user as the browser keeps it (the same shape Sign In
-// returns), for restoring a session on page load.
+// returns), for restoring a tab's session on page load - plus a renewed
+// token when the current one was issued more than RENEW_AFTER_SECONDS ago
+// (the browser asks for renewal through this route at most hourly, see
+// lib/shared/http.ts).
 export async function getSessionUser() {
-  const account = await getSessionAccount();
-  if (!account) return null;
-  return {
+  const found = await getSessionAccount();
+  if (!found) return null;
+  const { account, session } = found;
+  const issuedAt = session.expiresAt - SESSION_TTL_SECONDS;
+  const renewedToken = Date.now() / 1000 - issuedAt > RENEW_AFTER_SECONDS ? createSessionToken(account.id) : undefined;
+  const user = {
     id: account.id,
     email: account.email,
     role: account.role,
@@ -109,11 +106,13 @@ export async function getSessionUser() {
     signUpAt: account.signUpAt,
     lastLoginAt: account.lastLoginAt ?? null,
   };
+  return { user, renewedToken };
 }
 
 export async function getApiUser(): Promise<ApiUser | null> {
-  const account = await getSessionAccount();
-  if (!account) return null;
+  const found = await getSessionAccount();
+  if (!found) return null;
+  const { account } = found;
   return {
     id: account.id,
     email: account.email,
@@ -139,4 +138,34 @@ export async function requireRole(allowed: readonly Role[]): Promise<ApiUser | R
   if (!user) return unauthorized();
   if (!allowed.includes(user.role)) return forbidden();
   return user;
+}
+
+// Signed photo image URLs. An <img> can't send the Authorization header,
+// so GET /api/photos/:id/image is authorised by a signature in its URL
+// instead. The URLs are only handed out inside photo lists, which are
+// themselves role-checked and filtered (Adopters/Council get public photos
+// only). The expiry is bucketed to a whole UTC day, so a photo's URL stays
+// identical within a day (24-48 h validity) and the browser cache keeps
+// working.
+const IMAGE_URL_BUCKET_SECONDS = 24 * 60 * 60;
+
+function imageSignature(photoId: string, expiresAt: number): string {
+  return sign(`image.${photoId}.${expiresAt}`);
+}
+
+export function signedPhotoImageUrl(photoId: string, now = Date.now()): string {
+  const expiresAt = (Math.floor(now / 1000 / IMAGE_URL_BUCKET_SECONDS) + 2) * IMAGE_URL_BUCKET_SECONDS;
+  return `/api/photos/${encodeURIComponent(photoId)}/image?exp=${expiresAt}&sig=${imageSignature(photoId, expiresAt)}`;
+}
+
+// Seconds the signed URL stays valid, or null when the signature or
+// expiry is invalid.
+export function verifyPhotoImageUrl(photoId: string, exp: string | null, sig: string | null): number | null {
+  const expiresAt = Number(exp);
+  if (!sig || !Number.isFinite(expiresAt)) return null;
+  const expected = Buffer.from(imageSignature(photoId, expiresAt));
+  const given = Buffer.from(sig);
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
+  const remaining = expiresAt - Math.floor(Date.now() / 1000);
+  return remaining > 0 ? remaining : null;
 }

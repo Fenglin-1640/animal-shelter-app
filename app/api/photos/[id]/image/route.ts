@@ -1,24 +1,27 @@
 import { db } from "@/lib/db/client";
-import { requireRole } from "@/lib/auth/server-session";
-import { ALL_ROLES, seesAllRecords } from "@/lib/auth/api-roles";
+import { verifyPhotoImageUrl } from "@/lib/auth/server-session";
 
 // Serves one photo's image bytes, decoded from the stored base64 data
 // URL. Photo lists only carry metadata plus this URL (see toPhoto), so
 // each image is downloaded once, only where it's shown, and then reused
-// from the browser cache. A photo's image never changes after upload
-// (only its alt text and primary flag are ever patched), so the
-// response can be cached.
+// from the browser cache. An <img> can't send the Authorization header,
+// so this route is authorised by the signed, expiring URL that the
+// role-checked photo lists hand out (signedPhotoImageUrl) rather than by
+// a session. A photo's image never changes after upload (only its alt
+// text and primary flag are ever patched), so the response is cached for
+// as long as the URL stays valid.
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireRole(ALL_ROLES);
-  if (auth instanceof Response) return auth;
   const { id } = await params;
-  const row = await db.orm.Photo.select("id", "imageData", "useOnAdoptionListing").where({ id }).first();
-  // Adopters and Council Officers may load approved public photos only.
-  const visible = row && (seesAllRecords(auth.role) || row.useOnAdoptionListing === 1);
-  const match = visible ? row.imageData?.match(/^data:([^;,]+);base64,([A-Za-z0-9+/=]+)$/) : null;
+  const url = new URL(request.url);
+  const validFor = verifyPhotoImageUrl(id, url.searchParams.get("exp"), url.searchParams.get("sig"));
+  if (validFor === null) {
+    return new Response("Forbidden", { status: 403 });
+  }
+  const row = await db.orm.Photo.select("id", "imageData").where({ id }).first();
+  const match = row?.imageData?.match(/^data:([^;,]+);base64,([A-Za-z0-9+/=]+)$/);
   if (!match) {
     return new Response("Not found", { status: 404 });
   }
@@ -26,7 +29,7 @@ export async function GET(
   return new Response(Buffer.from(base64, "base64"), {
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": "private, max-age=86400",
+      "Cache-Control": `private, max-age=${Math.min(validFor, 86400)}`,
     },
   });
 }

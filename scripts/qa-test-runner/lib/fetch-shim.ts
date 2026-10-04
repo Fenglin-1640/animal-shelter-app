@@ -6,18 +6,18 @@
 // letting the exact same store functions the UI calls run unmodified
 // from this Node script.
 //
-// The API routes also require a signed-in session (an httpOnly cookie set
-// by Sign In) with a role allowed to make the call. actAs() signs in as
-// the given account and every following request carries that account's
-// session cookie - call it wherever the acting role changes, just as a
-// different user would be signed in for that step in the browser.
+// The API routes also require a signed-in session (the token Sign In
+// returns, sent as "Authorization: Bearer") with a role allowed to make the
+// call. actAs() signs in as the given account and every following request
+// carries that account's token - call it wherever the acting role changes,
+// just as a different user would be signed in for that step in the browser.
 const BASE_URL = process.env.ASAMS_BASE_URL ?? "http://localhost:3000";
 const DEMO_PASSWORD = "Demo123!";
 
 let installed = false;
 let realFetch: typeof fetch;
-let currentCookie: string | null = null;
-const cookiesByEmail = new Map<string, string>();
+let currentToken: string | null = null;
+const tokensByEmail = new Map<string, string>();
 
 export function installFetchShim(): void {
   if (installed) return;
@@ -26,7 +26,7 @@ export function installFetchShim(): void {
   globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
     if (typeof input === "string" && input.startsWith("/")) {
       const headers = new Headers(init?.headers);
-      if (currentCookie && !headers.has("cookie")) headers.set("cookie", currentCookie);
+      if (currentToken && !headers.has("authorization")) headers.set("authorization", `Bearer ${currentToken}`);
       return realFetch(BASE_URL + input, { ...init, headers });
     }
     return realFetch(input, init);
@@ -39,9 +39,9 @@ export function installFetchShim(): void {
 export async function actAs(email: string, password: string = DEMO_PASSWORD): Promise<void> {
   installFetchShim();
   const key = email.trim().toLowerCase();
-  const cached = cookiesByEmail.get(key);
+  const cached = tokensByEmail.get(key);
   if (cached) {
-    currentCookie = cached;
+    currentToken = cached;
     return;
   }
   const response = await realFetch(`${BASE_URL}/api/auth/sign-in`, {
@@ -50,10 +50,9 @@ export async function actAs(email: string, password: string = DEMO_PASSWORD): Pr
     body: JSON.stringify({ email: key, password }),
   });
   const result = await response.json();
-  const setCookie = response.headers.get("set-cookie");
-  if (!result.ok || !setCookie) throw new Error(`Sign in as ${key} failed: ${result.reason ?? "no session cookie"}`);
-  currentCookie = setCookie.split(";")[0];
-  cookiesByEmail.set(key, currentCookie);
+  if (!result.ok || !result.token) throw new Error(`Sign in as ${key} failed: ${result.reason ?? "no session token"}`);
+  currentToken = result.token as string;
+  tokensByEmail.set(key, result.token);
 }
 
 export async function assertServerUp(): Promise<void> {

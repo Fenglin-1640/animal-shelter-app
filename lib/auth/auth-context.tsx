@@ -10,7 +10,8 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { formatDisplayName } from "@/lib/auth/format-name";
-import { SESSION_EXPIRED_EVENT } from "@/lib/shared/http";
+import { getSessionToken, loadStoredSession, saveStoredSession } from "@/lib/auth/client-session";
+import { authedFetch, SESSION_EXPIRED_EVENT } from "@/lib/shared/http";
 import type { Role } from "@/lib/roles/roles";
 
 // Prototype auth per PRD FR-AUTH-01 / section 4.1: 6 failed attempts locks
@@ -18,7 +19,6 @@ import type { Role } from "@/lib/roles/roles";
 // state) now live in the database behind /api/auth and /api/users - see
 // prisma/contract.prisma - instead of the localStorage overlays this
 // module used to read/write directly.
-const STORAGE_KEY = "asams-session";
 
 // Pages reachable without signing in.
 const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
@@ -73,11 +73,8 @@ export type ChangePasswordResult =
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
-interface StoredSession {
+interface SessionState {
   user: SessionUser | null;
-}
-
-interface SessionState extends StoredSession {
   status: AuthStatus;
 }
 
@@ -117,23 +114,6 @@ function toSessionUser(raw: RawSessionUser): SessionUser {
   };
 }
 
-function loadSession(): StoredSession {
-  if (typeof window === "undefined") return { user: null };
-  try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return { user: null };
-    const parsed = JSON.parse(raw) as StoredSession;
-    return { user: parsed.user ?? null };
-  } catch {
-    return { user: null };
-  }
-}
-
-function saveSession(session: StoredSession) {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<SessionState>({
     status: "loading",
@@ -141,35 +121,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    // Restore the session on page load (refresh, deep link, new tab). The
-    // status stays "loading" until this settles, and nothing redirects or
-    // clears the session while it is loading. The server session cookie is
-    // what actually authorises API requests, so /api/auth/session decides:
-    //   200 -> signed in as the account it names (also restores a new tab,
-    //          whose per-tab sessionStorage starts empty, and picks up a
-    //          role or profile change made since sign-in)
-    //   401 -> no valid session (expired, signed out, Inactive or Locked)
-    //          -> signed out
+    // Restore this tab's session on page load (refresh, hard refresh, deep
+    // link). The session lives in this tab's sessionStorage
+    // (lib/auth/client-session.ts): a tab with no token - e.g. a newly
+    // opened one - starts signed out without asking the server. A tab with
+    // a stored user and token renders as that user straight away (no
+    // extra round trip before the page and its data load) while
+    // /api/auth/session, called with this tab's token, validates it in
+    // the background:
+    //   200 -> signed in as the account it names (picks up a role or
+    //          profile change made since sign-in, and a renewed token)
+    //   401 -> no valid session (expired, Inactive or Locked) -> signed out
     //   anything else (5xx, network error, timeout) is transient: keep the
     //   stored user rather than signing them out; if the session really is
     //   gone, the next API call's 401 signs them out then.
-    const storedUser = loadSession().user;
+    const stored = loadStoredSession();
+    const storedToken = stored.token;
+    if (!storedToken) {
+      saveStoredSession({ user: null });
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration of this tab's sessionStorage into React state.
+      setSession({ status: "unauthenticated", user: null });
+      return;
+    }
+    if (stored.user) setSession({ status: "authenticated", user: stored.user });
     let cancelled = false;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), SESSION_CHECK_TIMEOUT_MS);
-    fetch("/api/auth/session", { signal: controller.signal })
-      .then(async (response): Promise<SessionUser | null | "transient"> => {
+    fetch("/api/auth/session", { signal: controller.signal, headers: { Authorization: `Bearer ${storedToken}` } })
+      .then(async (response): Promise<{ user: SessionUser; token?: string } | null | "transient"> => {
         if (response.status === 401) return null;
         if (!response.ok) return "transient";
-        const result = (await response.json()) as { ok?: boolean; user?: RawSessionUser };
-        return result.ok && result.user ? toSessionUser(result.user) : "transient";
+        const result = (await response.json()) as { ok?: boolean; user?: RawSessionUser; token?: string };
+        return result.ok && result.user ? { user: toSessionUser(result.user), token: result.token } : "transient";
       })
       .catch((): "transient" => "transient")
       .then((outcome) => {
         clearTimeout(timeout);
-        if (cancelled) return;
-        const user = outcome === "transient" ? storedUser : outcome;
-        saveSession({ user });
+        // Ignore the result if this tab has signed out or in since.
+        if (cancelled || getSessionToken() !== storedToken) return;
+        const user = outcome === "transient" ? stored.user : outcome?.user ?? null;
+        const token = outcome !== "transient" && outcome?.token ? outcome.token : storedToken;
+        saveStoredSession({ user, token });
         setSession(user ? { status: "authenticated", user } : { status: "unauthenticated", user: null });
       });
     return () => {
@@ -196,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // sends the user back to Sign In.
   useEffect(() => {
     const handleExpired = () => {
-      saveSession({ user: null });
+      saveStoredSession({ user: null });
       setSession({ status: "unauthenticated", user: null });
     };
     window.addEventListener(SESSION_EXPIRED_EVENT, handleExpired);
@@ -216,17 +208,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return result;
     }
 
+    // Store this tab's token before re-rendering, so the first requests of
+    // the signed-in screens already carry it.
     const sessionUser = toSessionUser(result.user);
+    saveStoredSession({ user: sessionUser, token: result.token });
     setSession({ status: "authenticated", user: sessionUser });
-    saveSession({ user: sessionUser });
     return { ok: true };
   }, []);
 
   const signOut = useCallback(() => {
     setSession((prev) => ({ ...prev, status: "unauthenticated", user: null }));
-    saveSession({ user: null });
-    // End the server session too, so the cookie stops authorising requests.
-    void fetch("/api/auth/sign-out", { method: "POST" }).catch(() => {});
+    // Forget this tab's token - other tabs keep their own sessions.
+    saveStoredSession({ user: null });
   }, []);
 
   const signUp = useCallback(async (input: SignUpInput): Promise<SignUpResult> => {
@@ -241,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(
     async (input: UpdateProfileInput) => {
       if (!session.user) return;
-      await fetch(`/api/users/${session.user.id}/profile`, {
+      await authedFetch(`/api/users/${session.user.id}/profile`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
@@ -259,7 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ),
       };
       setSession((prev) => ({ ...prev, user: updatedUser }));
-      saveSession({ user: updatedUser });
+      saveStoredSession({ user: updatedUser, token: getSessionToken() });
     },
     [session.user],
   );
@@ -269,7 +262,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!session.user) {
         return { ok: false, reason: "incorrect_current_password" };
       }
-      const response = await fetch(`/api/users/${session.user.id}/change-password`, {
+      const response = await authedFetch(`/api/users/${session.user.id}/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),
@@ -285,13 +278,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // that demotes themselves) so the shell reflects it immediately.
   const refreshCurrentUser = useCallback(async () => {
     if (!session.user) return;
-    const response = await fetch(`/api/users/${session.user.id}`);
+    const response = await authedFetch(`/api/users/${session.user.id}`);
     if (!response.ok) return;
     const result = await response.json();
     if (!result.ok) return;
     const updatedUser = toSessionUser(result.user);
     setSession((prev) => ({ ...prev, user: updatedUser }));
-    saveSession({ user: updatedUser });
+    saveStoredSession({ user: updatedUser, token: getSessionToken() });
   }, [session.user]);
 
   return (
