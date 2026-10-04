@@ -23,6 +23,10 @@ const STORAGE_KEY = "asams-session";
 // Pages reachable without signing in.
 const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
 
+// How long the page-load session check may take before it counts as a
+// transient failure (the stored user is kept).
+const SESSION_CHECK_TIMEOUT_MS = 10000;
+
 export interface SessionUser {
   id: string;
   email: string;
@@ -137,36 +141,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    // sessionStorage only exists in the browser, so the real session state
-    // can't be known during the server-rendered "loading" pass. The stored
-    // user is only trusted while the server's session cookie (which is
-    // what actually authorises API requests) belongs to the same account;
-    // the server's copy of the role wins, so a role changed by an
-    // Administrator shows up on the next load.
-    const stored = loadSession();
-    const storedUser = stored.user;
-    if (!storedUser) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration of client-only sessionStorage into React state.
-      setSession({ status: "unauthenticated", user: null });
-      return;
-    }
+    // Restore the session on page load (refresh, deep link, new tab). The
+    // status stays "loading" until this settles, and nothing redirects or
+    // clears the session while it is loading. The server session cookie is
+    // what actually authorises API requests, so /api/auth/session decides:
+    //   200 -> signed in as the account it names (also restores a new tab,
+    //          whose per-tab sessionStorage starts empty, and picks up a
+    //          role or profile change made since sign-in)
+    //   401 -> no valid session (expired, signed out, Inactive or Locked)
+    //          -> signed out
+    //   anything else (5xx, network error, timeout) is transient: keep the
+    //   stored user rather than signing them out; if the session really is
+    //   gone, the next API call's 401 signs them out then.
+    const storedUser = loadSession().user;
     let cancelled = false;
-    fetch("/api/auth/session")
-      .then((response) => (response.ok ? response.json() : null))
-      .catch(() => null)
-      .then((result: { ok?: boolean; user?: { id: string; role: Role } } | null) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), SESSION_CHECK_TIMEOUT_MS);
+    fetch("/api/auth/session", { signal: controller.signal })
+      .then(async (response): Promise<SessionUser | null | "transient"> => {
+        if (response.status === 401) return null;
+        if (!response.ok) return "transient";
+        const result = (await response.json()) as { ok?: boolean; user?: RawSessionUser };
+        return result.ok && result.user ? toSessionUser(result.user) : "transient";
+      })
+      .catch((): "transient" => "transient")
+      .then((outcome) => {
+        clearTimeout(timeout);
         if (cancelled) return;
-        if (result?.ok && result.user?.id === storedUser.id) {
-          const user = { ...storedUser, role: result.user.role };
-          saveSession({ user });
-          setSession({ status: "authenticated", user });
-        } else {
-          saveSession({ user: null });
-          setSession({ status: "unauthenticated", user: null });
-        }
+        const user = outcome === "transient" ? storedUser : outcome;
+        saveSession({ user });
+        setSession(user ? { status: "authenticated", user } : { status: "unauthenticated", user: null });
       });
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
+      controller.abort();
     };
   }, []);
 

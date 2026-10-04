@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { getApiUser, unauthorized } from "@/lib/auth/server-session";
+import { getSessionUser, unauthorized } from "@/lib/auth/server-session";
 
-// Who the server session belongs to - the browser checks this on load so
-// its stored user can't drift from the account the API is acting as
-// (e.g. after signing in as someone else in another tab, an expired
-// session, or deactivation).
+// The account this browser's server session belongs to, in the same shape
+// Sign In returns. The browser uses it on page load to restore (or, in a
+// new tab, re-create) its signed-in user. 401 means there is no valid
+// session - missing, expired, signed out, or the account is now Inactive
+// or Locked - and is the only answer that signs the browser out.
 export async function GET() {
-  const user = await getApiUser();
+  const user = await getSessionUser();
   if (!user) return unauthorized();
-  return NextResponse.json({ ok: true, user: { id: user.id, role: user.role } });
+  return NextResponse.json({ ok: true, user });
 }
