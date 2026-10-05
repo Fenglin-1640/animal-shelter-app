@@ -1,6 +1,7 @@
 import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import { writeAuditLog } from "@/lib/audit/store";
+import type { AntibodyCheck } from "@/lib/medical/antibodies";
 import type {
   DesexingSchedule,
   DesexingStatus,
@@ -200,14 +201,19 @@ export interface VaccinationInput {
   administrationDate: string;
   doseOrChipId: string;
   nextBoosterDueDate: string;
+  // Required when a current antibody check already covers this vaccine.
+  antibodyOverrideReason?: string;
+  antibodyOverrideNote?: string;
 }
+
+export type VaccinationResult = MutationResult | { ok: false; reason: "antibodies_present"; antigens: string[] };
 
 export async function recordVaccination(
   animalId: string,
   input: VaccinationInput,
   email: string,
   name: string,
-): Promise<MutationResult> {
+): Promise<VaccinationResult> {
   if (!(await getAnimalById(animalId))) return { ok: false, reason: "not_found" };
   const record: VaccinationRecord = {
     id: generateId("VAC"),
@@ -217,9 +223,40 @@ export async function recordVaccination(
     veterinarianName: name,
     createdAt: new Date().toISOString(),
   };
-  await postJson("/api/medical/vaccinations", record);
-  await audit(email, name, "Record Vaccination", animalId, `vaccineType=${input.vaccineType}; administrationDate=${input.administrationDate}`);
+  // The route records the audit entry with the vaccination.
+  const response = await send("/api/medical/vaccinations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(record),
+  });
+  const result = await response.json();
+  if (result.reason === "antibodies_present") return { ok: false, reason: "antibodies_present", antigens: result.antigens ?? [] };
+  if (!result.ok) return { ok: false, reason: result.reason ?? "failed" };
   return { ok: true };
+}
+
+export async function listAntibodyChecks(animalId: string): Promise<AntibodyCheck[]> {
+  const result = await getJson(`/api/medical/antibody-checks?animalId=${encodeURIComponent(animalId)}`);
+  return (result.items as AntibodyCheck[]) ?? [];
+}
+
+export interface AntibodyCheckInput {
+  antigen: string;
+  result: string;
+  testDate: string;
+  expiryDate: string;
+  notes: string;
+}
+
+// Recorded (and audited) by the route as the signed-in Veterinarian.
+export async function recordAntibodyCheck(animalId: string, input: AntibodyCheckInput): Promise<MutationResult> {
+  const response = await send("/api/medical/antibody-checks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ animalId, ...input }),
+  });
+  const result = await response.json();
+  return result.ok ? { ok: true } : { ok: false, reason: result.reason ?? "failed" };
 }
 
 export async function getDesexingSchedule(animalId: string): Promise<DesexingSchedule | undefined> {

@@ -21,6 +21,7 @@ import {
   getMedicalClearance,
   getMedicalClearanceBlockers,
   issueMedicalClearance,
+  listAntibodyChecks,
   listHealthAssessments,
   listTreatmentEvents,
   listVaccinations,
@@ -34,6 +35,9 @@ import {
   type VaccinationInput,
 } from "@/lib/medical/store";
 import { DESEXING_STATUS_CATEGORY } from "@/lib/medical/status";
+import type { AntibodyCheck } from "@/lib/medical/antibodies";
+import { AntibodyChecksSection } from "@/components/medical/antibody-checks-section";
+import { AntibodyOverrideModal } from "@/components/medical/antibody-override-modal";
 import type {
   DesexingSchedule,
   HealthAssessment,
@@ -456,6 +460,11 @@ function MedicalContent({
   const [healthAssessments, setHealthAssessments] = useState<HealthAssessment[]>([]);
   const [treatmentEvents, setTreatmentEvents] = useState<TreatmentEvent[]>([]);
   const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
+  const [antibodyChecks, setAntibodyChecks] = useState<AntibodyCheck[]>([]);
+  // A vaccination waiting on the antibody question (the route refused it
+  // because a current antibody check already covers it).
+  const [pendingOverride, setPendingOverride] = useState<{ input: VaccinationInput; antigens: string[] } | null>(null);
+  const [savingVaccination, setSavingVaccination] = useState(false);
   const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
   const [clearance, setClearance] = useState<MedicalClearance | undefined>(undefined);
   // The Veterinarian half of Review Adoption Fitness, which issuing the
@@ -479,7 +488,7 @@ function MedicalContent({
   const [clearanceBlockers, setClearanceBlockers] = useState<string[]>([]);
 
   const reloadMedical = async () => {
-    const [healthAssessmentsResult, treatmentEventsResult, vaccinationsResult, desexingResult, clearanceResult, triggerResult, blockersResult, reviewResult] =
+    const [healthAssessmentsResult, treatmentEventsResult, vaccinationsResult, desexingResult, clearanceResult, triggerResult, blockersResult, reviewResult, antibodyResult] =
       await Promise.all([
         listHealthAssessments(animalId),
         listTreatmentEvents(animalId),
@@ -489,6 +498,7 @@ function MedicalContent({
         getActiveTreatmentTrigger(animalId),
         getMedicalClearanceBlockers(animalId),
         getFitnessReview(animalId),
+        listAntibodyChecks(animalId),
       ]);
     setHealthAssessments(healthAssessmentsResult);
     setTreatmentEvents(treatmentEventsResult);
@@ -498,6 +508,23 @@ function MedicalContent({
     setUnderTreatment(Boolean(triggerResult));
     setClearanceBlockers(blockersResult);
     setFitnessReview(reviewResult);
+    setAntibodyChecks(antibodyResult);
+  };
+
+  const saveVaccination = async (input: VaccinationInput) => {
+    setSavingVaccination(true);
+    try {
+      const result = await recordVaccination(animalId, input, email, displayName);
+      if (!result.ok && result.reason === "antibodies_present" && "antigens" in result) {
+        setPendingOverride({ input, antigens: result.antigens });
+        return;
+      }
+      setPendingOverride(null);
+      setShowVaccinationForm(false);
+      refresh();
+    } finally {
+      setSavingVaccination(false);
+    }
   };
 
   useEffect(() => {
@@ -709,6 +736,12 @@ function MedicalContent({
                     Next booster due {formatDate(v.nextBoosterDueDate)}
                   </p>
                 )}
+                {v.antibodyOverrideReason && (
+                  <p className="text-text">
+                    Given despite existing antibodies: {v.antibodyOverrideReason}
+                    {v.antibodyOverrideNote ? ` - ${v.antibodyOverrideNote}` : ""}
+                  </p>
+                )}
                 <p className="mt-1 text-xs text-text-muted">
                   {v.veterinarianName} &middot; {formatDateTime(v.createdAt)}
                 </p>
@@ -729,14 +762,23 @@ function MedicalContent({
           <VaccinationForm
             vaccineTypeOptions={vaccineTypeOptions}
             onCancel={() => setShowVaccinationForm(false)}
-            onSubmit={async (input) => {
-              await recordVaccination(animalId, input, email, displayName);
-              setShowVaccinationForm(false);
-              refresh();
-            }}
+            onSubmit={(input) => void saveVaccination(input)}
+          />
+        )}
+        {pendingOverride && (
+          <AntibodyOverrideModal
+            animalName={animal.name}
+            antigens={pendingOverride.antigens}
+            saving={savingVaccination}
+            onCancel={() => setPendingOverride(null)}
+            onConfirm={(reason, note) =>
+              void saveVaccination({ ...pendingOverride.input, antibodyOverrideReason: reason, antibodyOverrideNote: note })
+            }
           />
         )}
       </SectionCard>
+
+      <AntibodyChecksSection animalId={animalId} checks={antibodyChecks} canAct={canAct} onSaved={() => void reloadMedical()} />
 
       <SectionCard title="Desexing" required>
         {desexing ? (

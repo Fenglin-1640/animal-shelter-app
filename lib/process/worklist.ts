@@ -43,6 +43,16 @@ export interface PaymentToConfirm {
   animalName: string;
 }
 
+export type WorkbenchSectionKey = "implant" | "vaccination_desexing" | "clearance" | "pre_release";
+
+export interface WorkbenchRow {
+  animalId: string;
+  title: string;
+  shelterId: string;
+  detail: string;
+  href: string;
+}
+
 export interface Worklist {
   role: Role;
   counts: Record<string, number>;
@@ -50,6 +60,60 @@ export interface Worklist {
   applications: Record<string, ListFlag>;
   items: WorkItem[];
   paymentsToConfirm: PaymentToConfirm[];
+  // Veterinarian only: the Vet Workbench sections.
+  workbench?: Record<WorkbenchSectionKey, WorkbenchRow[]>;
+}
+
+// Animals that have left the shelter's care get no vaccination or
+// desexing reminders.
+const OUT_OF_CARE = new Set(["ReturnedToOwner", "Archived", "Rehomed", "inFollowUpPeriod"]);
+const BOOSTER_WINDOW_MS = 14 * 86400000;
+
+function formatDay(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Which Vet Workbench section an animal belongs in (at most one), from
+// the engine's steps plus appointments and boosters coming due.
+function workbenchRow(records: AnimalRecords, steps: ProcessStep[], now: number): [WorkbenchSectionKey, WorkbenchRow] | null {
+  const { animal } = records;
+  const a = animal.animalId;
+  const base = { animalId: a, title: animal.name, shelterId: animal.shelterId };
+  const vetStep = (key: StepKey) => steps.find((s) => s.key === key && needsRole(s, "Veterinarian"));
+
+  if (records.implant?.status === "Pending") {
+    return ["implant", { ...base, detail: `Implant microchip ${records.implant.assignedNumber}`, href: `/animals/${a}/microchip-implant` }];
+  }
+  const preRelease = vetStep("pre_release_check");
+  if (preRelease) return ["pre_release", { ...base, detail: preRelease.nextAction ?? "Conduct pre-release check", href: `/animals/${a}/pre-release-check` }];
+
+  const due: string[] = [];
+  const vacc = vetStep("implant_vaccination_desexing");
+  if (vacc) due.push(vacc.nextAction ?? vacc.detail);
+  if (!OUT_OF_CARE.has(animal.currentStatus)) {
+    const d = records.desexing;
+    if (d?.status === "Scheduled" && new Date(d.scheduledDate).getTime() <= now) due.push(`Desexing appointment due ${formatDay(d.scheduledDate)}`);
+    const latestByType = new Map<string, (typeof records.vaccinations)[number]>();
+    for (const v of records.vaccinations) {
+      const prev = latestByType.get(v.vaccineType);
+      if (!prev || new Date(v.administrationDate).getTime() > new Date(prev.administrationDate).getTime()) latestByType.set(v.vaccineType, v);
+    }
+    for (const v of latestByType.values()) {
+      if (v.nextBoosterDueDate && new Date(v.nextBoosterDueDate).getTime() <= now + BOOSTER_WINDOW_MS) {
+        due.push(`${v.vaccineType} booster due ${formatDay(v.nextBoosterDueDate)}`);
+      }
+    }
+  }
+  if (due.length > 0) return ["vaccination_desexing", { ...base, detail: due.join(" · "), href: `/animals/${a}/medical` }];
+
+  const clearance = vetStep("health_clearance");
+  if (clearance) return ["clearance", { ...base, detail: clearance.nextAction ?? clearance.detail, href: `/animals/${a}/medical` }];
+  // The clearance stands but its fitness confirmation was withdrawn (e.g.
+  // by a new Statutory Hold) and the animal is still on its way to listing.
+  if (records.clearances.length > 0 && !records.fitnessReview?.vetConfirmedAt && (animal.listingStatus === "Not Fit" || animal.listingStatus === "Pre-Listing")) {
+    return ["clearance", { ...base, detail: "Issue Medical Clearance again to re-confirm fitness", href: `/animals/${a}/medical` }];
+  }
+  return null;
 }
 
 // Where each step's action is taken, per acting role.
@@ -93,7 +157,7 @@ function hrefFor(step: StepKey, role: Role, records: AnimalRecords, applicationI
 }
 
 // Sidebar label that each pending step counts towards, per acting role.
-function navLabelFor(step: StepKey, role: Role, implantPending = false): string | null {
+function navLabelFor(step: StepKey, role: Role): string | null {
   if (role === "Adopter") {
     if (step === "application" || step === "documents") return "My Applications";
     if (step === "meet_and_greet") return "My Meet and Greets";
@@ -102,7 +166,6 @@ function navLabelFor(step: StepKey, role: Role, implantPending = false): string 
   }
   if (role === "Veterinarian") {
     if (step === "pre_release_check") return "Pre-Release Checks";
-    if (step === "microchip" || (step === "implant_vaccination_desexing" && implantPending)) return "Microchip Implants";
     return "Animals";
   }
   if (step === "suitability_checks" || step === "meet_and_greet") return "Adoption Applications";
@@ -150,6 +213,9 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
     staffSide ? db.orm.IntakeRecord.select("intakeId", "councilTransferSubmissionId").all() : Promise.resolve([]),
   ]);
   const normalizedEmail = email.trim().toLowerCase();
+  const workbench: Record<WorkbenchSectionKey, WorkbenchRow[]> | undefined =
+    role === "Veterinarian" ? { implant: [], vaccination_desexing: [], clearance: [], pre_release: [] } : undefined;
+  const now = Date.now();
 
   for (const records of all.values()) {
     const { animal } = records;
@@ -171,10 +237,17 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
     const active = pickActiveApplication(records.applications);
     const next = steps.find((s) => needsRole(s, role));
     animals[animal.animalId] = { needsMyAction: Boolean(next), nextAction: next?.nextAction, priority: next ? 0 : 1 };
+    if (workbench) {
+      const row = workbenchRow(records, steps, now);
+      if (row) {
+        workbench[row[0]].push(row[1]);
+        if (row[0] !== "pre_release") bump("Vet Workbench");
+      }
+    }
     if (next) {
       const appId = APPLICATION_STAGE.includes(next.key) ? active?.applicationId : undefined;
       items.push({ key: `animal-${animal.animalId}`, animalId: animal.animalId, applicationId: appId, title: animal.name, nextAction: next.nextAction ?? next.label, stepKey: next.key, href: hrefFor(next.key, acting, records, active?.applicationId) });
-      bump(navLabelFor(next.key, acting, records.implant?.status === "Pending"));
+      if (!workbench) bump(navLabelFor(next.key, acting));
     }
     // Application list flags (Staff/Admin/Vet views of applications).
     for (const app of records.applications) {
@@ -198,5 +271,9 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
     }
   }
 
-  return { role, counts, animals, applications, items, paymentsToConfirm };
+  if (workbench) {
+    counts["Pre-Release Checks"] = workbench.pre_release.length;
+    if (!counts["Pre-Release Checks"]) delete counts["Pre-Release Checks"];
+  }
+  return { role, counts, animals, applications, items, paymentsToConfirm, workbench };
 }

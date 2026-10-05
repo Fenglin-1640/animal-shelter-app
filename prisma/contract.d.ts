@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1013a4549b1e22a75f9fad2ae66bea8abb699c801878db150fd3bf61e2d9f688'>;
+  StorageHashBase<'073ecbc0cda9eb558f3d299437d8dbcd9a3e828b6504dd61063d9fdb0b1081cd'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -348,6 +348,18 @@ export type FieldOutputTypes = {
       readonly linkedPersonRole: CodecTypes['pg/text@1']['output'] | null;
       readonly linkedPersonName: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly AntibodyCheck: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly antigen: CodecTypes['pg/text@1']['output'];
+      readonly result: CodecTypes['pg/text@1']['output'];
+      readonly testDate: CodecTypes['pg/text@1']['output'];
+      readonly expiryDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly recordedByEmail: CodecTypes['pg/text@1']['output'];
+      readonly recordedByName: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
+    };
     readonly AssessmentTask: {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly animalId: CodecTypes['pg/text@1']['output'];
@@ -676,6 +688,8 @@ export type FieldOutputTypes = {
       readonly veterinarianEmail: CodecTypes['pg/text@1']['output'];
       readonly veterinarianName: CodecTypes['pg/text@1']['output'];
       readonly createdAt: TimestamptzString<6>;
+      readonly antibodyOverrideReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly antibodyOverrideNote: CodecTypes['pg/text@1']['output'] | null;
     };
   };
 };
@@ -787,6 +801,18 @@ export type FieldInputTypes = {
       readonly intakeSource: CodecTypes['pg/text@1']['input'];
       readonly linkedPersonRole: CodecTypes['pg/text@1']['input'] | null;
       readonly linkedPersonName: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly AntibodyCheck: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly antigen: CodecTypes['pg/text@1']['input'];
+      readonly result: CodecTypes['pg/text@1']['input'];
+      readonly testDate: CodecTypes['pg/text@1']['input'];
+      readonly expiryDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly recordedByEmail: CodecTypes['pg/text@1']['input'];
+      readonly recordedByName: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly AssessmentTask: {
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -1116,6 +1142,8 @@ export type FieldInputTypes = {
       readonly veterinarianEmail: CodecTypes['pg/text@1']['input'];
       readonly veterinarianName: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly antibodyOverrideReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly antibodyOverrideNote: CodecTypes['pg/text@1']['input'] | null;
     };
   };
 };
@@ -1227,6 +1255,18 @@ export type StorageColumnTypes = {
       readonly species: CodecTypes['pg/text@1']['output'];
       readonly statusUpdatedAt: TimestamptzString<6>;
       readonly temperaments: CodecTypes['pg/text@1']['output'];
+    };
+    readonly antibodyCheck: {
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly antigen: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
+      readonly expiryDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly recordedByEmail: CodecTypes['pg/text@1']['output'];
+      readonly recordedByName: CodecTypes['pg/text@1']['output'];
+      readonly result: CodecTypes['pg/text@1']['output'];
+      readonly testDate: CodecTypes['pg/text@1']['output'];
     };
     readonly assessmentTask: {
       readonly animalId: CodecTypes['pg/text@1']['output'];
@@ -1549,6 +1589,8 @@ export type StorageColumnTypes = {
     readonly vaccinationRecord: {
       readonly administrationDate: CodecTypes['pg/text@1']['output'];
       readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly antibodyOverrideNote: CodecTypes['pg/text@1']['output'] | null;
+      readonly antibodyOverrideReason: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: TimestamptzString<6>;
       readonly doseOrChipId: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -1668,6 +1710,18 @@ export type StorageColumnInputTypes = {
       readonly statusUpdatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly temperaments: CodecTypes['pg/text@1']['input'];
     };
+    readonly antibodyCheck: {
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly antigen: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly expiryDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly recordedByEmail: CodecTypes['pg/text@1']['input'];
+      readonly recordedByName: CodecTypes['pg/text@1']['input'];
+      readonly result: CodecTypes['pg/text@1']['input'];
+      readonly testDate: CodecTypes['pg/text@1']['input'];
+    };
     readonly assessmentTask: {
       readonly animalId: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -1989,6 +2043,8 @@ export type StorageColumnInputTypes = {
     readonly vaccinationRecord: {
       readonly administrationDate: CodecTypes['pg/text@1']['input'];
       readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly antibodyOverrideNote: CodecTypes['pg/text@1']['input'] | null;
+      readonly antibodyOverrideReason: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly doseOrChipId: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -2088,6 +2144,8 @@ export namespace Models {
     veterinarianEmail: CodecTypes['pg/text@1']['output'];
     veterinarianName: CodecTypes['pg/text@1']['output'];
     createdAt: TimestamptzString<6>;
+    antibodyOverrideReason: CodecTypes['pg/text@1']['output'] | null;
+    antibodyOverrideNote: CodecTypes['pg/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
   export type public_DesexingSchedule = {
@@ -2446,6 +2504,19 @@ export namespace Models {
     vetConfirmationNote: CodecTypes['pg/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type public_AntibodyCheck = {
+    id: CodecTypes['pg/text@1']['output'];
+    animalId: CodecTypes['pg/text@1']['output'];
+    antigen: CodecTypes['pg/text@1']['output'];
+    result: CodecTypes['pg/text@1']['output'];
+    testDate: CodecTypes['pg/text@1']['output'];
+    expiryDate: CodecTypes['pg/text@1']['output'] | null;
+    notes: CodecTypes['pg/text@1']['output'];
+    recordedByEmail: CodecTypes['pg/text@1']['output'];
+    recordedByName: CodecTypes['pg/text@1']['output'];
+    createdAt: TimestamptzString<6>;
+    readonly [RelationKeys]?: never;
+  };
   export type public_MicrochipImplantTask = {
     id: CodecTypes['pg/text@1']['output'];
     animalId: CodecTypes['pg/text@1']['output'];
@@ -2497,6 +2568,7 @@ export declare const models: {
     MicrochipLookup: Models.public_MicrochipLookup;
     AssessmentTask: Models.public_AssessmentTask;
     FitnessReview: Models.public_FitnessReview;
+    AntibodyCheck: Models.public_AntibodyCheck;
     MicrochipImplantTask: Models.public_MicrochipImplantTask;
     NotificationReadOverride: Models.public_NotificationReadOverride;
   };
@@ -3058,6 +3130,65 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['animalId'] };
               uniques: readonly [{ readonly columns: readonly ['shelterId'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly antibodyCheck: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly antigen: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly result: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly testDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly expiryDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly recordedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly recordedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
             };
@@ -4697,6 +4828,16 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 6 };
                 };
+                readonly antibodyOverrideReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly antibodyOverrideNote: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [];
@@ -4812,6 +4953,10 @@ type ContractBase = Omit<
     readonly fitnessReview: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'FitnessReview';
+    };
+    readonly antibodyCheck: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AntibodyCheck';
     };
     readonly microchipImplantTask: {
       readonly namespace: 'public' & NamespaceId;
@@ -5427,6 +5572,71 @@ type ContractBase = Omit<
                 readonly intakeSource: { readonly column: 'intakeSource' };
                 readonly linkedPersonRole: { readonly column: 'linkedPersonRole' };
                 readonly linkedPersonName: { readonly column: 'linkedPersonName' };
+              };
+            };
+          };
+          readonly AntibodyCheck: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly antigen: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly result: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly testDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly expiryDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly recordedByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly recordedByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'antibodyCheck';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly antigen: { readonly column: 'antigen' };
+                readonly result: { readonly column: 'result' };
+                readonly testDate: { readonly column: 'testDate' };
+                readonly expiryDate: { readonly column: 'expiryDate' };
+                readonly notes: { readonly column: 'notes' };
+                readonly recordedByEmail: { readonly column: 'recordedByEmail' };
+                readonly recordedByName: { readonly column: 'recordedByName' };
+                readonly createdAt: { readonly column: 'createdAt' };
               };
             };
           };
@@ -7257,6 +7467,14 @@ type ContractBase = Omit<
                   readonly typeParams: { readonly precision: 6 };
                 };
               };
+              readonly antibodyOverrideReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly antibodyOverrideNote: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
             };
             readonly relations: Record<string, never>;
             readonly storage: {
@@ -7272,6 +7490,8 @@ type ContractBase = Omit<
                 readonly veterinarianEmail: { readonly column: 'veterinarianEmail' };
                 readonly veterinarianName: { readonly column: 'veterinarianName' };
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly antibodyOverrideReason: { readonly column: 'antibodyOverrideReason' };
+                readonly antibodyOverrideNote: { readonly column: 'antibodyOverrideNote' };
               };
             };
           };

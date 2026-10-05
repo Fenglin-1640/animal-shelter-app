@@ -16,7 +16,7 @@ export const FUNCTION_HREFS: Partial<Record<string, string>> = {
   "Adoption Applications": "/adoption-applications",
   Adoptions: "/adoptions",
   "Pre-Release Checks": "/pre-release-checks",
-  "Microchip Implants": "/microchip-implants",
+  "Vet Workbench": "/vet-workbench",
   "Follow Up Visits": "/follow-up-visits",
   "My Follow Up Visits": "/my-follow-up-visits",
   "Archive Search": "/archive",

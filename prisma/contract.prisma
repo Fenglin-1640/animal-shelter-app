@@ -128,6 +128,10 @@ model VaccinationRecord {
   veterinarianEmail  String
   veterinarianName   String
   createdAt          TimestamptzString(6)
+  // Why the vaccine was given although a current antibody check showed
+  // protection; the note is required when the reason is "Other".
+  antibodyOverrideReason String?
+  antibodyOverrideNote   String?
 }
 
 model DesexingSchedule {
@@ -622,6 +626,20 @@ model FitnessReview {
 // number (15 digits, prefix 036) and gives the Veterinarian this implant
 // task; completing it sets the animal's microchip number and completes
 // the Microchip Check fitness task. status: Pending | Completed.
+// Antibody (titre) test results recorded by a Veterinarian.
+model AntibodyCheck {
+  id              String   @id
+  animalId        String
+  antigen         String
+  result          String
+  testDate        String
+  expiryDate      String?
+  notes           String
+  recordedByEmail String
+  recordedByName  String
+  createdAt       TimestamptzString(6)
+}
+
 model MicrochipImplantTask {
   id               String    @id
   animalId         String

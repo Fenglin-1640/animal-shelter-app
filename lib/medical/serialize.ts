@@ -51,11 +51,18 @@ export function toTreatmentEvent(row: TreatmentEventRow): TreatmentEvent {
   };
 }
 
-export interface VaccinationRecordRow extends Omit<VaccinationRecord, "createdAt"> {
+export interface VaccinationRecordRow extends Omit<VaccinationRecord, "createdAt" | "antibodyOverrideReason" | "antibodyOverrideNote"> {
   createdAt: string;
+  antibodyOverrideReason: string | null;
+  antibodyOverrideNote: string | null;
 }
 export function toVaccinationRecord(row: VaccinationRecordRow): VaccinationRecord {
-  return { ...row, createdAt: row.createdAt };
+  return {
+    ...row,
+    createdAt: row.createdAt,
+    antibodyOverrideReason: row.antibodyOverrideReason ?? undefined,
+    antibodyOverrideNote: row.antibodyOverrideNote ?? undefined,
+  };
 }
 
 export interface DesexingScheduleRow

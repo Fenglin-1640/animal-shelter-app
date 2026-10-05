@@ -69,6 +69,10 @@ export interface VaccinationRecord {
   veterinarianEmail: string;
   veterinarianName: string;
   createdAt: string;
+  // Set when the vaccine was given although a current antibody check
+  // showed protection (see lib/medical/antibodies.ts).
+  antibodyOverrideReason?: string;
+  antibodyOverrideNote?: string;
 }
 
 // "Exempt (Species)" and "Already Desexed (Pre-Intake)" both satisfy

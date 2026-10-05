@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { AntibodyOverrideModal } from "@/components/medical/antibody-override-modal";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
@@ -71,6 +72,9 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
   const [scheduledDate, setScheduledDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Antigens a current antibody check already covers, while the Vet is
+  // asked whether to vaccinate anyway.
+  const [antibodyAntigens, setAntibodyAntigens] = useState<string[] | null>(null);
 
   const load = async () => {
     const [animalResult, taskResult, vaccinationResult, desexingResult] = await Promise.all([
@@ -125,15 +129,34 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
   // One session: vaccination and desexing are saved first (each audited),
   // then the implant task completes on the server, which sets the
   // animal's microchip number and completes the Microchip Check task.
-  const handleComplete = async () => {
+  const handleComplete = async (override?: { reason: string; note: string }) => {
     if (!task) return;
     setSaving(true);
     setError(null);
     try {
       if (needsVaccination) {
-        const result = await recordVaccination(animalId, { vaccineType, administrationDate, doseOrChipId: doseOrChipId.trim(), nextBoosterDueDate }, email, displayName);
+        const result = await recordVaccination(
+          animalId,
+          {
+            vaccineType,
+            administrationDate,
+            doseOrChipId: doseOrChipId.trim(),
+            nextBoosterDueDate,
+            antibodyOverrideReason: override?.reason,
+            antibodyOverrideNote: override?.note,
+          },
+          email,
+          displayName,
+        );
+        // A current antibody check covers this vaccine: ask first, then
+        // run the session again with the chosen reason.
+        if (!result.ok && result.reason === "antibodies_present" && "antigens" in result) {
+          setAntibodyAntigens(result.antigens);
+          return;
+        }
         if (!result.ok) throw new Error("The vaccination could not be saved.");
       }
+      setAntibodyAntigens(null);
       if (needsDesexing) {
         const result =
           desexingChoice === "schedule"
@@ -272,6 +295,16 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
               <p className="mt-2 text-sm text-text-muted">Not yet recorded.</p>
             )}
           </Section>
+
+          {antibodyAntigens && (
+            <AntibodyOverrideModal
+              animalName={animal.name}
+              antigens={antibodyAntigens}
+              saving={saving}
+              onCancel={() => setAntibodyAntigens(null)}
+              onConfirm={(reason, note) => void handleComplete({ reason, note })}
+            />
+          )}
 
           {error && (
             <p role="alert" className="rounded-[12px] border border-danger bg-danger/10 px-3 py-2 text-sm text-text">

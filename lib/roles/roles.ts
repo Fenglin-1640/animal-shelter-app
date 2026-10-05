@@ -87,12 +87,12 @@ export const ROLE_FUNCTIONS: Record<Role, RoleFunctions> = {
     administration: [],
     user: [
       {
-        label: "Animals",
-        description: "View animal profiles, lifecycle status and photos.",
+        label: "Vet Workbench",
+        description: "Microchip implants, vaccinations, desexing and clearances waiting on you.",
       },
       {
-        label: "Microchip Implants",
-        description: "Implant assigned microchips and record vaccination and desexing.",
+        label: "Animals",
+        description: "View animal profiles, lifecycle status and photos.",
       },
       {
         label: "Pre-Release Checks",

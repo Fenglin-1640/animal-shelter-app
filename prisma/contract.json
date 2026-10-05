@@ -24,6 +24,10 @@
       "model": "Animal",
       "namespace": "public"
     },
+    "antibodyCheck": {
+      "model": "AntibodyCheck",
+      "namespace": "public"
+    },
     "assessmentTask": {
       "model": "AssessmentTask",
       "namespace": "public"
@@ -1196,6 +1200,120 @@
               },
               "namespaceId": "public",
               "table": "animal"
+            }
+          },
+          "AntibodyCheck": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "antigen": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "expiryDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "notes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "recordedByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "recordedByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "result": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "testDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "antigen": {
+                  "column": "antigen"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiryDate": {
+                  "column": "expiryDate"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "notes": {
+                  "column": "notes"
+                },
+                "recordedByEmail": {
+                  "column": "recordedByEmail"
+                },
+                "recordedByName": {
+                  "column": "recordedByName"
+                },
+                "result": {
+                  "column": "result"
+                },
+                "testDate": {
+                  "column": "testDate"
+                }
+              },
+              "namespaceId": "public",
+              "table": "antibodyCheck"
             }
           },
           "AssessmentTask": {
@@ -4307,6 +4425,20 @@
                   "kind": "scalar"
                 }
               },
+              "antibodyOverrideNote": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "antibodyOverrideReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -4368,6 +4500,12 @@
                 },
                 "animalId": {
                   "column": "animalId"
+                },
+                "antibodyOverrideNote": {
+                  "column": "antibodyOverrideNote"
+                },
+                "antibodyOverrideReason": {
+                  "column": "antibodyOverrideReason"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -5002,6 +5140,71 @@
                   ]
                 }
               ]
+            },
+            "antibodyCheck": {
+              "columns": {
+                "animalId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "antigen": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "expiryDate": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "recordedByEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "recordedByName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "result": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "testDate": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             },
             "assessmentTask": {
               "columns": {
@@ -6787,6 +6990,16 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "antibodyOverrideNote": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "antibodyOverrideReason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -6841,7 +7054,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1013a4549b1e22a75f9fad2ae66bea8abb699c801878db150fd3bf61e2d9f688"
+    "storageHash": "073ecbc0cda9eb558f3d299437d8dbcd9a3e828b6504dd61063d9fdb0b1081cd"
   },
   "capabilities": {
     "postgres": {

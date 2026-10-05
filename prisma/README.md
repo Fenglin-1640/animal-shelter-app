@@ -315,6 +315,10 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   app/api/microchip-implants. Created when Scan Microchip finds no chip;
   `assignedNumber` is unique (15 digits, prefix 036). Written only by
   its two routes, each in a transaction with its AuditLog entry.
+- `AntibodyCheck` - see lib/medical/antibodies.ts and
+  app/api/medical/antibody-checks. Titre results; `expiryDate` is
+  optional. `VaccinationRecord.antibodyOverrideReason`/`antibodyOverrideNote`
+  record why a vaccine was given despite a current Protective check.
 - `NotificationReadOverride` - see lib/notifications/read-state-store.ts.
   Per-account "mark as read" overrides for the Notifications screen
   (FR-NOT-01); each `NotificationItem` already carries its own
