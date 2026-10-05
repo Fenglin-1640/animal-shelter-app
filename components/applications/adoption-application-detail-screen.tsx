@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
+import { ApplicationDocuments } from "@/components/applications/application-documents";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -377,6 +378,8 @@ function AdoptionApplicationDetailContent({
   const [showRejectForm, setShowRejectForm] = useState(false);
 
   const canAct = CAN_ACT_ROLES.includes(role);
+  // Supporting documents are for Shelter Staff and Administrators.
+  const canSeeDocuments = role !== "Veterinarian";
 
   const refresh = async () => {
     const [applicationResult, checksResult] = await Promise.all([
@@ -477,16 +480,10 @@ function AdoptionApplicationDetailContent({
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Motivation Statement</h2>
         <p className="mt-2 text-sm text-text">{application.motivationStatement}</p>
-        {application.documents.length > 0 && (
+        {canSeeDocuments && (
           <>
             <h3 className="mt-4 text-sm font-semibold text-text">Supporting Documents</h3>
-            <ul className="mt-1 flex flex-col gap-1">
-              {application.documents.map((d) => (
-                <li key={d.id} className="text-sm text-text-muted">
-                  {d.fileName}
-                </li>
-              ))}
-            </ul>
+            <ApplicationDocuments applicationId={application.applicationId} documents={application.documents} canEdit={false} />
           </>
         )}
       </section>

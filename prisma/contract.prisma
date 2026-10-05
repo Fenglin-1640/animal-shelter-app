@@ -626,6 +626,33 @@ model FitnessReview {
 // number (15 digits, prefix 036) and gives the Veterinarian this implant
 // task; completing it sets the animal's microchip number and completes
 // the Microchip Check fitness task. status: Pending | Completed.
+// Uploaded files kept in the database (adoption application documents).
+// The content is stored in chunks of at most 2 MB (StoredFileChunk) so
+// neither an upload nor a download exceeds the hosting body-size limit;
+// completedAt is set once every chunk has arrived. List endpoints return
+// these metadata rows only.
+model StoredFile {
+  id              String   @id
+  ownerType       String
+  ownerId         String
+  fileName        String
+  contentType     String
+  sizeBytes       Int
+  chunkCount      Int
+  uploadedByEmail String
+  uploadedByName  String
+  uploadedAt      TimestamptzString(6)
+  completedAt     TimestamptzString(6)?
+}
+
+// One base64-encoded chunk of a StoredFile; id is "<fileId>:<chunkIndex>".
+model StoredFileChunk {
+  id         String @id
+  fileId     String
+  chunkIndex Int
+  data       String
+}
+
 // Antibody (titre) test results recorded by a Veterinarian.
 model AntibodyCheck {
   id              String   @id

@@ -19,6 +19,9 @@ export async function PATCH(
   if (auth instanceof Response) return auth;
   const { id } = await params;
   const patch = (await request.json()) as Partial<AdoptionApplication>;
+  // Documents are added and removed only through /api/files, which keeps
+  // this list in step with the stored files.
+  delete patch.documents;
   if (auth.role === "Adopter") {
     // An Adopter may only edit - and submit - their own Draft application;
     // every later status change is a Staff decision.

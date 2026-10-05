@@ -11,7 +11,12 @@ export async function GET() {
   if (auth instanceof Response) return auth;
   const rows = await db.orm.AdoptionApplication.where({}).all();
   // Adopters see only their own records; the care team sees all.
-  const items = rows.map(toAdoptionApplication).filter((item) => seesAllRecords(auth.role) || isOwnRecord(auth, item.adopterEmail));
+  // Supporting documents are for Shelter Staff, Administrators and the
+  // Adopter only - a Veterinarian gets the application without them.
+  const items = rows
+    .map(toAdoptionApplication)
+    .filter((item) => seesAllRecords(auth.role) || isOwnRecord(auth, item.adopterEmail))
+    .map((item) => (auth.role === "Veterinarian" ? { ...item, documents: [] } : item));
   return NextResponse.json({ items });
 }
 

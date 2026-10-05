@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'073ecbc0cda9eb558f3d299437d8dbcd9a3e828b6504dd61063d9fdb0b1081cd'>;
+  StorageHashBase<'bb7a077d8ae1aef9f7c1fd79ab783cb0d519b82d4b2d08890c55f04b49f87a14'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -609,6 +609,25 @@ export type FieldOutputTypes = {
       readonly custodyTransferByName: CodecTypes['pg/text@1']['output'] | null;
       readonly expiredAt: TimestamptzString<6> | null;
     };
+    readonly StoredFile: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly ownerType: CodecTypes['pg/text@1']['output'];
+      readonly ownerId: CodecTypes['pg/text@1']['output'];
+      readonly fileName: CodecTypes['pg/text@1']['output'];
+      readonly contentType: CodecTypes['pg/text@1']['output'];
+      readonly sizeBytes: CodecTypes['pg/int4@1']['output'];
+      readonly chunkCount: CodecTypes['pg/int4@1']['output'];
+      readonly uploadedByEmail: CodecTypes['pg/text@1']['output'];
+      readonly uploadedByName: CodecTypes['pg/text@1']['output'];
+      readonly uploadedAt: TimestamptzString<6>;
+      readonly completedAt: TimestamptzString<6> | null;
+    };
+    readonly StoredFileChunk: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly fileId: CodecTypes['pg/text@1']['output'];
+      readonly chunkIndex: CodecTypes['pg/int4@1']['output'];
+      readonly data: CodecTypes['pg/text@1']['output'];
+    };
     readonly SuitabilityCheck: {
       readonly checkId: CodecTypes['pg/text@1']['output'];
       readonly applicationId: CodecTypes['pg/text@1']['output'];
@@ -1062,6 +1081,25 @@ export type FieldInputTypes = {
       readonly custodyTransferByEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly custodyTransferByName: CodecTypes['pg/text@1']['input'] | null;
       readonly expiredAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+    };
+    readonly StoredFile: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly ownerType: CodecTypes['pg/text@1']['input'];
+      readonly ownerId: CodecTypes['pg/text@1']['input'];
+      readonly fileName: CodecTypes['pg/text@1']['input'];
+      readonly contentType: CodecTypes['pg/text@1']['input'];
+      readonly sizeBytes: CodecTypes['pg/int4@1']['input'];
+      readonly chunkCount: CodecTypes['pg/int4@1']['input'];
+      readonly uploadedByEmail: CodecTypes['pg/text@1']['input'];
+      readonly uploadedByName: CodecTypes['pg/text@1']['input'];
+      readonly uploadedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+    };
+    readonly StoredFileChunk: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly fileId: CodecTypes['pg/text@1']['input'];
+      readonly chunkIndex: CodecTypes['pg/int4@1']['input'];
+      readonly data: CodecTypes['pg/text@1']['input'];
     };
     readonly SuitabilityCheck: {
       readonly checkId: CodecTypes['pg/text@1']['input'];
@@ -1517,6 +1555,25 @@ export type StorageColumnTypes = {
       readonly reclaimedByName: CodecTypes['pg/text@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
     };
+    readonly storedFile: {
+      readonly chunkCount: CodecTypes['pg/int4@1']['output'];
+      readonly completedAt: TimestamptzString<6> | null;
+      readonly contentType: CodecTypes['pg/text@1']['output'];
+      readonly fileName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly ownerId: CodecTypes['pg/text@1']['output'];
+      readonly ownerType: CodecTypes['pg/text@1']['output'];
+      readonly sizeBytes: CodecTypes['pg/int4@1']['output'];
+      readonly uploadedAt: TimestamptzString<6>;
+      readonly uploadedByEmail: CodecTypes['pg/text@1']['output'];
+      readonly uploadedByName: CodecTypes['pg/text@1']['output'];
+    };
+    readonly storedFileChunk: {
+      readonly chunkIndex: CodecTypes['pg/int4@1']['output'];
+      readonly data: CodecTypes['pg/text@1']['output'];
+      readonly fileId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+    };
     readonly suitabilityCheck: {
       readonly applicationId: CodecTypes['pg/text@1']['output'];
       readonly checkId: CodecTypes['pg/text@1']['output'];
@@ -1970,6 +2027,25 @@ export type StorageColumnInputTypes = {
       readonly reclaimedByEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly reclaimedByName: CodecTypes['pg/text@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
+    };
+    readonly storedFile: {
+      readonly chunkCount: CodecTypes['pg/int4@1']['input'];
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly contentType: CodecTypes['pg/text@1']['input'];
+      readonly fileName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly ownerId: CodecTypes['pg/text@1']['input'];
+      readonly ownerType: CodecTypes['pg/text@1']['input'];
+      readonly sizeBytes: CodecTypes['pg/int4@1']['input'];
+      readonly uploadedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly uploadedByEmail: CodecTypes['pg/text@1']['input'];
+      readonly uploadedByName: CodecTypes['pg/text@1']['input'];
+    };
+    readonly storedFileChunk: {
+      readonly chunkIndex: CodecTypes['pg/int4@1']['input'];
+      readonly data: CodecTypes['pg/text@1']['input'];
+      readonly fileId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
     };
     readonly suitabilityCheck: {
       readonly applicationId: CodecTypes['pg/text@1']['input'];
@@ -2504,6 +2580,27 @@ export namespace Models {
     vetConfirmationNote: CodecTypes['pg/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
+  export type public_StoredFile = {
+    id: CodecTypes['pg/text@1']['output'];
+    ownerType: CodecTypes['pg/text@1']['output'];
+    ownerId: CodecTypes['pg/text@1']['output'];
+    fileName: CodecTypes['pg/text@1']['output'];
+    contentType: CodecTypes['pg/text@1']['output'];
+    sizeBytes: CodecTypes['pg/int4@1']['output'];
+    chunkCount: CodecTypes['pg/int4@1']['output'];
+    uploadedByEmail: CodecTypes['pg/text@1']['output'];
+    uploadedByName: CodecTypes['pg/text@1']['output'];
+    uploadedAt: TimestamptzString<6>;
+    completedAt: TimestamptzString<6> | null;
+    readonly [RelationKeys]?: never;
+  };
+  export type public_StoredFileChunk = {
+    id: CodecTypes['pg/text@1']['output'];
+    fileId: CodecTypes['pg/text@1']['output'];
+    chunkIndex: CodecTypes['pg/int4@1']['output'];
+    data: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_AntibodyCheck = {
     id: CodecTypes['pg/text@1']['output'];
     animalId: CodecTypes['pg/text@1']['output'];
@@ -2568,6 +2665,8 @@ export declare const models: {
     MicrochipLookup: Models.public_MicrochipLookup;
     AssessmentTask: Models.public_AssessmentTask;
     FitnessReview: Models.public_FitnessReview;
+    StoredFile: Models.public_StoredFile;
+    StoredFileChunk: Models.public_StoredFileChunk;
     AntibodyCheck: Models.public_AntibodyCheck;
     MicrochipImplantTask: Models.public_MicrochipImplantTask;
     NotificationReadOverride: Models.public_NotificationReadOverride;
@@ -4434,6 +4533,99 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly storedFile: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly ownerType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly ownerId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly fileName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly contentType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly sizeBytes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly chunkCount: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly uploadedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly uploadedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly uploadedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+                readonly completedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly storedFileChunk: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly fileId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly chunkIndex: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly data: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly suitabilityCheck: {
               columns: {
                 readonly checkId: {
@@ -4953,6 +5145,14 @@ type ContractBase = Omit<
     readonly fitnessReview: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'FitnessReview';
+    };
+    readonly storedFile: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'StoredFile';
+    };
+    readonly storedFileChunk: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'StoredFileChunk';
     };
     readonly antibodyCheck: {
       readonly namespace: 'public' & NamespaceId;
@@ -7042,6 +7242,111 @@ type ContractBase = Omit<
                 readonly custodyTransferByEmail: { readonly column: 'custodyTransferByEmail' };
                 readonly custodyTransferByName: { readonly column: 'custodyTransferByName' };
                 readonly expiredAt: { readonly column: 'expiredAt' };
+              };
+            };
+          };
+          readonly StoredFile: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly ownerType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly ownerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly fileName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly contentType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly sizeBytes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly chunkCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly uploadedByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly uploadedByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly uploadedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'storedFile';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly ownerType: { readonly column: 'ownerType' };
+                readonly ownerId: { readonly column: 'ownerId' };
+                readonly fileName: { readonly column: 'fileName' };
+                readonly contentType: { readonly column: 'contentType' };
+                readonly sizeBytes: { readonly column: 'sizeBytes' };
+                readonly chunkCount: { readonly column: 'chunkCount' };
+                readonly uploadedByEmail: { readonly column: 'uploadedByEmail' };
+                readonly uploadedByName: { readonly column: 'uploadedByName' };
+                readonly uploadedAt: { readonly column: 'uploadedAt' };
+                readonly completedAt: { readonly column: 'completedAt' };
+              };
+            };
+          };
+          readonly StoredFileChunk: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly fileId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly chunkIndex: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly data: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'storedFileChunk';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly fileId: { readonly column: 'fileId' };
+                readonly chunkIndex: { readonly column: 'chunkIndex' };
+                readonly data: { readonly column: 'data' };
               };
             };
           };
