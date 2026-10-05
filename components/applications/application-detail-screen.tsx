@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ApplicationJourneySection } from "@/components/process/application-journey-section";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -169,6 +170,8 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
           </p>
         )}
       </div>
+
+      <ApplicationJourneySection applicationId={application.applicationId} />
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Motivation Statement</h2>

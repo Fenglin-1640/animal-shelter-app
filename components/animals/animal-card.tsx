@@ -2,11 +2,13 @@ import Link from "next/link";
 import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { AttributeChip } from "@/components/shared/attribute-chip";
 import { StatusChip } from "@/components/shared/status-chip";
+import { NeedsActionLabel } from "@/components/process/needs-action-label";
 import { getDisplayAge } from "@/lib/animals/age";
 import { CURRENT_STATUS_CATEGORY } from "@/lib/animals/status";
 import type { Animal } from "@/lib/animals/types";
+import type { ListFlag } from "@/lib/process/worklist";
 
-export function AnimalCard({ animal }: { animal: Animal }) {
+export function AnimalCard({ animal, flag }: { animal: Animal; flag?: ListFlag }) {
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
       <Link
@@ -26,6 +28,7 @@ export function AnimalCard({ animal }: { animal: Animal }) {
           </h3>
           <p className="text-xs text-text-muted">{animal.shelterId}</p>
         </div>
+        {flag?.needsMyAction && <NeedsActionLabel label={flag.nextAction} />}
         <p className="text-sm text-text-muted">
           {animal.species} &middot; {animal.breed} &middot; {getDisplayAge(animal)}
         </p>

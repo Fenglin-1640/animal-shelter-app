@@ -3,6 +3,7 @@ import path from "node:path";
 import { Temporal } from "@js-temporal/polyfill";
 import { config as loadEnv } from "dotenv";
 import postgres from "@prisma/orm-postgres/runtime";
+import { Pool } from "pg";
 import type { Contract } from "@/prisma/contract";
 
 // The postgres runtime's timestamptz codec reads/writes through the global
@@ -39,7 +40,20 @@ if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 // `globalThis.prisma` singleton pattern).
 const globalForDb = globalThis as unknown as { asamsDb?: ReturnType<typeof postgres<Contract>> };
 
-const client = globalForDb.asamsDb ?? postgres<Contract>({ contractJson, url: databaseUrl });
+// An explicit pg pool so its size can be set: the runtime's default
+// (node-postgres' 10 connections) splits a burst like the process
+// worklist's ~20 parallel reads into two sequential waves. DATABASE_URL is
+// Neon's pooled (PgBouncer) endpoint, which accepts far more client
+// connections than this; timeouts match the runtime's defaults.
+function createPool() {
+  const pool = new Pool({ connectionString: databaseUrl, max: 25, connectionTimeoutMillis: 20000, idleTimeoutMillis: 30000 });
+  // As the runtime does for its own pool: an idle connection dropped by
+  // the server must not crash the process (the pool replaces it).
+  pool.on("error", (error) => console.warn("Idle database connection error:", error.message));
+  return pool;
+}
+
+const client = globalForDb.asamsDb ?? postgres<Contract>({ contractJson, pg: createPool() });
 
 if (process.env.NODE_ENV !== "production") {
   globalForDb.asamsDb = client;

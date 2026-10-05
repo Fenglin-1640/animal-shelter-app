@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { NeedsActionLabel } from "@/components/process/needs-action-label";
 import { StatusChip } from "@/components/shared/status-chip";
+import { ensureWorklist, useWorklist } from "@/lib/process/worklist-client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listAllApplications } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
@@ -22,6 +24,7 @@ function AdoptionApplicationsContent() {
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "">("");
 
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
+  const worklist = useWorklist();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -32,6 +35,7 @@ function AdoptionApplicationsContent() {
       .then((result) => {
         if (cancelled) return;
         setApplications(result);
+        ensureWorklist();
         setLoadError(null);
       })
       .catch(() => {
@@ -52,6 +56,9 @@ function AdoptionApplicationsContent() {
     [applications],
   );
 
+  // Applications that need the viewer's action come first (server-ranked,
+  // /api/worklist).
+  const priority = (id: string) => worklist?.applications[id]?.priority ?? 1;
   const filtered = applications.filter((a) => {
     if (a.applicationStatus === "Draft") return false;
     const query = search.trim().toLowerCase();
@@ -61,7 +68,7 @@ function AdoptionApplicationsContent() {
     }
     if (statusFilter && a.applicationStatus !== statusFilter) return false;
     return true;
-  });
+  }).sort((a, b) => priority(a.applicationId) - priority(b.applicationId));
 
   return (
     <div className="flex flex-col gap-6">
@@ -135,6 +142,9 @@ function AdoptionApplicationsContent() {
                     {a.applicationId}
                     {a.submissionDate ? ` · Submitted ${formatDate(a.submissionDate)}` : ""}
                   </p>
+                  {worklist?.applications[a.applicationId]?.needsMyAction && (
+                    <NeedsActionLabel label={worklist.applications[a.applicationId].nextAction} />
+                  )}
                 </div>
                 <StatusChip
                   label={a.applicationStatus}

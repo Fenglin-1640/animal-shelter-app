@@ -1,30 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@/lib/auth/auth-context";
-import { getJson } from "@/lib/shared/http";
+import { useWorklist } from "@/lib/process/worklist-client";
 
-// A nav item (RoleSidebar) subscribes to its own pending count by label.
-// Every badge on the page asks GET /api/pending-counts (which answers for
-// the signed-in user's session), so they share one request (lib/shared/http.ts) and the
-// server returns only the counts (lib/pending-actions/counts.ts).
-// Returns 0 for any label with no badge, or while the signed-in user is
-// unknown - RoleSidebar only shows a badge for count > 0, so both cases
-// render identically to "nothing pending".
+// A nav item (RoleSidebar) reads its own pending count by label from the
+// shared worklist (lib/process/worklist-client.ts: one GET /api/worklist
+// per tab, refreshed every 20 s and on window focus). Returns 0 for any
+// label with nothing pending, or while the worklist hasn't loaded -
+// RoleSidebar only shows a badge for count > 0.
 export function usePendingCount(label: string): number {
-  const { user } = useAuth();
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    getJson<{ counts?: Record<string, number> }>("/api/pending-counts").then((result) => {
-      if (!cancelled) setCount(result.counts?.[label] ?? 0);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [label, user]);
-
-  return count;
+  return useWorklist()?.counts[label] ?? 0;
 }

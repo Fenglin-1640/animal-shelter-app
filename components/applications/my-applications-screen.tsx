@@ -7,6 +7,7 @@ import { ApplicationCard } from "@/components/applications/application-card";
 import { AppShell } from "@/components/layout/app-shell";
 import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/layout/filter-panel";
 import { useAuth } from "@/lib/auth/auth-context";
+import { ensureWorklist, useWorklist } from "@/lib/process/worklist-client";
 import { listMyApplications } from "@/lib/applications/store";
 import type { AdoptionApplication, ApplicationStatus } from "@/lib/applications/types";
 import type { Role } from "@/lib/roles/roles";
@@ -74,6 +75,7 @@ function MyApplicationsContent({ email }: { email: string }) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const [allApplications, setAllApplications] = useState<AdoptionApplication[]>([]);
+  const worklist = useWorklist();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -84,6 +86,7 @@ function MyApplicationsContent({ email }: { email: string }) {
       .then((result) => {
         if (cancelled) return;
         setAllApplications(result);
+        ensureWorklist();
         setLoadError(null);
       })
       .catch(() => {
@@ -129,6 +132,11 @@ function MyApplicationsContent({ email }: { email: string }) {
       return true;
     })
     .sort((a, b) => {
+      // Applications that need the Adopter's action come first (server-
+      // ranked, /api/worklist), before pagination.
+      const pa = worklist?.applications[a.applicationId]?.priority ?? 1;
+      const pb = worklist?.applications[b.applicationId]?.priority ?? 1;
+      if (pa !== pb) return pa - pb;
       // A Draft has no submissionDate yet; treat it as the most recent so
       // it sorts to the top under "Newest first", the sort order an
       // adopter is most likely to want it visible under.
@@ -251,7 +259,7 @@ function MyApplicationsContent({ email }: { email: string }) {
             ) : (
               <div className="flex flex-col gap-3">
                 {pageItems.map((application) => (
-                  <ApplicationCard key={application.applicationId} application={application} />
+                  <ApplicationCard key={application.applicationId} application={application} flag={worklist?.applications[application.applicationId]} />
                 ))}
               </div>
             )}

@@ -3,6 +3,8 @@ import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication } from "@/lib/applications/types";
+import { NeedsActionLabel } from "@/components/process/needs-action-label";
+import type { ListFlag } from "@/lib/process/worklist";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
@@ -12,7 +14,7 @@ function actionLabel(status: AdoptionApplication["applicationStatus"]): string {
   return status === "Draft" ? "Continue Application" : "View Application";
 }
 
-export function ApplicationCard({ application }: { application: AdoptionApplication }) {
+export function ApplicationCard({ application, flag }: { application: AdoptionApplication; flag?: ListFlag }) {
   return (
     <article className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0_2px_8px_rgba(200,182,173,0.2)] sm:flex-row">
       <AnimalThumbnail animalId={application.animalId} species={application.animalSpecies} className="w-full sm:w-32" />
@@ -22,6 +24,7 @@ export function ApplicationCard({ application }: { application: AdoptionApplicat
           <div>
             <h3 className="text-base font-semibold text-text">{application.animalName}</h3>
             <p className="text-xs text-text-muted">{application.applicationId}</p>
+            {flag?.needsMyAction && <NeedsActionLabel label={flag.nextAction} />}
           </div>
           <StatusChip
             label={application.applicationStatus}

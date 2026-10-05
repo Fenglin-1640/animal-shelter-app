@@ -31,6 +31,11 @@ const inflight = new Map<string, Promise<unknown>>();
 // AuthProvider (lib/auth/auth-context.tsx) listens and signs out.
 export const SESSION_EXPIRED_EVENT = "asams:session-expired";
 
+// Fired after every write (send()), so live views - process trackers,
+// "needs my action" lists, sidebar badges - refresh right away instead of
+// waiting for their next poll (lib/process/worklist-client.ts).
+export const DATA_CHANGED_EVENT = "asams:data-changed";
+
 function noteUnauthorized(response: Response) {
   if (response.status === 401 && typeof window !== "undefined") {
     window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
@@ -107,5 +112,7 @@ export async function getJson<T = Record<string, unknown>>(url: string): Promise
 export async function send(url: string, init: RequestInit): Promise<Response> {
   generation++;
   inflight.clear();
-  return authedFetch(url, init);
+  const response = await authedFetch(url, init);
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(DATA_CHANGED_EVENT));
+  return response;
 }

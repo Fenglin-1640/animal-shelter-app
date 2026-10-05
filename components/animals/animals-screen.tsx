@@ -7,6 +7,7 @@ import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/la
 import { AnimalCard } from "@/components/animals/animal-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAllAnimals } from "@/lib/animals/animal-store";
+import { ensureWorklist, useWorklist } from "@/lib/process/worklist-client";
 import type { Animal, CurrentStatus, Species } from "@/lib/animals/types";
 import { getBreedSpeciesList, getBreedsForSpecies, type BreedOption } from "@/lib/options/breeds";
 import type { Role } from "@/lib/roles/roles";
@@ -220,6 +221,7 @@ function AnimalsContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const [allAnimals, setAllAnimals] = useState<Animal[]>([]);
+  const worklist = useWorklist();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -248,6 +250,7 @@ function AnimalsContent() {
       .then((result) => {
         if (cancelled) return;
         setAllAnimals(result);
+        ensureWorklist();
         setLoadError(null);
       })
       .catch(() => {
@@ -360,6 +363,12 @@ function AnimalsContent() {
       return true;
     })
     .sort((a, b) => {
+      // Animals that need the viewer's action come first, in the order the
+      // server ranked them (/api/worklist), ahead of the chosen sort and
+      // before the list is paginated.
+      const pa = worklist?.animals[a.animalId]?.priority ?? 1;
+      const pb = worklist?.animals[b.animalId]?.priority ?? 1;
+      if (pa !== pb) return pa - pb;
       if (sortOrder === "recently-entered") {
         return new Date(b.enteredAt).getTime() - new Date(a.enteredAt).getTime();
       }
@@ -475,7 +484,7 @@ function AnimalsContent() {
         ) : (
           <div className="flex flex-col gap-3">
             {pageItems.map((animal) => (
-              <AnimalCard key={animal.animalId} animal={animal} />
+              <AnimalCard key={animal.animalId} animal={animal} flag={worklist?.animals[animal.animalId]} />
             ))}
           </div>
         )}
