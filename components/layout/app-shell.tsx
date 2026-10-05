@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useAnimalScope } from "@/lib/process/animal-scope";
 import type { Role } from "@/lib/roles/roles";
 
-// Roles that see an animal's process tracker on every animal page.
+// Roles that see an animal's process rail beside every animal page.
 const TRACKER_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 
 export function AppShell({
@@ -57,12 +57,10 @@ export function AppShell({
           onClose={() => setMobileNavOpen(false)}
         />
         <main className="min-w-0 flex-1 px-[5%] py-8">
-          <div className="mx-auto flex w-full max-w-[70em] flex-col gap-6">
-            {scopedAnimalId && TRACKER_ROLES.includes(user.role) && <AnimalProcessTracker animalId={scopedAnimalId} />}
-            <div>{children}</div>
-          </div>
+          <div className="mx-auto w-full max-w-[70em]">{children}</div>
         </main>
-        {rightPanel}
+        {rightPanel ??
+          (scopedAnimalId && TRACKER_ROLES.includes(user.role) ? <AnimalProcessTracker animalId={scopedAnimalId} /> : null)}
       </div>
     </div>
   );

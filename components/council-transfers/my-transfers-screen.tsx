@@ -8,7 +8,7 @@ import { FilterGroup, FilterPanel, type ActiveFilterChip } from "@/components/la
 import { TransferCard } from "@/components/council-transfers/transfer-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listMyTransfers } from "@/lib/council-transfers/store";
-import { ProcessLegend, useTransferStatuses } from "@/components/process/transfer-status";
+import { useTransferStatuses } from "@/components/process/transfer-status";
 import type { CouncilTransferSubmission, TransferStatus } from "@/lib/council-transfers/types";
 import type { Role } from "@/lib/roles/roles";
 
@@ -259,9 +259,8 @@ function MyTransfersContent({ email }: { email: string }) {
             ) : (
               <div className="flex flex-col gap-3">
                 {pageItems.map((transfer) => (
-                  <TransferCard key={transfer.id} transfer={transfer} statusSteps={transferStatuses[transfer.id]} />
+                  <TransferCard key={transfer.id} transfer={transfer} statusSteps={transferStatuses?.[transfer.id]} />
                 ))}
-                <ProcessLegend />
               </div>
             )}
 

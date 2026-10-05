@@ -2,7 +2,7 @@ import Link from "next/link";
 import { StatusChip } from "@/components/shared/status-chip";
 import { TRANSFER_STATUS_CATEGORY } from "@/lib/council-transfers/status";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
-import { TransferStatusSteps, type TransferStep } from "@/components/process/transfer-status";
+import { TransferStatusSummary, type TransferStep } from "@/components/process/transfer-status";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
@@ -37,7 +37,7 @@ export function TransferCard({ transfer, statusSteps }: { transfer: CouncilTrans
           {transfer.attachments.length} attachment
           {transfer.attachments.length === 1 ? "" : "s"}
         </p>
-        {statusSteps && <TransferStatusSteps transferId={transfer.id} steps={statusSteps} />}
+        {statusSteps && <TransferStatusSummary steps={statusSteps} />}
       </div>
 
       <div className="flex items-start sm:items-center">

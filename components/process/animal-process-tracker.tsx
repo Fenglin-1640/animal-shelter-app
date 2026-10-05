@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ProcessTracker, type TrackerStep } from "@/components/process/process-tracker";
+import { ProcessRail } from "@/components/process/process-rail";
+import { toRailSteps, type TrackerStep } from "@/components/process/process-tracker";
 import { useWorklist } from "@/lib/process/worklist-client";
 import { getJson } from "@/lib/shared/http";
 
-// The animal's journey at the top of every animal page (Administrator,
+// The animal's journey as a rail beside every animal page (Administrator,
 // Shelter Staff, Veterinarian). Re-fetched on navigation between the
 // animal's pages and whenever the shared worklist refreshes - every 20 s,
 // on window focus, and right after an action (refreshWorklist()).
@@ -33,13 +34,5 @@ export function AnimalProcessTracker({ animalId }: { animalId: string }) {
   }, [animalId, pathname, worklist]);
 
   if (steps && steps.length === 0) return null;
-  if (!steps) {
-    return <div className="h-16 animate-pulse rounded-[12px] border border-border bg-surface" aria-label="Loading process" />;
-  }
-  return (
-    <section aria-label="Process tracker" className="rounded-[12px] border border-border bg-surface p-4">
-      <h2 className="mb-3 text-sm font-bold text-text">Process</h2>
-      <ProcessTracker steps={steps} idPrefix={`animal-${animalId}`} />
-    </section>
-  );
+  return <ProcessRail steps={steps ? toRailSteps(steps) : null} idPrefix={`animal-${animalId}`} />;
 }

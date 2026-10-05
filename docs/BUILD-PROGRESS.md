@@ -31,6 +31,18 @@ _Last updated: 2026-09-15, after adding Archive, Search and Export (FR-REC-01) -
 - All of that data (the animal and every record hanging off it, the stored file, the Adopter account and profile, and their audit entries) was then deleted.
 Not done in this overhaul: Council Transfer attachments are still metadata only. They are added before the transfer exists, so moving them to stored files was not a small change; they do follow the same type and size rules. Intake records have no document attachments besides photos.
 
+**Process rail note (2026-10-06):** The process tracker is now a compact rail on the right instead of a full-width card above the page. This is a presentation change only: the engine, states, roles, tooltip text, red-dot rules and endpoints are unchanged. `components/process/process-rail.tsx` renders the steps as a vertical list:
+- **Nodes:** each node has a status dot and a 12 px label. Small arrow connectors run between nodes. Current (waiting, in progress or blocked) steps are bolder on a light background, while done and not-started steps are muted.
+- **Tooltips:** each node's tooltip opens to the left on hover or keyboard focus. It is positioned against the viewport, so the rail never clips it.
+- **Legend:** a two-column colour legend sits at the bottom.
+- **Layout:** at 1280 px and wider the rail is a sticky 208 px column beside the main content, under the header, with internal scroll if needed; the main content starts at the top. Below 1280 px it becomes a "Process" button (with a red dot when a step needs the viewer) that opens the same rail in a drawer, closed with Esc, with focus returned to the button.
+- **Where it appears:**
+  - Animal pages, for Administrator, Shelter Staff and Veterinarian, via `AppShell`.
+  - The Adopter's application page, as "Application journey", with the plain-language "With Shelter Staff - waiting" wording as a second line under each label.
+  - The Council Officer's transfer page, as "Transfer status". Transfer cards on My Transfers now show a one-line "Now: <step> - with <role>" summary instead of the step chips.
+
+Checked with a browser script for every role at 1280/1440/1920 and 820 px (517 checks): main content at the top, no horizontal scroll, rail width and position, legend in view, the 18 animal steps fitting without scrolling at 900 px tall, tooltips on hover and focus inside the viewport, red dots matching the engine's `needsMe` for that role, drawer open/Esc/focus return, and at least 4.5:1 text contrast in dark mode.
+
 **Seed-data note (2026-09-26):** the PRD 12.1 seed animals (`lib/animals/mock-animals.ts`, written by `prisma/seed.ts`) demonstrate specific lifecycle states, not a full history. Luna, Charlie, Daisy, Rocky and Oliver are seeded straight into their states with none of the records a real animal would have passed through to get there (assessment tasks, Review Adoption Fitness sign-off, Medical Clearance, etc.), so they don't satisfy every gate that state implies. Ruby (A-0006, "Vet cleared, waiting for Staff to publish") is the exception: `seedRubyPrerequisites()` seeds her complete Pre-Listing history (3 completed assessment tasks backed by a No Chip lookup, a Health Assessment and a Suitable Temperament Assessment; the Staff + Veterinarian Review Adoption Fitness confirmation; Medical Clearance backed by a vaccination and a species desexing exemption; an adoption fee; and a public photo with alt text), so Staff can actually publish her in the demo.
 
 ## Summary

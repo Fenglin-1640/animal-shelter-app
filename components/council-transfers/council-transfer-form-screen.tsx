@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { TransferStatusRail } from "@/components/process/transfer-status";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import {
@@ -527,7 +528,11 @@ export function CouncilTransferFormScreen() {
   }
 
   return (
-    <AppShell>
+    <AppShell
+      rightPanel={
+        transferId && user.role === "Council Animal Control Officer" ? <TransferStatusRail transferId={transferId} /> : undefined
+      }
+    >
       <CouncilTransferFormContent
         email={user.email}
         displayName={user.displayName}

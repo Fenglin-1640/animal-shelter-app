@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ProcessLegend, STATE_COLOUR } from "@/components/process/process-tracker";
+import { ProcessRail, RAIL_DOT, type RailStep } from "@/components/process/process-rail";
 import type { StepState } from "@/lib/process/engine";
 import { useWorklist } from "@/lib/process/worklist-client";
 import { getJson } from "@/lib/shared/http";
@@ -10,41 +10,52 @@ export type TransferStep = { label: string; state: StepState; detail: string; wa
 
 // A Council Officer's own transfers' status steps (GET /api/process/transfers),
 // refreshed with the shared worklist.
-export function useTransferStatuses(): Record<string, TransferStep[]> {
-  const [statuses, setStatuses] = useState<Record<string, TransferStep[]>>({});
+export function useTransferStatuses(enabled = true): Record<string, TransferStep[]> | null {
+  const [statuses, setStatuses] = useState<Record<string, TransferStep[]> | null>(null);
   const worklist = useWorklist();
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     getJson<{ ok?: boolean; transfers?: Record<string, TransferStep[]> }>("/api/process/transfers").then((result) => {
-      if (!cancelled && result.ok !== false && result.transfers) setStatuses(result.transfers);
+      if (!cancelled) setStatuses(result.ok !== false && result.transfers ? result.transfers : {});
     });
     return () => {
       cancelled = true;
     };
-  }, [worklist]);
+  }, [worklist, enabled]);
   return statuses;
 }
 
-export function TransferStatusSteps({ transferId, steps }: { transferId: string; steps: TransferStep[] }) {
-  return (
-    <ol className="flex flex-wrap gap-2" aria-label="Transfer status">
-      {steps.map((step) => {
-        const tipId = `transfer-${transferId}-${step.label.replace(/\W+/g, "-")}`;
-        return (
-          <li key={step.label} className="group relative">
-            <span tabIndex={0} aria-describedby={tipId} className="flex items-center gap-1.5 rounded-full border border-border bg-page px-2.5 py-1 text-xs font-semibold text-text outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              <span className={`inline-block h-3 w-3 rounded-full ${STATE_COLOUR[step.state]}`} aria-hidden="true" />
-              {step.label}
-            </span>
-            <span id={tipId} role="tooltip" className="pointer-events-none invisible absolute left-0 top-full z-20 mt-1 w-56 rounded-[8px] border border-border bg-surface p-2 text-xs text-text opacity-0 shadow-lg group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-              {step.waitingOn ? <span className="block">Waiting on: {step.waitingOn}</span> : null}
-              <span className="block">{step.detail}</span>
-            </span>
-          </li>
-        );
-      })}
-    </ol>
-  );
+function toRail(steps: TransferStep[]): RailStep[] {
+  return steps.map((step) => ({
+    key: step.label.replace(/\W+/g, "-"),
+    label: step.label,
+    state: step.state,
+    tooltip: [...(step.waitingOn ? [`Waiting on: ${step.waitingOn}`] : []), step.detail],
+  }));
 }
 
-export { ProcessLegend };
+// The transfer's status steps as a rail beside the transfer page (the
+// Council Officer who submitted it).
+export function TransferStatusRail({ transferId }: { transferId: string }) {
+  const statuses = useTransferStatuses();
+  const steps = statuses ? statuses[transferId] : null;
+  if (statuses && !steps) return null;
+  return <ProcessRail title="Transfer status" steps={steps ? toRail(steps) : null} idPrefix={`transfer-${transferId}`} showActionLegend={false} />;
+}
+
+// One line on a transfer card: the step it is at now and who it's with.
+// The full status is on the transfer page.
+export function TransferStatusSummary({ steps }: { steps: TransferStep[] }) {
+  const current = steps.find((s) => s.state !== "done") ?? steps[steps.length - 1];
+  if (!current) return null;
+  return (
+    <p className="flex items-center gap-1.5 text-xs text-text-muted">
+      <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${RAIL_DOT[current.state]}`} aria-hidden="true" />
+      <span>
+        <span className="font-semibold text-text">{current.state === "done" ? "Complete" : `Now: ${current.label}`}</span>
+        {current.state !== "done" && current.waitingOn ? ` - with ${current.waitingOn}` : ""}
+      </span>
+    </p>
+  );
+}
