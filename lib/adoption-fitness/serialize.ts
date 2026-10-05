@@ -29,6 +29,7 @@ export interface FitnessReviewRow
     | "vetConfirmedByEmail"
     | "vetConfirmedByName"
     | "vetConfirmedAt"
+    | "vetConfirmationNote"
   > {
   staffConfirmedByEmail: string | null;
   staffConfirmedByName: string | null;
@@ -36,6 +37,7 @@ export interface FitnessReviewRow
   vetConfirmedByEmail: string | null;
   vetConfirmedByName: string | null;
   vetConfirmedAt: string | null;
+  vetConfirmationNote: string | null;
 }
 
 export function toFitnessReview(row: FitnessReviewRow): FitnessReview {
@@ -47,5 +49,6 @@ export function toFitnessReview(row: FitnessReviewRow): FitnessReview {
     vetConfirmedByEmail: row.vetConfirmedByEmail ?? undefined,
     vetConfirmedByName: row.vetConfirmedByName ?? undefined,
     vetConfirmedAt: row.vetConfirmedAt ?? undefined,
+    vetConfirmationNote: row.vetConfirmationNote ?? undefined,
   };
 }

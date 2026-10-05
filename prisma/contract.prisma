@@ -612,6 +612,27 @@ model FitnessReview {
   vetConfirmedByEmail   String?
   vetConfirmedByName    String?
   vetConfirmedAt        TimestamptzString(6)?
+  // How the Vet half was confirmed - a Medical Clearance issued by a
+  // Veterinarian confirms it automatically ("Confirmed together with
+  // Medical Clearance").
+  vetConfirmationNote   String?
+}
+
+// A Scan Microchip that finds no chip assigns a new, unique microchip
+// number (15 digits, prefix 036) and gives the Veterinarian this implant
+// task; completing it sets the animal's microchip number and completes
+// the Microchip Check fitness task. status: Pending | Completed.
+model MicrochipImplantTask {
+  id               String    @id
+  animalId         String
+  assignedNumber   String    @unique
+  status           String
+  createdByEmail   String
+  createdByName    String
+  createdAt        TimestamptzString(6)
+  completedByEmail String?
+  completedByName  String?
+  completedAt      TimestamptzString(6)?
 }
 
 // Per-account "mark as read" overrides for the Notifications screen

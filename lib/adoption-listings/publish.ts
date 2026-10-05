@@ -2,6 +2,7 @@ import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { getLatestTemperamentAssessment } from "@/lib/behaviour/store";
 import { getMedicalClearance } from "@/lib/medical/store";
 import { getPrimaryPhoto } from "@/lib/photos/store";
+import { getFitnessReview } from "@/lib/adoption-fitness/store";
 import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 
 // FR-LIST-01's 5 conditions, plus BR-007's "Staff publish from
@@ -9,20 +10,21 @@ import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 // evaluatePreListingEligibility() (lib/adoption-listings/pre-listing.ts)
 // sets, once getPreListingBlockers() is empty (Medical Clearance issued,
 // no unresolved Statutory Hold, latest Behavioural Assessment Suitable,
-// Review Adoption Fitness confirmed). The clearance, hold and behaviour
-// conditions are re-checked here via the same getters as a safety net
-// in case something changed after the animal reached Pre-Listing (e.g. a
-// new hold or a later assessment); the fitness review has no undo path,
-// so it isn't re-checked.
+// Review Adoption Fitness confirmed). The clearance, hold, behaviour and
+// fitness review conditions are re-checked here via the same getters as a
+// safety net in case something changed after the animal reached
+// Pre-Listing (e.g. a new hold, which also withdraws the Vet fitness
+// confirmation, or a later assessment). Photo alt text is optional.
 export async function getPublishBlockers(animalId: string): Promise<string[]> {
   // The lookups are independent, so fetch them together; the blocker
   // order below is unchanged.
-  const [animal, clearance, latestAssessment, unresolvedHold, primaryPhoto] = await Promise.all([
+  const [animal, clearance, latestAssessment, unresolvedHold, primaryPhoto, review] = await Promise.all([
     getAnimalById(animalId),
     getMedicalClearance(animalId),
     getLatestTemperamentAssessment(animalId),
     hasUnresolvedHold(animalId),
     getPrimaryPhoto(animalId),
+    getFitnessReview(animalId),
   ]);
   if (!animal) return ["Animal not found."];
 
@@ -37,6 +39,11 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
     blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
   }
   if (unresolvedHold) blockers.push("There is an unresolved Statutory Hold on this animal.");
+  // Re-checked because the Vet half can now be withdrawn after Pre-Listing
+  // (a new Statutory Hold), until the clearance is issued again.
+  if (!review?.staffConfirmedAt || !review?.vetConfirmedAt) {
+    blockers.push("Review Adoption Fitness has not been confirmed by both Shelter Staff and Veterinarian.");
+  }
   if (animal.adoptionFee == null) blockers.push("Adoption Fee must be filled in.");
   if (!animal.generalDescription.trim()) blockers.push("General Description must be filled in.");
   if (!animal.breed.trim() || animal.breed === "Unknown") {
@@ -47,12 +54,8 @@ export async function getPublishBlockers(animalId: string): Promise<string[]> {
   }
   if (!animal.sex) blockers.push("Sex must be filled in.");
   if (animal.temperaments.length === 0) blockers.push("At least one Temperament must be filled in.");
-  // Checks the alt text itself, not just that a public photo exists: an
-  // intake photo becomes the default public photo even when no alt text
-  // was entered at Intake (it's optional there).
-  if (!primaryPhoto?.altText.trim()) {
-    blockers.push("A public photo with alt text must be selected.");
-  }
+  // A public photo must be selected; its alt text is optional.
+  if (!primaryPhoto) blockers.push("A public photo must be selected.");
 
   return blockers;
 }

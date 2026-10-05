@@ -47,6 +47,9 @@ export interface FitnessReview {
   vetConfirmedByEmail?: string;
   vetConfirmedByName?: string;
   vetConfirmedAt?: string;
+  // "Confirmed together with Medical Clearance" - the Vet half is recorded
+  // automatically when a Veterinarian issues a Medical Clearance.
+  vetConfirmationNote?: string;
 }
 
 export function isFitnessReviewComplete(review: FitnessReview | undefined): boolean {

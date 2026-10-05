@@ -192,8 +192,8 @@ function PhotosContent({
       setAltTextDraft("");
       setMessage(null);
       await refresh();
-    } else if (result.reason === "alt_text_required") {
-      setMessage("Alt text is required to select a public photo.");
+    } else if (result.reason === "not_found") {
+      setMessage("That photo no longer exists.");
     }
   };
 
@@ -203,7 +203,7 @@ function PhotosContent({
   const renderAltTextForm = (photoId: string) => (
     <div className="flex flex-col gap-2 rounded-[12px] border border-border bg-page p-3">
       <label htmlFor={`alt-text-${photoId}`} className="text-xs font-semibold text-text-muted">
-        Alt Text (required)
+        Alt Text (optional)
       </label>
       <input
         id={`alt-text-${photoId}`}
@@ -258,8 +258,8 @@ function PhotosContent({
           {animal.name} &middot; {animal.shelterId}
         </p>
         <p className="mt-2 text-sm text-text-muted">
-          Exactly one photo can be selected as the public Adoption Listing photo, and it requires
-          alt text.
+          Exactly one photo can be selected as the public Adoption Listing photo. Alt text is
+          optional but helps people using screen readers.
         </p>
         {message && (
           <p role="status" className="mt-2 text-sm text-danger">
@@ -357,7 +357,7 @@ function PhotosContent({
                   {photo.altText ? (
                     <p className="text-xs text-text-muted">Alt text: {photo.altText}</p>
                   ) : (
-                    <p className="text-xs text-danger">No alt text yet - required before Publish.</p>
+                    <p className="text-xs text-text-muted">No alt text yet (optional).</p>
                   )}
                   {canAct &&
                     (settingPrimaryId === photo.id ? (

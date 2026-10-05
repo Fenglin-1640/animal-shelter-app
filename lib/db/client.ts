@@ -68,4 +68,8 @@ if (process.env.NODE_ENV !== "production") {
 export const db = {
   orm: client.orm.public,
   close: () => client.close(),
+  // Runs fn in one database transaction: every write through the given
+  // ORM (same flat shape as db.orm) commits together or not at all.
+  transaction: <R>(fn: (orm: typeof client.orm.public) => PromiseLike<R>) =>
+    client.transaction((tx) => fn(tx.orm.public)),
 };

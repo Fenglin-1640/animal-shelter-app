@@ -688,8 +688,7 @@ function IntakeRecordFormContent({
         <p className="mt-1 text-sm text-text-muted">
           At least one photo is required before Finalise Intake. The first photo becomes the
           default public listing photo. A description for screen readers (alt text) is
-          optional here, but the public photo needs one before the animal can be published -
-          it can also be added later on the Photos screen.
+          optional and can also be added later on the Photos screen.
         </p>
         {photoError && (
           <p role="status" className="mt-2 text-sm text-danger">

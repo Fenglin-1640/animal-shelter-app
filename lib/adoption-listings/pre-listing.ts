@@ -10,7 +10,8 @@ import { hasUnresolvedHold } from "@/lib/statutory-hold/store";
 // FR-MED-03's closing paragraph: Medical Clearance issued, no unresolved
 // Statutory Hold, latest Behavioural Assessment Suitable for Adoption.
 // The 4th is Review Adoption Fitness (FR-INT-04 / BR-016): both the
-// Shelter Staff Member and Veterinarian confirmations recorded. Without
+// Shelter Staff Member and Veterinarian confirmations recorded (the
+// Veterinarian's is recorded by issuing the Medical Clearance). Without
 // it an animal could be listed without its Microchip Check ever being
 // run and without the joint sign-off on the 3 parallel intake tasks -
 // Medical Clearance itself only covers vaccination and desexing.
@@ -31,12 +32,12 @@ export async function getPreListingBlockers(animalId: string): Promise<string[]>
   if (latestAssessment?.outcome !== "Suitable for Adoption") {
     blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
   }
-  if (!review?.staffConfirmedAt || !review?.vetConfirmedAt) {
-    const missing = [
-      !review?.staffConfirmedAt && "Shelter Staff Member",
-      !review?.vetConfirmedAt && "Veterinarian",
-    ].filter(Boolean);
-    blockers.push(`Review Adoption Fitness has not been confirmed (missing: ${missing.join(" and ")}).`);
+  // The Veterinarian half comes with the Medical Clearance; it is only
+  // listed on its own when the clearance exists but the confirmation was
+  // withdrawn (e.g. by a new Statutory Hold).
+  if (!review?.staffConfirmedAt) blockers.push("Review Adoption Fitness has not been confirmed by Shelter Staff.");
+  if (clearance && !review?.vetConfirmedAt) {
+    blockers.push("The Veterinarian fitness confirmation was withdrawn - the Medical Clearance must be issued again.");
   }
   return blockers;
 }

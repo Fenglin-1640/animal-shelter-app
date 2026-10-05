@@ -11,7 +11,7 @@ import { createIntakeRecord, finaliseIntake, getIntakeRecord } from "@/lib/intak
 import { performScan } from "@/lib/microchip/store";
 import { recordHealthAssessment } from "@/lib/medical/store";
 import { recordTemperamentAssessment } from "@/lib/behaviour/store";
-import { confirmAsStaff, confirmAsVet, getFitnessReview, listTasksForAnimal } from "@/lib/adoption-fitness/store";
+import { confirmAsStaff, getFitnessReview, listTasksForAnimal } from "@/lib/adoption-fitness/store";
 import { getFitnessBlockers } from "@/lib/adoption-fitness/types";
 import { getAnimalById } from "@/lib/animals/animal-store";
 import {
@@ -286,7 +286,7 @@ export async function runAnimalWorkflow(
     "adoption_fitness_confirm",
     adoption.executionRoute === "Behaviour blocked before listing"
       ? "Blocked - cannot complete (expected)."
-      : "Both confirmations recorded; review becomes read-only/complete.",
+      : "Staff confirmation recorded; the Veterinarian half follows with the Medical Clearance.",
     async () => {
       await actAs(STAFF.email);
       const animal = await getAnimalById(animalId);
@@ -298,14 +298,11 @@ export async function runAnimalWorkflow(
           ? blockedExpected(`Blocked: ${blockers.join("; ")}`)
           : fail(`Blocked: ${blockers.join("; ")}`);
       }
+      // The Veterinarian half is confirmed by issuing the Medical Clearance.
       const staffResult = await confirmAsStaff(animalId, STAFF.email, STAFF.name);
-      await actAs(VET.email);
-      const vetResult = await confirmAsVet(animalId, VET.email, VET.name);
-      if (!ok(staffResult) || !ok(vetResult)) return fail("staff/vet confirmation rejected after blockers were empty");
+      if (!ok(staffResult)) return fail("staff confirmation rejected after blockers were empty");
       const review = await getFitnessReview(animalId);
-      return review?.staffConfirmedAt && review?.vetConfirmedAt
-        ? pass("Both confirmed")
-        : fail("Confirmed but review missing one side");
+      return review?.staffConfirmedAt ? pass("Staff confirmed") : fail("Confirmed but review missing the Staff side");
     },
   );
 
@@ -363,7 +360,7 @@ export async function runAnimalWorkflow(
     await actAs(VET.email);
     const blockers = await getMedicalClearanceBlockers(animalId);
     if (blockers.length > 0) return fail(`Blocked: ${blockers.join("; ")}`);
-    const result = await issueMedicalClearance(animalId, VET.email, VET.name);
+    const result = await issueMedicalClearance(animalId);
     if (!ok(result)) return fail(`issueMedicalClearance failed: ${(result as { reason: string }).reason}`);
     // Same call the Medical screen makes after issuing clearance - moves
     // the animal to Pre-Listing, which Publish requires (BR-007).

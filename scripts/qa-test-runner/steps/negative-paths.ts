@@ -176,7 +176,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
   // re-verify steps the 60 standard TCs already cover.
   await step(entry, "fast_track_to_meet_and_greet_ready", "Animal reaches Available For Adoption / Current.", async () => {
     const { getFitnessBlockers } = await import("@/lib/adoption-fitness/types");
-    const { listTasksForAnimal, confirmAsStaff, confirmAsVet } = await import("@/lib/adoption-fitness/store");
+    const { listTasksForAnimal, confirmAsStaff } = await import("@/lib/adoption-fitness/store");
     const { recordHealthAssessment } = await import("@/lib/medical/store");
     const { recordTemperamentAssessment } = await import("@/lib/behaviour/store");
 
@@ -200,8 +200,6 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
     const tasks = await listTasksForAnimal(animalId);
     if (animal && getFitnessBlockers(animal, tasks).length === 0) {
       await confirmAsStaff(animalId, STAFF.email, STAFF.name);
-      await actAs(VET.email);
-      await confirmAsVet(animalId, VET.email, VET.name);
     }
     await actAs(VET.email);
     await recordVaccination(animalId, { vaccineType: template.adoption.vaccineType || "Core Vaccination", administrationDate: new Date().toISOString(), doseOrChipId: "1.0 mL", nextBoosterDueDate: new Date(Date.now() + 365 * 86400000).toISOString() }, VET.email, VET.name);
@@ -212,7 +210,7 @@ export async function runIncompatibleNegative(template: TestCaseBundle): Promise
       await scheduleDesexing(animalId, new Date().toISOString(), VET.email, VET.name);
       await completeDesexing(animalId, VET.email, VET.name);
     }
-    await issueMedicalClearance(animalId, VET.email, VET.name);
+    await issueMedicalClearance(animalId);
     await evaluatePreListingEligibility(animalId, VET);
     await actAs(STAFF.email);
     const publishResult = await publishAdoptionProfile(animalId, STAFF.email, STAFF.name);

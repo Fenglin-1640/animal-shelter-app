@@ -9,7 +9,8 @@ import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
 import type { Animal } from "@/lib/animals/types";
-import { listLookupsForAnimal, performScan } from "@/lib/microchip/store";
+import { getLatestMicrochipImplant, listLookupsForAnimal, performScan } from "@/lib/microchip/store";
+import type { MicrochipImplantTask } from "@/lib/microchip/implant";
 import { LOOKUP_RESULT_CATEGORY } from "@/lib/microchip/status";
 import type { MicrochipLookup } from "@/lib/microchip/types";
 import type { Role } from "@/lib/roles/roles";
@@ -34,7 +35,7 @@ function NotFound() {
   );
 }
 
-function ResultMessage({ lookup }: { lookup: MicrochipLookup }) {
+function ResultMessage({ lookup, implant }: { lookup: MicrochipLookup; implant: MicrochipImplantTask | undefined }) {
   if (lookup.result === "Timeout") {
     return (
       <p className="text-sm text-text">
@@ -44,7 +45,22 @@ function ResultMessage({ lookup }: { lookup: MicrochipLookup }) {
     );
   }
   if (lookup.result === "No Chip") {
-    return <p className="text-sm text-text">No microchip number was entered - recorded as No Chip.</p>;
+    return (
+      <div className="flex flex-col gap-1 text-sm text-text">
+        <p>No chip was found - recorded as No Chip.</p>
+        {implant?.status === "Pending" ? (
+          <p>
+            Microchip number <span className="font-mono font-semibold">{implant.assignedNumber}</span> has been assigned
+            and a Veterinarian has been asked to implant it.{" "}
+            <Link href={`/animals/${lookup.animalId}/microchip-implant`} className="font-semibold text-secondary underline underline-offset-2 hover:no-underline">
+              View implant task
+            </Link>
+          </p>
+        ) : implant?.status === "Completed" ? (
+          <p>Microchip {implant.assignedNumber} has since been implanted.</p>
+        ) : null}
+      </div>
+    );
   }
   if (lookup.result === "No Match") {
     return (
@@ -85,13 +101,18 @@ function ScanMicrochipContent({
   const [lookups, setLookups] = useState<MicrochipLookup[]>([]);
   const [microchipNumber, setMicrochipNumber] = useState("");
   const [isScanning, setIsScanning] = useState(false);
+  const [implant, setImplant] = useState<MicrochipImplantTask | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
     getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
-      if (result) setLookups(await listLookupsForAnimal(animalId));
+      if (!result) return;
+      const [lookupResult, implantResult] = await Promise.all([listLookupsForAnimal(animalId), getLatestMicrochipImplant(animalId)]);
+      if (cancelled) return;
+      setLookups(lookupResult);
+      setImplant(implantResult);
     });
     return () => {
       cancelled = true;
@@ -114,8 +135,14 @@ function ScanMicrochipContent({
     const result = await performScan(animalId, microchipNumber, email, displayName);
     setIsScanning(false);
     if (result.ok) {
-      setLookups(await listLookupsForAnimal(animalId));
-      setAnimal((await getAnimalById(animalId)) ?? null);
+      const [lookupResult, animalResult, implantResult] = await Promise.all([
+        listLookupsForAnimal(animalId),
+        getAnimalById(animalId),
+        getLatestMicrochipImplant(animalId),
+      ]);
+      setLookups(lookupResult);
+      setAnimal(animalResult ?? null);
+      setImplant(implantResult);
     }
   };
 
@@ -182,7 +209,7 @@ function ScanMicrochipContent({
               />
               <span className="text-xs text-text-muted">{formatDateTime(lastLookup.performedAt)}</span>
             </div>
-            <ResultMessage lookup={lastLookup} />
+            <ResultMessage lookup={lastLookup} implant={implant} />
           </div>
         )}
       </section>

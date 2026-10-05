@@ -45,6 +45,7 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
     payments,
     preRelease,
     followUps,
+    implants,
   ] = await Promise.all([
     db.orm.Animal.where(by).all(),
     db.orm.AssessmentTask.where(by).all(),
@@ -63,6 +64,7 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
     db.orm.AdoptionPayment.where(by).all(),
     db.orm.PreReleaseCheck.where(by).all(),
     db.orm.FollowUpVisit.where(by).all(),
+    db.orm.MicrochipImplantTask.select("animalId", "status", "assignedNumber", "createdAt").where(by).all(),
   ]);
   // Checks hang off applications, not animals.
   const appIds = new Set(applications.map((a) => a.applicationId));
@@ -96,6 +98,14 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
     preRelease: group(preRelease, toPreReleaseCheck),
     followUps: group(followUps, toFollowUpVisit),
   };
+  // The latest implant task per animal.
+  const latestImplant = new Map<string, { status: "Pending" | "Completed"; assignedNumber: string; createdAt: string }>();
+  for (const t of implants) {
+    const current = latestImplant.get(t.animalId);
+    if (!current || new Date(t.createdAt) > new Date(current.createdAt)) {
+      latestImplant.set(t.animalId, { status: t.status === "Completed" ? "Completed" : "Pending", assignedNumber: t.assignedNumber, createdAt: t.createdAt });
+    }
+  }
   const primaryPhoto = new Set(photos.filter((p) => p.useOnAdoptionListing === 1).map((p) => p.animalId));
   const checksByApp = new Map<string, ReturnType<typeof toSuitabilityCheck>[]>();
   for (const c of checks) {
@@ -113,7 +123,7 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
       animal: toAnimal(row),
       tasks: g.tasks.get(id) ?? [],
       lookups: g.lookups.get(id) ?? [],
-      implant: null,
+      implant: latestImplant.get(id) ?? null,
       vaccinations: g.vaccinations.get(id) ?? [],
       desexing: g.desexing.get(id)?.[0] ?? null,
       healthAssessments: g.health.get(id) ?? [],

@@ -13,7 +13,7 @@ import { fileToDataUrl } from "@/lib/photos/upload";
 // only, same CAN_ACT_ROLES as the Photos screen) to upload a new photo
 // or pick a different existing one as the profile picture. Both paths
 // end at the same setPrimaryPhoto() call the Photos screen itself uses,
-// so alt text stays required either way.
+// so it behaves the same either way (alt text optional).
 export function ProfilePhotoLightbox({
   animalId,
   species,
@@ -93,8 +93,8 @@ export function ProfilePhotoLightbox({
       setAltTextDraft("");
       setError(null);
       await onChanged();
-    } else if (result.reason === "alt_text_required") {
-      setError("Alt text is required to select a public photo.");
+    } else if (result.reason === "not_found") {
+      setError("That photo no longer exists.");
     }
   };
 
@@ -208,7 +208,7 @@ export function ProfilePhotoLightbox({
                 {selectingId && (
                   <div className="flex flex-col gap-2 rounded-[12px] border border-border bg-surface p-3">
                     <label htmlFor="lightbox-alt-text" className="text-xs font-semibold text-text-muted">
-                      Alt Text (required)
+                      Alt Text (optional)
                     </label>
                     <input
                       id="lightbox-alt-text"

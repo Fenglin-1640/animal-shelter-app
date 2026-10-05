@@ -35,6 +35,10 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   return result.item as T;
 }
 
+async function audit(email: string, name: string, action: string, animalId: string, newValue: string): Promise<void> {
+  await writeAuditLog({ userId: email, userName: name, action, entityType: "MedicalRecord", entityId: animalId, oldValue: "", newValue, result: "Success" });
+}
+
 function generateId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
@@ -214,6 +218,7 @@ export async function recordVaccination(
     createdAt: new Date().toISOString(),
   };
   await postJson("/api/medical/vaccinations", record);
+  await audit(email, name, "Record Vaccination", animalId, `vaccineType=${input.vaccineType}; administrationDate=${input.administrationDate}`);
   return { ok: true };
 }
 
@@ -248,6 +253,7 @@ export async function scheduleDesexing(
     createdAt: new Date().toISOString(),
   };
   await postJson("/api/medical/desexing-schedules", schedule);
+  await audit(email, name, "Schedule Desexing", animalId, `scheduledDate=${scheduledDate}`);
   return { ok: true };
 }
 
@@ -282,6 +288,7 @@ export async function recordDesexingExemption(
     createdAt: new Date().toISOString(),
   };
   await postJson("/api/medical/desexing-schedules", schedule);
+  await audit(email, name, "Record Desexing Outcome", animalId, `status=${reason}`);
   return { ok: true };
 }
 
@@ -320,6 +327,7 @@ export async function completeDesexing(animalId: string, email: string, name: st
   });
   const result = await response.json();
   if (!result.ok) return { ok: false, reason: result.reason ?? "not_found" };
+  await audit(email, name, "Complete Desexing", animalId, "status=Completed");
   return { ok: true };
 }
 
@@ -363,40 +371,21 @@ export async function getMedicalClearanceBlockers(animalId: string): Promise<str
   return blockers;
 }
 
-export async function issueMedicalClearance(
-  animalId: string,
-  email: string,
-  name: string,
-): Promise<MutationResult> {
-  if (await getMedicalClearance(animalId)) return { ok: false, reason: "already_issued" };
+// Issues the Medical Clearance. The server (POST /api/medical/clearances)
+// re-checks the clearance conditions, records the Veterinarian half of
+// Review Adoption Fitness in the same transaction ("Confirmed together with
+// Medical Clearance") and audits both. Callers then re-run
+// evaluatePreListingEligibility().
+export async function issueMedicalClearance(animalId: string): Promise<MutationResult> {
   const blockers = await getMedicalClearanceBlockers(animalId);
   if (blockers.length > 0) return { ok: false, reason: "blocked" };
-
-  const clearance: MedicalClearance = {
-    id: generateId("MC"),
-    animalId,
-    issuedByEmail: email,
-    issuedByName: name,
-    issuedAt: new Date().toISOString(),
-  };
-  await postJson("/api/medical/clearances", clearance);
-
-  // Doesn't itself change currentStatus/listingStatus (that's a separate
-  // evaluatePreListingEligibility() call from the UI layer, see
-  // lib/adoption-listings/pre-listing.ts), but PRD BR-014 still wants
-  // this significant action in the AuditLog.
-  await writeAuditLog({
-    userId: email,
-    userName: name,
-    action: "Issue Medical Clearance",
-    entityType: "MedicalRecord",
-    entityId: animalId,
-    oldValue: "Not issued",
-    newValue: `Issued by ${name}`,
-    result: "Success",
+  const response = await send("/api/medical/clearances", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ animalId }),
   });
-
-  return { ok: true };
+  const result = await response.json();
+  return result.ok ? { ok: true } : { ok: false, reason: result.reason ?? "failed" };
 }
 
 // --- Pre-Release Check (FR-REL-01) ---

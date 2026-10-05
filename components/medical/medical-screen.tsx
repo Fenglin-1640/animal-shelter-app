@@ -11,6 +11,8 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
 import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
+import { getFitnessReview } from "@/lib/adoption-fitness/store";
+import type { FitnessReview } from "@/lib/adoption-fitness/types";
 import {
   addTreatmentEvent,
   completeDesexing,
@@ -456,6 +458,11 @@ function MedicalContent({
   const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
   const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
   const [clearance, setClearance] = useState<MedicalClearance | undefined>(undefined);
+  // The Veterinarian half of Review Adoption Fitness, which issuing the
+  // clearance confirms; withdrawn (e.g. by a Statutory Hold) until the
+  // clearance is issued again.
+  const [fitnessReview, setFitnessReview] = useState<FitnessReview | undefined>(undefined);
+  const [issuing, setIssuing] = useState(false);
   const [underTreatment, setUnderTreatment] = useState(false);
 
   const [showHealthForm, setShowHealthForm] = useState(false);
@@ -472,7 +479,7 @@ function MedicalContent({
   const [clearanceBlockers, setClearanceBlockers] = useState<string[]>([]);
 
   const reloadMedical = async () => {
-    const [healthAssessmentsResult, treatmentEventsResult, vaccinationsResult, desexingResult, clearanceResult, triggerResult, blockersResult] =
+    const [healthAssessmentsResult, treatmentEventsResult, vaccinationsResult, desexingResult, clearanceResult, triggerResult, blockersResult, reviewResult] =
       await Promise.all([
         listHealthAssessments(animalId),
         listTreatmentEvents(animalId),
@@ -481,6 +488,7 @@ function MedicalContent({
         getMedicalClearance(animalId),
         getActiveTreatmentTrigger(animalId),
         getMedicalClearanceBlockers(animalId),
+        getFitnessReview(animalId),
       ]);
     setHealthAssessments(healthAssessmentsResult);
     setTreatmentEvents(treatmentEventsResult);
@@ -489,6 +497,7 @@ function MedicalContent({
     setClearance(clearanceResult);
     setUnderTreatment(Boolean(triggerResult));
     setClearanceBlockers(blockersResult);
+    setFitnessReview(reviewResult);
   };
 
   useEffect(() => {
@@ -530,6 +539,30 @@ function MedicalContent({
     await reloadMedical();
     await evaluatePreListingEligibility(animalId, { email, name: displayName });
   };
+
+  const issueButton = canAct && (
+    <div className="mt-4 flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        disabled={clearanceBlockers.length > 0 || issuing}
+        title={clearanceBlockers.length > 0 ? "Resolve the items listed above before issuing." : undefined}
+        onClick={async () => {
+          setIssuing(true);
+          try {
+            await issueMedicalClearance(animalId);
+            await refresh();
+          } finally {
+            setIssuing(false);
+          }
+        }}
+        className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {issuing ? "Issuing..." : "Issue Medical Clearance"}
+      </button>
+      <span className="text-xs text-text-muted">Issuing clearance also confirms medical fitness for adoption.</span>
+    </div>
+  );
+  const vetConfirmed = Boolean(fitnessReview?.vetConfirmedAt);
 
   return (
     <div className="flex flex-col gap-6">
@@ -851,6 +884,18 @@ function MedicalContent({
             <p className="mt-1 text-text">
               Issued by {clearance.issuedByName} on {formatDateTime(clearance.issuedAt)}
             </p>
+            {vetConfirmed ? (
+              <p className="mt-1 text-text-muted">Medical fitness for adoption confirmed with this clearance.</p>
+            ) : (
+              <div className="mt-2 rounded-[12px] border border-gold bg-gold/10 px-3 py-2 text-text">
+                <p className="font-semibold">Fitness confirmation withdrawn</p>
+                <p className="text-xs text-text-muted">
+                  {fitnessReview?.vetConfirmationNote ?? "The Veterinarian confirmation is no longer in place."} Issue the
+                  clearance again to re-confirm medical fitness for adoption.
+                </p>
+                {issueButton}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -869,29 +914,11 @@ function MedicalContent({
                 </p>
               </div>
             )}
-            {canAct && (
-              <button
-                type="button"
-                disabled={clearanceBlockers.length > 0}
-                title={
-                  clearanceBlockers.length > 0
-                    ? "Resolve the items listed above before issuing."
-                    : undefined
-                }
-                onClick={() => {
-                  issueMedicalClearance(animalId, email, displayName);
-                  refresh();
-                }}
-                className="mt-4 h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Issue Medical Clearance
-              </button>
-            )}
+            {issueButton}
             <p className="mt-2 text-xs text-text-muted">
               Once issued, if there is no unresolved Statutory Hold, the latest Behavioural
-              Assessment is Suitable for Adoption and Review Adoption Fitness has been confirmed
-              by both Staff and a Veterinarian, this animal&apos;s listing moves to Pre-Listing
-              automatically.
+              Assessment is Suitable for Adoption and Shelter Staff have confirmed adoption
+              fitness, this animal&apos;s listing moves to Pre-Listing automatically.
             </p>
           </>
         )}

@@ -463,7 +463,8 @@ export function publishBlockers(records: AnimalRecords): string[] {
   if (records.clearances.length === 0) blockers.push("Medical Clearance has not been issued.");
   const latest = newestFirst(records.temperamentAssessments)[0];
   if (latest?.outcome !== "Suitable for Adoption") blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
-  if (activeHold(records.holds)) blockers.push("There is an unresolved Statutory Hold on this animal.");
+  // Any Active hold, even past its end date, as hasUnresolvedHold() does.
+  if (records.holds.some((h) => h.status === "Active")) blockers.push("There is an unresolved Statutory Hold on this animal.");
   if (!records.fitnessReview?.staffConfirmedAt || !vetFitnessConfirmed(records)) {
     blockers.push("Review Adoption Fitness has not been confirmed by both Shelter Staff and Veterinarian.");
   }
@@ -473,6 +474,23 @@ export function publishBlockers(records: AnimalRecords): string[] {
   if (!animal.sex) blockers.push("Sex must be filled in.");
   if (animal.temperaments.length === 0) blockers.push("At least one Temperament must be filled in.");
   if (!records.hasPrimaryPhoto) blockers.push("A public photo must be selected.");
+  return blockers;
+}
+
+// Same conditions and messages as getPreListingBlockers()
+// (lib/adoption-listings/pre-listing.ts), from already-loaded records.
+export function preListingBlockers(records: AnimalRecords): string[] {
+  const blockers: string[] = [];
+  const hasClearance = records.clearances.length > 0;
+  if (!hasClearance) blockers.push("Medical Clearance has not been issued.");
+  // Any Active hold, even past its end date, as hasUnresolvedHold() does.
+  if (records.holds.some((h) => h.status === "Active")) blockers.push("There is an unresolved Statutory Hold on this animal.");
+  const latest = newestFirst(records.temperamentAssessments)[0];
+  if (latest?.outcome !== "Suitable for Adoption") blockers.push("The latest Behavioural Assessment is not Suitable for Adoption.");
+  if (!records.fitnessReview?.staffConfirmedAt) blockers.push("Review Adoption Fitness has not been confirmed by Shelter Staff.");
+  if (hasClearance && !records.fitnessReview?.vetConfirmedAt) {
+    blockers.push("The Veterinarian fitness confirmation was withdrawn - the Medical Clearance must be issued again.");
+  }
   return blockers;
 }
 

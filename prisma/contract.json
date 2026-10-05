@@ -72,6 +72,10 @@
       "model": "MeetAndGreet",
       "namespace": "public"
     },
+    "microchipImplantTask": {
+      "model": "MicrochipImplantTask",
+      "namespace": "public"
+    },
     "microchipLookup": {
       "model": "MicrochipLookup",
       "namespace": "public"
@@ -1866,6 +1870,13 @@
                   "kind": "scalar"
                 }
               },
+              "vetConfirmationNote": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "vetConfirmedAt": {
                 "nullable": true,
                 "type": {
@@ -1905,6 +1916,9 @@
                 },
                 "staffConfirmedByName": {
                   "column": "staffConfirmedByName"
+                },
+                "vetConfirmationNote": {
+                  "column": "vetConfirmationNote"
                 },
                 "vetConfirmedAt": {
                   "column": "vetConfirmedAt"
@@ -2890,6 +2904,123 @@
               },
               "namespaceId": "public",
               "table": "meetAndGreet"
+            }
+          },
+          "MicrochipImplantTask": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "assignedNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "completedByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "createdByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "assignedNumber": {
+                  "column": "assignedNumber"
+                },
+                "completedAt": {
+                  "column": "completedAt"
+                },
+                "completedByEmail": {
+                  "column": "completedByEmail"
+                },
+                "completedByName": {
+                  "column": "completedByName"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdByEmail": {
+                  "column": "createdByEmail"
+                },
+                "createdByName": {
+                  "column": "createdByName"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "status": {
+                  "column": "status"
+                }
+              },
+              "namespaceId": "public",
+              "table": "microchipImplantTask"
             }
           },
           "MicrochipLookup": {
@@ -5272,6 +5403,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "vetConfirmationNote": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "vetConfirmedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -5831,6 +5967,80 @@
                 ]
               },
               "uniques": []
+            },
+            "microchipImplantTask": {
+              "columns": {
+                "animalId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "assignedNumber": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "completedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "completedByEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "completedByName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "createdByEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdByName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "assignedNumber"
+                  ]
+                }
+              ]
             },
             "microchipLookup": {
               "columns": {
@@ -6631,7 +6841,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e03c951a035d714f4c68cb8cbb86a718d3b04cb47a0da78b8b8c3ba5bc2c8cd2"
+    "storageHash": "1013a4549b1e22a75f9fad2ae66bea8abb699c801878db150fd3bf61e2d9f688"
   },
   "capabilities": {
     "postgres": {

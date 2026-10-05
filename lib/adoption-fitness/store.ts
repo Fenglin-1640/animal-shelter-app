@@ -15,8 +15,8 @@ import { getJson, send } from "@/lib/shared/http";
 // /api/assessment-tasks and /api/fitness-reviews - see
 // prisma/README.md for this Prisma toolchain's quirks.
 
-async function fetchAllTasks(): Promise<AssessmentTask[]> {
-  const result = await getJson("/api/assessment-tasks");
+async function fetchTasks(animalId: string): Promise<AssessmentTask[]> {
+  const result = await getJson(`/api/assessment-tasks?animalId=${encodeURIComponent(animalId)}`);
   return result.items as AssessmentTask[];
 }
 
@@ -32,8 +32,7 @@ function generateTaskId(): string {
 // Called as a side effect of Finalise Intake (FR-INT-03). A no-op if
 // tasks already exist for this animal.
 export async function createTasksForAnimal(animalId: string): Promise<void> {
-  const all = await fetchAllTasks();
-  if (all.some((t) => t.animalId === animalId)) return;
+  if ((await fetchTasks(animalId)).length > 0) return;
   for (const taskType of TASK_TYPES) {
     const task: AssessmentTask = {
       id: generateTaskId(),
@@ -52,9 +51,12 @@ export async function createTasksForAnimal(animalId: string): Promise<void> {
 // The 10 PRD 12.1 seed animals predate this workflow and have no tasks
 // of their own - lazily create them on first view so every animal
 // reaching Under Assessment has the 3 tasks BR-016 describes.
+// One request when the tasks already exist.
 export async function listTasksForAnimal(animalId: string): Promise<AssessmentTask[]> {
+  const existing = await fetchTasks(animalId);
+  if (existing.length > 0) return existing;
   await createTasksForAnimal(animalId);
-  return (await fetchAllTasks()).filter((t) => t.animalId === animalId);
+  return fetchTasks(animalId);
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: "not_found" | "blocked" };
@@ -106,12 +108,10 @@ async function upsertReview(review: FitnessReview): Promise<void> {
   });
 }
 
-async function confirm(
-  animalId: string,
-  email: string,
-  name: string,
-  side: "staff" | "vet",
-): Promise<MutationResult> {
+// Shelter Staff half only. The Veterinarian half is confirmed on the
+// server when a Veterinarian issues the Medical Clearance
+// (app/api/medical/clearances/route.ts).
+export async function confirmAsStaff(animalId: string, email: string, name: string): Promise<MutationResult> {
   const animal = await getAnimalById(animalId);
   if (!animal) return { ok: false, reason: "not_found" };
 
@@ -120,17 +120,14 @@ async function confirm(
 
   const existing = (await getFitnessReview(animalId)) ?? { animalId };
   const now = new Date().toISOString();
-  const updated: FitnessReview =
-    side === "staff"
-      ? { ...existing, staffConfirmedByEmail: email, staffConfirmedByName: name, staffConfirmedAt: now }
-      : { ...existing, vetConfirmedByEmail: email, vetConfirmedByName: name, vetConfirmedAt: now };
+  const updated: FitnessReview = { ...existing, staffConfirmedByEmail: email, staffConfirmedByName: name, staffConfirmedAt: now };
 
   await upsertReview(updated);
 
   await writeAuditLog({
     userId: email,
     userName: name,
-    action: side === "staff" ? "Review Adoption Fitness - Staff Confirmation" : "Review Adoption Fitness - Veterinarian Confirmation",
+    action: "Review Adoption Fitness - Staff Confirmation",
     entityType: "Animal",
     entityId: animalId,
     oldValue: "",
@@ -139,14 +136,6 @@ async function confirm(
   });
 
   return { ok: true };
-}
-
-export function confirmAsStaff(animalId: string, email: string, name: string): Promise<MutationResult> {
-  return confirm(animalId, email, name, "staff");
-}
-
-export function confirmAsVet(animalId: string, email: string, name: string): Promise<MutationResult> {
-  return confirm(animalId, email, name, "vet");
 }
 
 // PRD 9 permission matrix: MedicalRecord (Health Assessment) is

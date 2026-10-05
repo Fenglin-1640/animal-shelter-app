@@ -91,6 +91,10 @@ export const ROLE_FUNCTIONS: Record<Role, RoleFunctions> = {
         description: "View animal profiles, lifecycle status and photos.",
       },
       {
+        label: "Microchip Implants",
+        description: "Implant assigned microchips and record vaccination and desexing.",
+      },
+      {
         label: "Pre-Release Checks",
         description: "Confirm animals are fit for release to an adopter.",
       },

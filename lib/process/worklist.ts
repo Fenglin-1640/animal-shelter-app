@@ -65,8 +65,9 @@ function hrefFor(step: StepKey, role: Role, records: AnimalRecords, applicationI
   }
   switch (step) {
     case "microchip":
-      return role === "Veterinarian" ? `/animals/${a}/medical` : `/animals/${a}/scan-microchip`;
+      return role === "Veterinarian" ? `/animals/${a}/microchip-implant` : `/animals/${a}/scan-microchip`;
     case "implant_vaccination_desexing":
+      return records.implant?.status === "Pending" ? `/animals/${a}/microchip-implant` : `/animals/${a}/medical`;
     case "health_clearance":
       return `/animals/${a}/medical`;
     case "behaviour":
@@ -92,14 +93,18 @@ function hrefFor(step: StepKey, role: Role, records: AnimalRecords, applicationI
 }
 
 // Sidebar label that each pending step counts towards, per acting role.
-function navLabelFor(step: StepKey, role: Role): string | null {
+function navLabelFor(step: StepKey, role: Role, implantPending = false): string | null {
   if (role === "Adopter") {
     if (step === "application" || step === "documents") return "My Applications";
     if (step === "meet_and_greet") return "My Meet and Greets";
     if (step === "agreement" || step === "payment") return "My Agreements";
     return null;
   }
-  if (role === "Veterinarian") return step === "pre_release_check" ? "Pre-Release Checks" : "Animals";
+  if (role === "Veterinarian") {
+    if (step === "pre_release_check") return "Pre-Release Checks";
+    if (step === "microchip" || (step === "implant_vaccination_desexing" && implantPending)) return "Microchip Implants";
+    return "Animals";
+  }
   if (step === "suitability_checks" || step === "meet_and_greet") return "Adoption Applications";
   if (step === "agreement" || step === "payment_confirmation") return "Adoptions";
   if (step === "follow_up") return "Follow Up Visits";
@@ -169,7 +174,7 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
     if (next) {
       const appId = APPLICATION_STAGE.includes(next.key) ? active?.applicationId : undefined;
       items.push({ key: `animal-${animal.animalId}`, animalId: animal.animalId, applicationId: appId, title: animal.name, nextAction: next.nextAction ?? next.label, stepKey: next.key, href: hrefFor(next.key, acting, records, active?.applicationId) });
-      bump(navLabelFor(next.key, acting));
+      bump(navLabelFor(next.key, acting, records.implant?.status === "Pending"));
     }
     // Application list flags (Staff/Admin/Vet views of applications).
     for (const app of records.applications) {

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e03c951a035d714f4c68cb8cbb86a718d3b04cb47a0da78b8b8c3ba5bc2c8cd2'>;
+  StorageHashBase<'1013a4549b1e22a75f9fad2ae66bea8abb699c801878db150fd3bf61e2d9f688'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -422,6 +422,7 @@ export type FieldOutputTypes = {
       readonly vetConfirmedByEmail: CodecTypes['pg/text@1']['output'] | null;
       readonly vetConfirmedByName: CodecTypes['pg/text@1']['output'] | null;
       readonly vetConfirmedAt: TimestamptzString<6> | null;
+      readonly vetConfirmationNote: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly FollowUpVisit: {
       readonly followUpVisitId: CodecTypes['pg/text@1']['output'];
@@ -521,6 +522,18 @@ export type FieldOutputTypes = {
       readonly createdByName: CodecTypes['pg/text@1']['output'];
       readonly createdAt: TimestamptzString<6>;
       readonly updatedAt: TimestamptzString<6>;
+    };
+    readonly MicrochipImplantTask: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly assignedNumber: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly createdByEmail: CodecTypes['pg/text@1']['output'];
+      readonly createdByName: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
+      readonly completedByEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly completedByName: CodecTypes['pg/text@1']['output'] | null;
+      readonly completedAt: TimestamptzString<6> | null;
     };
     readonly MicrochipLookup: {
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -849,6 +862,7 @@ export type FieldInputTypes = {
       readonly vetConfirmedByEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly vetConfirmedByName: CodecTypes['pg/text@1']['input'] | null;
       readonly vetConfirmedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly vetConfirmationNote: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly FollowUpVisit: {
       readonly followUpVisitId: CodecTypes['pg/text@1']['input'];
@@ -948,6 +962,18 @@ export type FieldInputTypes = {
       readonly createdByName: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly MicrochipImplantTask: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly assignedNumber: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly createdByEmail: CodecTypes['pg/text@1']['input'];
+      readonly createdByName: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly completedByEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly completedByName: CodecTypes['pg/text@1']['input'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
     };
     readonly MicrochipLookup: {
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -1273,6 +1299,7 @@ export type StorageColumnTypes = {
       readonly staffConfirmedAt: TimestamptzString<6> | null;
       readonly staffConfirmedByEmail: CodecTypes['pg/text@1']['output'] | null;
       readonly staffConfirmedByName: CodecTypes['pg/text@1']['output'] | null;
+      readonly vetConfirmationNote: CodecTypes['pg/text@1']['output'] | null;
       readonly vetConfirmedAt: TimestamptzString<6> | null;
       readonly vetConfirmedByEmail: CodecTypes['pg/text@1']['output'] | null;
       readonly vetConfirmedByName: CodecTypes['pg/text@1']['output'] | null;
@@ -1375,6 +1402,18 @@ export type StorageColumnTypes = {
       readonly staffNotes: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: TimestamptzString<6>;
+    };
+    readonly microchipImplantTask: {
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly assignedNumber: CodecTypes['pg/text@1']['output'];
+      readonly completedAt: TimestamptzString<6> | null;
+      readonly completedByEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly completedByName: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: TimestamptzString<6>;
+      readonly createdByEmail: CodecTypes['pg/text@1']['output'];
+      readonly createdByName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
     };
     readonly microchipLookup: {
       readonly animalId: CodecTypes['pg/text@1']['output'];
@@ -1700,6 +1739,7 @@ export type StorageColumnInputTypes = {
       readonly staffConfirmedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly staffConfirmedByEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly staffConfirmedByName: CodecTypes['pg/text@1']['input'] | null;
+      readonly vetConfirmationNote: CodecTypes['pg/text@1']['input'] | null;
       readonly vetConfirmedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly vetConfirmedByEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly vetConfirmedByName: CodecTypes['pg/text@1']['input'] | null;
@@ -1802,6 +1842,18 @@ export type StorageColumnInputTypes = {
       readonly staffNotes: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly microchipImplantTask: {
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly assignedNumber: CodecTypes['pg/text@1']['input'];
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly completedByEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly completedByName: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdByEmail: CodecTypes['pg/text@1']['input'];
+      readonly createdByName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
     };
     readonly microchipLookup: {
       readonly animalId: CodecTypes['pg/text@1']['input'];
@@ -2391,6 +2443,20 @@ export namespace Models {
     vetConfirmedByEmail: CodecTypes['pg/text@1']['output'] | null;
     vetConfirmedByName: CodecTypes['pg/text@1']['output'] | null;
     vetConfirmedAt: TimestamptzString<6> | null;
+    vetConfirmationNote: CodecTypes['pg/text@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
+  export type public_MicrochipImplantTask = {
+    id: CodecTypes['pg/text@1']['output'];
+    animalId: CodecTypes['pg/text@1']['output'];
+    assignedNumber: CodecTypes['pg/text@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    createdByEmail: CodecTypes['pg/text@1']['output'];
+    createdByName: CodecTypes['pg/text@1']['output'];
+    createdAt: TimestamptzString<6>;
+    completedByEmail: CodecTypes['pg/text@1']['output'] | null;
+    completedByName: CodecTypes['pg/text@1']['output'] | null;
+    completedAt: TimestamptzString<6> | null;
     readonly [RelationKeys]?: never;
   };
   export type public_NotificationReadOverride = {
@@ -2431,6 +2497,7 @@ export declare const models: {
     MicrochipLookup: Models.public_MicrochipLookup;
     AssessmentTask: Models.public_AssessmentTask;
     FitnessReview: Models.public_FitnessReview;
+    MicrochipImplantTask: Models.public_MicrochipImplantTask;
     NotificationReadOverride: Models.public_NotificationReadOverride;
   };
 };
@@ -3362,6 +3429,11 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly typeParams: { readonly precision: 6 };
                 };
+                readonly vetConfirmationNote: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
               };
               primaryKey: { readonly columns: readonly ['animalId'] };
               uniques: readonly [];
@@ -3859,6 +3931,66 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['meetAndGreetId'] };
               uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly microchipImplantTask: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly assignedNumber: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+                readonly completedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly completedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly completedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['assignedNumber'] }];
               indexes: readonly [];
               foreignKeys: readonly [];
             };
@@ -4680,6 +4812,10 @@ type ContractBase = Omit<
     readonly fitnessReview: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'FitnessReview';
+    };
+    readonly microchipImplantTask: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'MicrochipImplantTask';
     };
     readonly notificationReadOverride: {
       readonly namespace: 'public' & NamespaceId;
@@ -5712,6 +5848,10 @@ type ContractBase = Omit<
                   readonly typeParams: { readonly precision: 6 };
                 };
               };
+              readonly vetConfirmationNote: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
             };
             readonly relations: Record<string, never>;
             readonly storage: {
@@ -5725,6 +5865,7 @@ type ContractBase = Omit<
                 readonly vetConfirmedByEmail: { readonly column: 'vetConfirmedByEmail' };
                 readonly vetConfirmedByName: { readonly column: 'vetConfirmedByName' };
                 readonly vetConfirmedAt: { readonly column: 'vetConfirmedAt' };
+                readonly vetConfirmationNote: { readonly column: 'vetConfirmationNote' };
               };
             };
           };
@@ -6269,6 +6410,75 @@ type ContractBase = Omit<
                 readonly createdByName: { readonly column: 'createdByName' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly MicrochipImplantTask: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly assignedNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              readonly completedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly completedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'microchipImplantTask';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly assignedNumber: { readonly column: 'assignedNumber' };
+                readonly status: { readonly column: 'status' };
+                readonly createdByEmail: { readonly column: 'createdByEmail' };
+                readonly createdByName: { readonly column: 'createdByName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly completedByEmail: { readonly column: 'completedByEmail' };
+                readonly completedByName: { readonly column: 'completedByName' };
+                readonly completedAt: { readonly column: 'completedAt' };
               };
             };
           };

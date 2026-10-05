@@ -309,6 +309,12 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   onto the domain type, no flattening or JSON-encoding needed.
   `staffConfirmedAt`/`vetConfirmedAt` are system-generated timestamps,
   so both are DateTime. See lib/adoption-fitness/serialize.ts.
+  `vetConfirmationNote` records how the Vet half was set ("Confirmed
+  together with Medical Clearance") or why it was withdrawn.
+- `MicrochipImplantTask` - see lib/microchip/implant.ts and
+  app/api/microchip-implants. Created when Scan Microchip finds no chip;
+  `assignedNumber` is unique (15 digits, prefix 036). Written only by
+  its two routes, each in a transaction with its AuditLog entry.
 - `NotificationReadOverride` - see lib/notifications/read-state-store.ts.
   Per-account "mark as read" overrides for the Notifications screen
   (FR-NOT-01); each `NotificationItem` already carries its own

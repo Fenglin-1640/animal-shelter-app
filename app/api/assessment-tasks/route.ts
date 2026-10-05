@@ -6,10 +6,12 @@ import type { AssessmentTask } from "@/lib/adoption-fitness/types";
 import { requireRole } from "@/lib/auth/server-session";
 import { CARE_TEAM } from "@/lib/auth/api-roles";
 
-export async function GET() {
+// ?animalId= narrows the list to one animal's tasks.
+export async function GET(request: Request) {
   const auth = await requireRole(CARE_TEAM);
   if (auth instanceof Response) return auth;
-  const rows = await db.orm.AssessmentTask.where({}).all();
+  const animalId = new URL(request.url).searchParams.get("animalId");
+  const rows = await db.orm.AssessmentTask.where(animalId ? { animalId } : {}).all();
   return NextResponse.json({ items: rows.map(toAssessmentTask) });
 }
 
