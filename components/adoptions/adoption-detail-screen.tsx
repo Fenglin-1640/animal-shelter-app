@@ -173,7 +173,7 @@ function PaymentSection({
     <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
       <h2 className="text-lg font-bold text-text">Adoption Payment</h2>
       <p className="mt-1 text-xs text-text-muted">
-        Simulated payment only - no real payment gateway is connected.
+        The Adopter pays the adoption fee from their agreement; confirm the payment once it has been received.
       </p>
 
       {!agreementId ? (

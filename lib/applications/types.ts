@@ -19,13 +19,16 @@ export type ApplicationStatus =
 // even if the Adopter later edits their live Profile.
 export type AdopterProfileSnapshot = AdopterProfile;
 
-// Metadata only - no real file storage backend, same pattern as Council
-// Transfer/Intake/Photo attachments.
+// The application keeps each document's metadata. Files uploaded through
+// /api/files (stored: true) have their content stored separately and are
+// downloaded through that route; older entries are metadata only.
 export interface ApplicationDocument {
   id: string;
   fileName: string;
   fileSizeKB: number;
   uploadedAt: string;
+  contentType?: string;
+  stored?: boolean;
 }
 
 export interface AdoptionApplication {

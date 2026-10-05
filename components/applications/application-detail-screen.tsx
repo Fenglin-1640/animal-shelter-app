@@ -12,15 +12,12 @@ import { getAdopterProfile } from "@/lib/adopter-profile/store";
 import { getAdopterProfileSubmissionBlockers, type AdopterProfile } from "@/lib/adopter-profile/types";
 import { getApplication, submitApplication, updateDraft } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
-import type { AdoptionApplication, ApplicationDocument } from "@/lib/applications/types";
+import type { AdoptionApplication } from "@/lib/applications/types";
+import { ApplicationDocuments } from "@/components/applications/application-documents";
 import { createChecksForApplication } from "@/lib/checks/store";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Adopter"];
-
-function formatSize(kb: number): string {
-  return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
-}
 
 function NotFound() {
   return (
@@ -56,9 +53,6 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
   const router = useRouter();
   const [application, setApplication] = useState<AdoptionApplication | null | undefined>(undefined);
   const [motivation, setMotivation] = useState("");
-  const [documents, setDocuments] = useState<ApplicationDocument[]>([]);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [fileInputKey, setFileInputKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitBlockers, setSubmitBlockers] = useState<string[] | null>(null);
   const [profile, setProfile] = useState<AdopterProfile | undefined>(undefined);
@@ -69,7 +63,6 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
       if (cancelled) return;
       setApplication(result ?? null);
       setMotivation(result?.motivationStatement ?? "");
-      setDocuments(result?.documents ?? []);
     });
     getAdopterProfile(email).then((result) => {
       if (!cancelled) setProfile(result);
@@ -96,36 +89,15 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
   ];
 
   const handleSaveDraft = async () => {
-    await updateDraft(applicationId, { motivationStatement: motivation, documents });
+    await updateDraft(applicationId, { motivationStatement: motivation });
     setApplication(await getApplication(applicationId));
-  };
-
-  const handleAddDocument = async () => {
-    if (!pendingFile) return;
-    const doc: ApplicationDocument = {
-      id: `DOC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-      fileName: pendingFile.name,
-      fileSizeKB: Math.max(1, Math.round(pendingFile.size / 1024)),
-      uploadedAt: new Date().toISOString(),
-    };
-    const nextDocuments = [...documents, doc];
-    setDocuments(nextDocuments);
-    setPendingFile(null);
-    setFileInputKey((k) => k + 1);
-    await updateDraft(applicationId, { motivationStatement: motivation, documents: nextDocuments });
-  };
-
-  const handleRemoveDocument = async (id: string) => {
-    const nextDocuments = documents.filter((d) => d.id !== id);
-    setDocuments(nextDocuments);
-    await updateDraft(applicationId, { motivationStatement: motivation, documents: nextDocuments });
   };
 
   const handleSubmit = async () => {
     setSubmitBlockers(null);
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
-    await updateDraft(applicationId, { motivationStatement: motivation, documents });
+    await updateDraft(applicationId, { motivationStatement: motivation });
     const result = await submitApplication(applicationId);
     setIsSubmitting(false);
 
@@ -191,50 +163,12 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Supporting Documents</h2>
-        <p className="mt-1 text-sm text-text-muted">
-          Only the file name is recorded; file content is not stored.
-        </p>
-        {documents.length > 0 && (
-          <ul className="mt-3 flex flex-col gap-2">
-            {documents.map((d) => (
-              <li
-                key={d.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-page px-3 py-2 text-sm"
-              >
-                <span className="text-text">
-                  {d.fileName} ({formatSize(d.fileSizeKB)})
-                </span>
-                {isDraft && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveDocument(d.id)}
-                    className="text-xs font-semibold text-danger underline underline-offset-2 hover:no-underline"
-                  >
-                    Remove
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-        {isDraft && (
-          <div className="mt-4 flex flex-wrap items-end gap-2">
-            <input
-              key={fileInputKey}
-              type="file"
-              onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
-              className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
-            />
-            <button
-              type="button"
-              onClick={handleAddDocument}
-              disabled={!pendingFile}
-              className="h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Add Document
-            </button>
-          </div>
-        )}
+        <ApplicationDocuments
+          applicationId={application.applicationId}
+          documents={application.documents}
+          canEdit={isDraft}
+          onChanged={async () => setApplication(await getApplication(applicationId))}
+        />
       </section>
 
       {isDraft && (

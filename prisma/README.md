@@ -319,6 +319,10 @@ npm run db:seed      # recreate the PRD 4.2 demo accounts + PRD 12.1 seed animal
   app/api/medical/antibody-checks. Titre results; `expiryDate` is
   optional. `VaccinationRecord.antibodyOverrideReason`/`antibodyOverrideNote`
   record why a vaccine was given despite a current Protective check.
+- `StoredFile` / `StoredFileChunk` - see lib/files/ and app/api/files.
+  Uploaded application documents: metadata row plus base64 chunks of at
+  most 2 MB (id `<fileId>:<index>`); `completedAt` is set when every
+  chunk has arrived.
 - `NotificationReadOverride` - see lib/notifications/read-state-store.ts.
   Per-account "mark as read" overrides for the Notifications screen
   (FR-NOT-01); each `NotificationItem` already carries its own

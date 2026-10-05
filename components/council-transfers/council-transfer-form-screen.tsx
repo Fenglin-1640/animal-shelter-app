@@ -16,6 +16,8 @@ import {
 import { TRANSFER_STATUS_CATEGORY } from "@/lib/council-transfers/status";
 import type { CouncilTransferSubmission, TransferAttachment } from "@/lib/council-transfers/types";
 import type { Role } from "@/lib/roles/roles";
+import { getAttachmentRules } from "@/lib/files/client";
+import { checkFile, describeRules, FILE_FORMATS, type AttachmentRules } from "@/lib/files/rules";
 import { getActiveValues } from "@/lib/system-administration/store";
 
 const ALLOWED_ROLES: Role[] = ["Council Animal Control Officer"];
@@ -87,6 +89,9 @@ function CouncilTransferFormContent({
   const [pendingDocType, setPendingDocType] = useState("");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
+  // The Rule Configuration's allowed types and size limit.
+  const [attachmentRules, setAttachmentRules] = useState<AttachmentRules | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -104,6 +109,9 @@ function CouncilTransferFormContent({
     let cancelled = false;
     getActiveValues("Document Type").then((result) => {
       if (!cancelled) setDocumentTypeOptions(result);
+    });
+    getAttachmentRules().then((rules) => {
+      if (!cancelled) setAttachmentRules(rules);
     });
     return () => {
       cancelled = true;
@@ -444,7 +452,14 @@ function CouncilTransferFormContent({
                 key={fileInputKey}
                 id="pendingFile"
                 type="file"
-                onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
+                accept={attachmentRules?.formats.flatMap((format) => [...FILE_FORMATS[format].extensions]).join(",")}
+                aria-describedby="pendingFile-rules"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  const problem = file && attachmentRules ? checkFile(file.name, file.size, attachmentRules) : null;
+                  setFileError(problem);
+                  setPendingFile(problem ? null : file);
+                }}
                 className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
               />
             </div>
@@ -456,6 +471,14 @@ function CouncilTransferFormContent({
             >
               Add Attachment
             </button>
+            <p id="pendingFile-rules" className="w-full text-xs text-text-muted">
+              Accepted: {attachmentRules ? describeRules(attachmentRules) : "PDF, JPG, PNG"}.
+            </p>
+            {fileError && (
+              <p role="alert" className="w-full text-sm text-danger">
+                {fileError}
+              </p>
+            )}
           </div>
         )}
       </section>

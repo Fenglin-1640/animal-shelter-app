@@ -105,7 +105,8 @@ export type MutationResult = { ok: true } | { ok: false; reason: string };
 
 export async function updateDraft(
   applicationId: string,
-  input: { motivationStatement: string; documents: ApplicationDocument[] },
+  // documents is ignored by the server - files are added through /api/files.
+  input: { motivationStatement: string; documents?: ApplicationDocument[] },
 ): Promise<MutationResult> {
   const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };

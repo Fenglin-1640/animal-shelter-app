@@ -75,8 +75,7 @@ function PaymentSection({ agreement, email, displayName }: { agreement: Adoption
     <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
       <h2 className="text-lg font-bold text-text">Payment</h2>
       <p className="mt-1 text-xs text-text-muted">
-        This is a simulated payment - no real payment gateway is connected and no funds are
-        actually transferred.
+        Pay the adoption fee to complete your adoption. Shelter Staff will confirm the payment.
       </p>
 
       {!payment || payment.paymentStatus === "Failed" ? (
@@ -107,7 +106,7 @@ function PaymentSection({ agreement, email, displayName }: { agreement: Adoption
             disabled={!paymentMethod}
             className="h-9 w-fit rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {payment?.paymentStatus === "Failed" ? "Try Again (Simulated Payment)" : "Pay Now (Simulated Payment)"}
+            {payment?.paymentStatus === "Failed" ? "Try Again" : "Pay Now"}
           </button>
         </div>
       ) : (

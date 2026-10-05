@@ -2,6 +2,7 @@
 
 import { FunctionCardGroup } from "@/components/landing/function-card";
 import { NeedsMyActionPanel } from "@/components/process/needs-my-action-panel";
+import { PaymentConfirmPopup } from "@/components/process/payment-confirm-popup";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ROLE_FUNCTIONS } from "@/lib/roles/roles";
 
@@ -18,7 +19,12 @@ export function LandingScreen() {
         </h1>
       </div>
 
-      {(user.role === "Administrator" || user.role === "Shelter Staff Member") && <NeedsMyActionPanel />}
+      {(user.role === "Administrator" || user.role === "Shelter Staff Member") && (
+        <>
+          <NeedsMyActionPanel />
+          <PaymentConfirmPopup />
+        </>
+      )}
 
       <FunctionCardGroup
         heading="Administration Functions"

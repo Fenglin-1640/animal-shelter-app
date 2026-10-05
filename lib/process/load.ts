@@ -138,7 +138,7 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
       meetAndGreets: g.meetAndGreets.get(id) ?? [],
       agreements: g.agreements.get(id) ?? [],
       payments: g.payments.get(id) ?? [],
-      documentCounts: {},
+      documentCounts: Object.fromEntries(animalApps.map((a) => [a.applicationId, a.documents.length])),
       preReleaseChecks: g.preRelease.get(id) ?? [],
       followUpVisits: g.followUps.get(id) ?? [],
     });
