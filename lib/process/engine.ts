@@ -464,12 +464,17 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
   );
 
   const visit = [...records.followUpVisits].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+  // Staff act on a scheduled visit (what the Follow Up Visits page lists);
+  // an animal in its follow-up period without one has nothing to complete.
+  const scheduledVisit = records.followUpVisits.some((v) => v.status === "Scheduled");
   steps.push(
     status === "Rehomed" || visit?.status === "Completed"
       ? step("follow_up", "done", [STAFF], "Follow-up completed")
-      : status === "inFollowUpPeriod"
+      : status === "inFollowUpPeriod" && scheduledVisit
         ? step("follow_up", "waiting", [STAFF], "Follow-up visit scheduled", act(STAFF, "Complete follow-up visit"))
-        : step("follow_up", "not_started", [STAFF], "Waiting for release"),
+        : status === "inFollowUpPeriod"
+          ? step("follow_up", "in_progress", [STAFF], "In follow-up period - no visit scheduled")
+          : step("follow_up", "not_started", [STAFF], "Waiting for release"),
   );
 
   steps.push(status === "Rehomed" ? step("rehomed", "done", [STAFF], "Rehomed") : step("rehomed", "not_started", [STAFF], "Not rehomed yet"));

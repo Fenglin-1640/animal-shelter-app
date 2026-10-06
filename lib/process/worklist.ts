@@ -217,6 +217,7 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
     staffSide ? db.orm.IntakeRecord.select("intakeId", "councilTransferSubmissionId").all() : Promise.resolve([]),
   ]);
   const normalizedEmail = email.trim().toLowerCase();
+  let scheduledVisits = 0;
   const workbench: Record<WorkbenchSectionKey, WorkbenchRow[]> | undefined =
     role === "Veterinarian" ? { implant: [], vaccination_desexing: [], clearance: [], pre_release: [] } : undefined;
   const now = Date.now();
@@ -251,7 +252,9 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
     if (next) {
       const appId = APPLICATION_STAGE.includes(next.key) ? active?.applicationId : undefined;
       items.push({ key: `animal-${animal.animalId}`, animalId: animal.animalId, applicationId: appId, title: animal.name, nextAction: next.nextAction ?? next.label, stepKey: next.key, href: hrefFor(next.key, acting, records, active?.applicationId) });
-      if (!workbench) bump(navLabelFor(next.key, acting));
+      // Staff badges are counted from the lists below; Adoptions has no
+      // per-row flags, so it keeps counting animals at that stage.
+      if (!workbench && (!staffSide || navLabelFor(next.key, acting) === "Adoptions")) bump(navLabelFor(next.key, acting));
     }
     // Application list flags (Staff/Admin/Vet views of applications).
     for (const app of records.applications) {
@@ -259,11 +262,24 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
         app.applicationId === active?.applicationId ? steps.find((s) => APPLICATION_STAGE.includes(s.key) && needsRole(s, role)) : undefined;
       applications[app.applicationId] = { needsMyAction: Boolean(appStep), nextAction: appStep?.nextAction, priority: appStep ? 0 : 1 };
     }
+    if (staffSide) scheduledVisits += records.followUpVisits.filter((v) => v.status === "Scheduled").length;
     if (acting === "Shelter Staff Member") {
       for (const p of records.payments.filter((p) => p.paymentStatus === "Pending")) {
         paymentsToConfirm.push({ paymentId: p.paymentId, applicationId: p.applicationId, adopterName: p.adopterName, animalName: p.animalName });
       }
     }
+  }
+
+  // Each Staff badge counts exactly the rows its page flags: animals and
+  // (non-draft) applications with a red dot, and the scheduled visits the
+  // Follow Up Visits page lists.
+  if (staffSide) {
+    const set = (label: string, n: number) => {
+      if (n > 0) counts[label] = n;
+    };
+    set("Animals", Object.values(animals).filter((f) => f.needsMyAction).length);
+    set("Adoption Applications", [...all.values()].flatMap((r) => r.applications).filter((a) => a.applicationStatus !== "Draft" && applications[a.applicationId]?.needsMyAction).length);
+    set("Follow Up Visits", scheduledVisits);
   }
 
   if (staffSide) {
