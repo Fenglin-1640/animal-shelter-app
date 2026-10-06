@@ -17,29 +17,6 @@ export interface StatusActor {
   name: string;
 }
 
-export async function addAnimal(animal: Animal, actor?: StatusActor): Promise<void> {
-  await send("/api/animals", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(animal),
-  });
-  // BR-014: every status change is written to StatusHistory and
-  // AuditLog. Creation is the first entry for this Animal - oldValue is
-  // empty since nothing existed before it.
-  if (actor) {
-    await writeAuditLog({
-      userId: actor.email,
-      userName: actor.name,
-      action: "Create Animal (Finalise Intake)",
-      entityType: "Animal",
-      entityId: animal.animalId,
-      oldValue: "",
-      newValue: `currentStatus=${animal.currentStatus}, listingStatus=${animal.listingStatus}`,
-      result: "Success",
-    });
-  }
-}
-
 export async function updateAnimal(animalId: string, patch: Partial<Animal>): Promise<void> {
   await send(`/api/animals/${animalId}`, {
     method: "PATCH",
@@ -103,10 +80,4 @@ export async function getAnimalById(animalId: string): Promise<Animal | undefine
   // non-JSON error response - both map to undefined, as before.
   const result = await getJson(`/api/animals/${animalId}`);
   return result.ok ? (result.animal as Animal) : undefined;
-}
-
-export function generateShelterId(): string {
-  const year = new Date().getFullYear();
-  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `SH-${year}-${suffix}`;
 }

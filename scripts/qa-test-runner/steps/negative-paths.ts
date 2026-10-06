@@ -97,7 +97,7 @@ async function intakeFreshAnimal(
   });
   setId(entry, "intakeId", intakeId);
 
-  const finaliseResult = await finaliseIntake(intakeId, STAFF.email, STAFF.name);
+  const finaliseResult = await finaliseIntake(intakeId);
   if (!ok(finaliseResult)) return undefined;
   const record = await getIntakeRecord(intakeId);
   if (!record) return undefined;

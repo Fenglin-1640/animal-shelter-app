@@ -158,7 +158,7 @@ export async function runAnimalWorkflow(
         setId(entry, "intakeId", intakeId);
       }
 
-      const result = await finaliseIntake(intakeId, STAFF.email, STAFF.name);
+      const result = await finaliseIntake(intakeId);
       if (!ok(result)) {
         const blockers = (result as { blockers?: string[] }).blockers;
         return fail(`finaliseIntake failed: ${(result as { reason: string }).reason}`, blockers?.join("; "));

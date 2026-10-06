@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { BreedSelect } from "@/components/animals/breed-select";
 import { TemperamentCheckboxes } from "@/components/animals/temperament-checkboxes";
@@ -13,7 +13,7 @@ import { listAllTransfers } from "@/lib/council-transfers/store";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
 import {
   createIntakeRecord,
-  finaliseIntake,
+  saveAndFinaliseIntake,
   getIntakeRecord,
   listLinkedTransferIds,
   updateIntakeRecord,
@@ -120,6 +120,9 @@ function IntakeRecordFormContent({
   const [linkedElsewhere, setLinkedElsewhere] = useState<Set<string>>(new Set());
   const [dataLoaded, setDataLoaded] = useState(false);
   const [finalisedAt, setFinalisedAt] = useState<string | undefined>(undefined);
+  // Reasons the last Save and Finalise attempt did not go through.
+  const [finaliseErrors, setFinaliseErrors] = useState<string[] | null>(null);
+  const errorsRef = useRef<HTMLDivElement>(null);
   const isReadOnly = Boolean(finalisedAt);
 
   const [intakeSourceOptions, setIntakeSourceOptions] = useState<string[]>([]);
@@ -289,49 +292,54 @@ function IntakeRecordFormContent({
     setPhotos((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const handleSave = async () => {
+  // Low-emphasis draft save, for a form that isn't complete yet.
+  const handleSaveDraft = async () => {
     setSavedMessage(null);
+    setFinaliseErrors(null);
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
     const input = buildInput();
     if (existing) {
       await updateIntakeRecord(existing.intakeId, input);
       setIsSaving(false);
-      setSavedMessage("Intake record saved.");
+      setSavedMessage("Draft saved.");
       return;
     }
-
     const id = await createIntakeRecord(email, displayName, input);
     setIsSaving(false);
     onCreated(id);
   };
 
-  const handleFinalise = async () => {
-    if (!existing) return;
+  // One step: validates every required field (including a photo), then the
+  // server saves and finalises the record in one transaction. If anything
+  // is missing or the server refuses, nothing is finalised and the reasons
+  // are listed above the button.
+  const handleSaveAndFinalise = async () => {
     setSavedMessage(null);
-    setIsFinalising(true);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-
-    // Persist the latest edits first so Finalise checks against current data.
-    await updateIntakeRecord(existing.intakeId, buildInput());
-    const result = await finaliseIntake(existing.intakeId, email, displayName);
-    setIsFinalising(false);
-
-    if (!result.ok) {
-      // The Finalise button is disabled whenever liveBlockers is non-empty,
-      // so "blocked" here would only happen from a stale read - defensive,
-      // not expected in normal use.
-      setSavedMessage(
-        result.reason === "blocked"
-          ? (result.blockers?.[0] ?? "Some required items are still missing.")
-          : "Something went wrong finalising this intake. Please try again.",
-      );
+    if (liveBlockers.length > 0) {
+      setFinaliseErrors(liveBlockers);
+      errorsRef.current?.focus();
       return;
     }
-
+    setFinaliseErrors(null);
+    setIsFinalising(true);
+    const result = await saveAndFinaliseIntake(existing?.intakeId, buildInput());
+    setIsFinalising(false);
+    if (!result.ok) {
+      setFinaliseErrors(
+        result.reason === "blocked" && result.blockers?.length
+          ? result.blockers
+          : [result.reason === "already_finalised" ? "This intake has already been finalised." : "Something went wrong saving this intake. Nothing was finalised - please try again."],
+      );
+      requestAnimationFrame(() => errorsRef.current?.focus());
+      return;
+    }
+    if (!existing) {
+      onCreated(result.intakeId);
+      return;
+    }
     const refreshed = await getIntakeRecord(existing.intakeId);
-    setFinalisedAt(refreshed?.finalisedAt);
+    setExisting(refreshed ?? existing);
+    setFinalisedAt(refreshed?.finalisedAt ?? new Date().toISOString());
   };
 
   return (
@@ -617,7 +625,7 @@ function IntakeRecordFormContent({
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Breed and Adoption Details</h2>
         <p className="mt-1 text-sm text-text-muted">
-          Required before Finalise Intake. These carry over to the Animal Profile and its
+          Required before finalising. These carry over to the Animal Profile and its
           adoption listing, and can still be corrected there later.
         </p>
         <div className="mt-4 flex flex-col gap-4">
@@ -686,7 +694,7 @@ function IntakeRecordFormContent({
           Photos <span aria-hidden="true">*</span>
         </h2>
         <p className="mt-1 text-sm text-text-muted">
-          At least one photo is required before Finalise Intake. The first photo becomes the
+          At least one photo is required before finalising. The first photo becomes the
           default public listing photo. A description for screen readers (alt text) is
           optional and can also be added later on the Photos screen.
         </p>
@@ -778,43 +786,49 @@ function IntakeRecordFormContent({
 
       {!isReadOnly && (
         <div className="flex flex-col gap-3">
-          {liveBlockers.length > 0 && (
+          {finaliseErrors ? (
             <div
-              role="status"
-              className="flex flex-col gap-1 rounded-[12px] border border-gold bg-gold/10 px-3 py-3 text-sm text-text"
+              ref={errorsRef}
+              tabIndex={-1}
+              role="alert"
+              className="flex flex-col gap-1 rounded-[12px] border border-danger bg-danger/10 px-3 py-3 text-sm text-text outline-none"
             >
-              <p className="font-semibold">Not ready to finalise:</p>
+              <p className="font-semibold">The intake was not finalised:</p>
               <ul className="list-inside list-disc">
-                {liveBlockers.map((b) => (
+                {finaliseErrors.map((b) => (
                   <li key={b}>{b}</li>
                 ))}
               </ul>
             </div>
+          ) : (
+            liveBlockers.length > 0 && (
+              <div role="status" className="flex flex-col gap-1 rounded-[12px] border border-gold bg-gold/10 px-3 py-3 text-sm text-text">
+                <p className="font-semibold">Still needed before finalising:</p>
+                <ul className="list-inside list-disc">
+                  {liveBlockers.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+              </div>
+            )
           )}
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => void handleSaveAndFinalise()}
               disabled={isSaving || isFinalising}
-              className="h-10 rounded-[12px] border border-border bg-surface px-5 text-sm font-semibold text-text hover:bg-surface-active disabled:opacity-60"
+              className="h-10 rounded-[12px] bg-primary px-5 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSaving ? "Saving..." : "Save Intake Record"}
+              {isFinalising ? "Saving and finalising..." : "Save and Finalise Intake"}
             </button>
             <button
               type="button"
-              onClick={handleFinalise}
-              disabled={!existing || isSaving || isFinalising || liveBlockers.length > 0}
-              title={
-                !existing
-                  ? "Save the intake record before finalising"
-                  : liveBlockers.length > 0
-                    ? "Resolve the items listed above before finalising"
-                    : undefined
-              }
-              className="h-10 rounded-[12px] bg-primary px-5 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => void handleSaveDraft()}
+              disabled={isSaving || isFinalising}
+              className="text-sm font-semibold text-secondary underline underline-offset-2 hover:no-underline disabled:opacity-60"
             >
-              {isFinalising ? "Finalising..." : "Finalise Intake"}
+              {isSaving ? "Saving draft..." : "Save draft"}
             </button>
             {savedMessage && (
               <span role="status" className="text-sm text-text">

@@ -1,4 +1,3 @@
-import type { AnimalPhoto } from "@/lib/animals/types";
 import type { Photo } from "@/lib/photos/types";
 import { getJson, send } from "@/lib/shared/http";
 
@@ -74,33 +73,6 @@ export async function addPhoto(
     body: JSON.stringify(photo),
   });
   return photo;
-}
-
-// Once Finalise Intake (FR-INT-03) creates the Animal, the photos
-// uploaded at intake become real Photo records here, carrying any alt
-// text Staff entered at upload (optional at Intake). The first one is
-// selected as the default public listing photo (alt text is optional);
-// Staff can pick a different public photo on the Photos screen (FR-AN-02).
-export async function seedPhotosFromIntake(
-  animalId: string,
-  photos: AnimalPhoto[],
-  email: string,
-  name: string,
-): Promise<void> {
-  const created: Photo[] = [];
-  for (const p of photos) {
-    created.push(
-      await addPhoto(
-        animalId,
-        { fileName: p.fileName, fileSizeKB: p.fileSizeKB, dateTaken: p.uploadedAt, imageData: p.imageData, altText: p.altText },
-        email,
-        name,
-        p.uploadedAt,
-      ),
-    );
-  }
-  // Set directly - nothing else can be public yet for a new Animal.
-  if (created[0]) await patchPhoto(created[0].id, { useOnAdoptionListing: true });
 }
 
 export type MutationResult = { ok: true } | { ok: false; reason: string };

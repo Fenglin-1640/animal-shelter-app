@@ -19,7 +19,7 @@ export async function GET() {
 }
 
 // FR-INT-03: Finalise Intake creates the Animal record. The client
-// (lib/animals/animal-store.ts's addAnimal()) already builds the full
+// (app/api/intake-records/finalise) already builds the full
 // Animal object, including animalId/shelterId - this is a thin insert.
 export async function POST(request: Request) {
   const auth = await requireRole(STAFF);

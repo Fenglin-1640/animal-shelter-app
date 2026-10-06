@@ -31,7 +31,7 @@ export interface LinkedPerson {
 // in this prototype, consistent with Council Transfer attachments).
 // Used only by the Intake Record form's simple "at least one photo
 // uploaded" Finalise Intake gate (FR-INT-03) - once the Animal exists,
-// lib/photos/store.ts's seedPhotosFromIntake() converts these into full
+// Save and Finalise Intake (app/api/intake-records/finalise) converts these into full
 // Photo records (FR-AN-02: altText, selecting the public listing photo,
 // dateTaken/takenBy).
 export interface AnimalPhoto {
@@ -42,7 +42,7 @@ export interface AnimalPhoto {
   // The actual uploaded image, as a base64 data URL - same field/format
   // as Photo.imageData (lib/photos/types.ts), carried through here so a
   // photo added during Intake keeps its real bytes once
-  // seedPhotosFromIntake() converts it into a full Photo record, instead
+  // Save and Finalise Intake converts it into a full Photo record, instead
   // of only ever getting a placeholder graphic. Optional since older
   // rows predate this field.
   imageData?: string;

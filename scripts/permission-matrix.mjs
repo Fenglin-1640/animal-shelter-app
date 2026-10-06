@@ -61,6 +61,7 @@ const FORBIDDEN_WRITES = [
   ["POST", "/api/animals", [V, C, D]],
   ["POST", "/api/animals/A-0001/status", [C, D]],
   ["POST", "/api/intake-records", [V, C, D]],
+  ["POST", "/api/intake-records/finalise", [V, C, D]],
   ["POST", "/api/microchip-lookups", [V, C, D]],
   ["POST", "/api/statutory-holds", [V, C, D]],
   ["POST", "/api/follow-up-visits", [A, V, C, D]],

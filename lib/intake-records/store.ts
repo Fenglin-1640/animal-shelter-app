@@ -1,12 +1,6 @@
-import { acceptTransfer, getTransfer } from "@/lib/council-transfers/store";
-import { addAnimal, generateShelterId } from "@/lib/animals/animal-store";
-import { createTasksForAnimal } from "@/lib/adoption-fitness/store";
-import { seedPhotosFromIntake } from "@/lib/photos/store";
-import { getBreedsForSpecies } from "@/lib/options/breeds";
-import type { Animal } from "@/lib/animals/types";
+import { acceptTransfer } from "@/lib/council-transfers/store";
 import type { RegisteredOwnerContact } from "@/lib/microchip/types";
 import {
-  getFinaliseBlockers,
   type IntakeRecord,
   type IntakeRecordFormInput,
 } from "@/lib/intake-records/types";
@@ -127,59 +121,31 @@ export async function updateIntakeRecord(
 }
 
 export type FinaliseResult =
-  | { ok: true }
-  | { ok: false; reason: "not_found" | "already_finalised" | "blocked"; blockers?: string[] };
+  | { ok: true; intakeId: string; animalId: string }
+  | { ok: false; reason: "not_found" | "already_finalised" | "blocked" | "failed"; blockers?: string[] };
 
-// FR-INT-03: Finalise Intake creates the Animal record (+ initial status
-// fields) from a completed Intake Record - including the Breed, Adoption
-// Fee, Temperaments and General Description captured at intake, so the
-// Animal already has FR-LIST-01's publish fields - and (FR-INT-04) the 3 parallel
-// assessment tasks Review Adoption Fitness gates on. A separate
-// MedicalRecord is not persisted here - nothing in this prototype
-// reads/displays one yet, so an empty shell object would have no
-// observable effect.
-export async function finaliseIntake(intakeId: string, email: string, name: string): Promise<FinaliseResult> {
-  const record = await getIntakeRecord(intakeId);
-  if (!record) return { ok: false, reason: "not_found" };
-  if (record.finalisedAt) return { ok: false, reason: "already_finalised" };
+// Save and Finalise Intake in one server transaction: validates the form,
+// saves the record (a new one, or the draft intakeId) and finalises it -
+// the Animal (Under Assessment / Not Fit), its three assessment tasks,
+// its photos (the first one public) and a linked Council Transfer
+// accepted - all audited. If anything is missing nothing is saved and the
+// unmet conditions come back as blockers.
+export async function saveAndFinaliseIntake(intakeId: string | undefined, input: IntakeRecordFormInput): Promise<FinaliseResult> {
+  return postFinalise({ intakeId, input });
+}
 
-  const linkedTransfer = record.councilTransferSubmissionId
-    ? await getTransfer(record.councilTransferSubmissionId)
-    : undefined;
-  const blockers = getFinaliseBlockers(record, linkedTransfer);
-  if (blockers.length > 0) return { ok: false, reason: "blocked", blockers };
+// Finalises a saved draft as stored.
+export async function finaliseIntake(intakeId: string): Promise<FinaliseResult> {
+  return postFinalise({ intakeId });
+}
 
-  const species = record.species || "Cat";
-  const breedOption = (await getBreedsForSpecies(species)).find((b) => b.name === record.breed);
-
-  const now = new Date().toISOString();
-  const animal: Animal = {
-    animalId: record.animalId,
-    shelterId: generateShelterId(),
-    name: record.animalName,
-    species,
-    breed: record.breed,
-    breedDescription: breedOption?.description ?? "",
-    sex: record.sex || "Male",
-    dateOfBirth: record.dateOfBirth || undefined,
-    estimatedAge: record.estimatedAge || undefined,
-    coatColour: record.coatColour,
-    coatMarkings: record.coatMarkings,
-    generalDescription: record.generalDescription,
-    temperaments: record.temperaments,
-    adoptionFee: record.adoptionFee,
-    currentStatus: "Under Assessment",
-    listingStatus: "Not Fit",
-    statusUpdatedAt: now,
-    enteredAt: now,
-    lastModifiedAt: now,
-    intakeSource: record.intakeSource,
-  };
-  await addAnimal(animal, { email, name });
-  await createTasksForAnimal(animal.animalId);
-  await seedPhotosFromIntake(animal.animalId, record.photos, record.createdByEmail, record.createdByName);
-
-  await patchIntakeRecord(intakeId, { finalisedAt: now, updatedAt: now });
-
-  return { ok: true };
+async function postFinalise(body: { intakeId?: string; input?: IntakeRecordFormInput }): Promise<FinaliseResult> {
+  const response = await send("/api/intake-records/finalise", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const result = await response.json().catch(() => ({ ok: false, reason: "failed" }));
+  if (result.ok) return { ok: true, intakeId: result.intakeId, animalId: result.animalId };
+  return { ok: false, reason: result.reason ?? "failed", blockers: result.blockers };
 }
