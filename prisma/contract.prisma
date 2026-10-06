@@ -653,6 +653,43 @@ model StoredFileChunk {
   data       String
 }
 
+// A Veterinarian vaccination check: what the animal is already covered
+// for (antibody results, vaccinations, outside evidence) and a report.
+// evidence, coverage and notApplicable are JSON-encoded lists; whatever
+// is not covered becomes VaccinationTask rows.
+model VaccinationCheck {
+  id             String   @id
+  animalId       String
+  checkDate      String
+  report         String
+  outcome        String
+  evidence       String
+  coverage       String
+  notApplicable  String
+  checkedByEmail String
+  checkedByName  String
+  createdAt      TimestamptzString(6)
+}
+
+// A vaccination still to be given after a vaccination check: Pending,
+// then Completed (by a VaccinationRecord) or Waived (with a reason).
+model VaccinationTask {
+  id                     String    @id
+  animalId               String
+  checkId                String
+  vaccineType            String
+  status                 String
+  dueDate                String?
+  waivedReason           String?
+  createdByEmail         String
+  createdByName          String
+  createdAt              TimestamptzString(6)
+  completedVaccinationId String?
+  resolvedByEmail        String?
+  resolvedByName         String?
+  resolvedAt             TimestamptzString(6)?
+}
+
 // Antibody (titre) test results recorded by a Veterinarian.
 model AntibodyCheck {
   id              String   @id

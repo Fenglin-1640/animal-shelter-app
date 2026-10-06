@@ -53,7 +53,7 @@ const VACCINE_ANTIGENS: Record<string, string[]> = {
   C4: ["Canine parvovirus", "Canine distemper", "Canine adenovirus (hepatitis)", "Canine parainfluenza"],
   C5: ["Canine parvovirus", "Canine distemper", "Canine adenovirus (hepatitis)", "Canine parainfluenza", "Bordetella"],
   C7: ["Canine parvovirus", "Canine distemper", "Canine adenovirus (hepatitis)", "Canine parainfluenza", "Bordetella", "Leptospirosis"],
-  "Kennel Cough (Bordetella)": ["Bordetella", "Canine parainfluenza"],
+  "Kennel Cough (Bordetella)": ["Bordetella"],
 };
 
 export function antigensForVaccine(vaccineType: string): string[] {

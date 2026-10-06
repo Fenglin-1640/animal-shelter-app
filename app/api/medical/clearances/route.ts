@@ -30,19 +30,23 @@ export async function POST(request: Request) {
   const { animalId } = (await request.json()) as { animalId?: string };
   if (!animalId) return NextResponse.json({ ok: false, reason: "invalid" }, { status: 400 });
 
-  const [animal, existing, review, vaccination, desexing, health] = await Promise.all([
+  const [animal, existing, review, vaccination, desexing, health, check, pendingItem] = await Promise.all([
     db.orm.Animal.select("animalId").where({ animalId }).first(),
     db.orm.MedicalClearance.where({ animalId }).first(),
     db.orm.FitnessReview.where({ animalId }).first(),
     db.orm.VaccinationRecord.select("id").where({ animalId }).first(),
     db.orm.DesexingSchedule.select("id").where({ animalId }).first(),
     db.orm.HealthAssessment.select("createdAt", "healthRecheckRequired").where({ animalId }).all(),
+    db.orm.VaccinationCheck.select("id").where({ animalId }).first(),
+    db.orm.VaccinationTask.select("id").where({ animalId, status: "Pending" }).first(),
   ]);
   if (!animal) return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
   if (existing && review?.vetConfirmedAt) return NextResponse.json({ ok: false, reason: "already_issued" }, { status: 409 });
   // Same conditions as getMedicalClearanceBlockers() in lib/medical/store.ts.
   const latestHealth = [...health].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-  if (!vaccination || !desexing || latestHealth?.healthRecheckRequired === 1) {
+  // Vaccination: a Vaccination Check (or, for animals from before checks,
+  // a vaccination record) and no vaccination items still pending.
+  if ((!check && !vaccination) || pendingItem || !desexing || latestHealth?.healthRecheckRequired === 1) {
     return NextResponse.json({ ok: false, reason: "blocked" }, { status: 409 });
   }
 

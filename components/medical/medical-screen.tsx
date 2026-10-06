@@ -22,6 +22,9 @@ import {
   getMedicalClearanceBlockers,
   issueMedicalClearance,
   listAntibodyChecks,
+  listVaccinationChecks,
+  listVaccinationTasks,
+  waiveVaccinationTask,
   listHealthAssessments,
   listTreatmentEvents,
   listVaccinations,
@@ -38,6 +41,8 @@ import { DESEXING_STATUS_CATEGORY } from "@/lib/medical/status";
 import type { AntibodyCheck } from "@/lib/medical/antibodies";
 import { AntibodyChecksSection } from "@/components/medical/antibody-checks-section";
 import { AntibodyOverrideModal } from "@/components/medical/antibody-override-modal";
+import { VaccinationCheckForm } from "@/components/medical/vaccination-check-form";
+import type { VaccinationCheck, VaccinationTask } from "@/lib/medical/vaccination-check";
 import type {
   DesexingSchedule,
   HealthAssessment,
@@ -359,14 +364,17 @@ function TreatmentEventForm({
 
 function VaccinationForm({
   vaccineTypeOptions,
+  initialVaccineType,
   onSubmit,
   onCancel,
 }: {
   vaccineTypeOptions: string[];
+  // Administering a pending vaccination: the type is fixed.
+  initialVaccineType?: string;
   onSubmit: (input: VaccinationInput) => void;
   onCancel: () => void;
 }) {
-  const [vaccineType, setVaccineType] = useState("");
+  const [vaccineType, setVaccineType] = useState(initialVaccineType ?? "");
   const [administrationDate, setAdministrationDate] = useState(todayDate());
   const [doseOrChipId, setDoseOrChipId] = useState("");
   const [nextBoosterDueDate, setNextBoosterDueDate] = useState("");
@@ -381,6 +389,7 @@ function VaccinationForm({
           <select
             id="vac-type"
             value={vaccineType}
+            disabled={Boolean(initialVaccineType)}
             onChange={(e) => setVaccineType(e.target.value)}
             className="h-9 rounded-[12px] border border-border bg-surface px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
@@ -461,6 +470,12 @@ function MedicalContent({
   const [treatmentEvents, setTreatmentEvents] = useState<TreatmentEvent[]>([]);
   const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
   const [antibodyChecks, setAntibodyChecks] = useState<AntibodyCheck[]>([]);
+  const [vaccinationChecks, setVaccinationChecks] = useState<VaccinationCheck[]>([]);
+  const [vaccinationTasks, setVaccinationTasks] = useState<VaccinationTask[]>([]);
+  const [showCheckForm, setShowCheckForm] = useState(false);
+  // The pending vaccination being given, and the one being waived.
+  const [administering, setAdministering] = useState<VaccinationTask | null>(null);
+  const [waiving, setWaiving] = useState<{ taskId: string; reason: string; error?: string } | null>(null);
   // A vaccination waiting on the antibody question (the route refused it
   // because a current antibody check already covers it).
   const [pendingOverride, setPendingOverride] = useState<{ input: VaccinationInput; antigens: string[] } | null>(null);
@@ -488,7 +503,7 @@ function MedicalContent({
   const [clearanceBlockers, setClearanceBlockers] = useState<string[]>([]);
 
   const reloadMedical = async () => {
-    const [healthAssessmentsResult, treatmentEventsResult, vaccinationsResult, desexingResult, clearanceResult, triggerResult, blockersResult, reviewResult, antibodyResult] =
+    const [healthAssessmentsResult, treatmentEventsResult, vaccinationsResult, desexingResult, clearanceResult, triggerResult, blockersResult, reviewResult, antibodyResult, checksResult, tasksResult] =
       await Promise.all([
         listHealthAssessments(animalId),
         listTreatmentEvents(animalId),
@@ -499,6 +514,8 @@ function MedicalContent({
         getMedicalClearanceBlockers(animalId),
         getFitnessReview(animalId),
         listAntibodyChecks(animalId),
+        listVaccinationChecks(animalId),
+        listVaccinationTasks(animalId),
       ]);
     setHealthAssessments(healthAssessmentsResult);
     setTreatmentEvents(treatmentEventsResult);
@@ -509,6 +526,23 @@ function MedicalContent({
     setClearanceBlockers(blockersResult);
     setFitnessReview(reviewResult);
     setAntibodyChecks(antibodyResult);
+    setVaccinationChecks(checksResult);
+    setVaccinationTasks(tasksResult);
+  };
+
+  const handleWaive = async () => {
+    if (!waiving) return;
+    if (!waiving.reason.trim()) {
+      setWaiving({ ...waiving, error: "A reason is required." });
+      return;
+    }
+    const result = await waiveVaccinationTask(waiving.taskId, waiving.reason.trim());
+    if (!result.ok) {
+      setWaiving({ ...waiving, error: "The vaccination could not be waived." });
+      return;
+    }
+    setWaiving(null);
+    refresh();
   };
 
   const saveVaccination = async (input: VaccinationInput) => {
@@ -521,6 +555,7 @@ function MedicalContent({
       }
       setPendingOverride(null);
       setShowVaccinationForm(false);
+      setAdministering(null);
       refresh();
     } finally {
       setSavingVaccination(false);
@@ -561,6 +596,10 @@ function MedicalContent({
     );
   }
   if (!animal) return <NotFound />;
+
+  const latestCheck = vaccinationChecks[0];
+  const pendingTasks = vaccinationTasks.filter((t) => t.status === "Pending");
+  const resolvedTasks = vaccinationTasks.filter((t) => t.status !== "Pending");
 
   const refresh = async () => {
     await reloadMedical();
@@ -719,11 +758,139 @@ function MedicalContent({
         </SectionCard>
       )}
 
-      <SectionCard title="Vaccinations" required>
-        {vaccinations.length === 0 ? (
-          <p className="mt-2 text-sm text-text-muted">No vaccinations recorded yet.</p>
+      <SectionCard title="Vaccination Check and Records" required>
+        {latestCheck ? (
+          <div className="mt-3 rounded-[12px] border border-border bg-page p-3 text-sm">
+            <p className="font-semibold text-text">
+              Vaccination Check, {formatDate(latestCheck.checkDate)}: {latestCheck.outcome}
+            </p>
+            <p className="mt-1 whitespace-pre-line text-text">{latestCheck.report}</p>
+            {latestCheck.coverage.length > 0 && (
+              <p className="mt-1 text-xs text-text-muted">Covered: {latestCheck.coverage.map((c) => `${c.vaccineType} (${c.reason})`).join("; ")}</p>
+            )}
+            {latestCheck.notApplicable.length > 0 && (
+              <p className="text-xs text-text-muted">Not applicable: {latestCheck.notApplicable.join(", ")}</p>
+            )}
+            <p className="mt-1 text-xs text-text-muted">
+              {latestCheck.checkedByName} &middot; {formatDateTime(latestCheck.createdAt)}
+            </p>
+          </div>
         ) : (
-          <ul className="mt-4 flex flex-col gap-2">
+          <p className="mt-2 text-sm text-text-muted">
+            {vaccinations.length > 0 ? "No vaccination check recorded (vaccinations recorded before checks were introduced)." : "No vaccination check recorded yet."}
+          </p>
+        )}
+        {canAct && !showCheckForm && (
+          <button
+            type="button"
+            onClick={() => setShowCheckForm(true)}
+            className="mt-3 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+          >
+            Run Vaccination Check
+          </button>
+        )}
+        {canAct && showCheckForm && (
+          <VaccinationCheckForm
+            animalId={animalId}
+            species={animal.species}
+            mode="standalone"
+            onCancel={() => setShowCheckForm(false)}
+            onSaved={() => {
+              setShowCheckForm(false);
+              refresh();
+            }}
+          />
+        )}
+
+        {pendingTasks.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-semibold text-text">Pending vaccinations</h3>
+            <ul className="mt-2 flex flex-col gap-2">
+              {pendingTasks.map((t) => (
+                <li key={t.id} className="rounded-[12px] border border-gold bg-gold/10 p-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 font-semibold text-text">
+                      {t.vaccineType}
+                      <StatusChip label="Pending" category="attention" />
+                    </span>
+                    {canAct && administering?.id !== t.id && waiving?.taskId !== t.id && (
+                      <span className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWaiving(null);
+                            setShowVaccinationForm(false);
+                            setAdministering(t);
+                          }}
+                          className="h-8 rounded-[12px] bg-primary px-3 text-xs font-semibold text-page hover:opacity-90"
+                        >
+                          Record administration
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdministering(null);
+                            setWaiving({ taskId: t.id, reason: "" });
+                          }}
+                          className="h-8 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
+                        >
+                          Waive
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                  {canAct && administering?.id === t.id && (
+                    <VaccinationForm
+                      vaccineTypeOptions={vaccineTypeOptions.includes(t.vaccineType) ? vaccineTypeOptions : [...vaccineTypeOptions, t.vaccineType]}
+                      initialVaccineType={t.vaccineType}
+                      onCancel={() => setAdministering(null)}
+                      onSubmit={(input) => void saveVaccination({ ...input, vaccinationTaskId: t.id })}
+                    />
+                  )}
+                  {canAct && waiving?.taskId === t.id && (
+                    <div className="mt-2 flex flex-col gap-2">
+                      <label htmlFor={`waive-${t.id}`} className="text-xs font-semibold text-text-muted">
+                        Reason for waiving (required)
+                      </label>
+                      <textarea
+                        id={`waive-${t.id}`}
+                        rows={2}
+                        value={waiving.reason}
+                        onChange={(e) => setWaiving({ taskId: t.id, reason: e.target.value })}
+                        className="rounded-[12px] border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      />
+                      {waiving.error && <p role="alert" className="text-xs text-danger">{waiving.error}</p>}
+                      <span className="flex gap-2">
+                        <button type="button" onClick={() => void handleWaive()} className="h-8 rounded-[12px] bg-primary px-3 text-xs font-semibold text-page hover:opacity-90">
+                          Confirm waive
+                        </button>
+                        <button type="button" onClick={() => setWaiving(null)} className="h-8 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active">
+                          Cancel
+                        </button>
+                      </span>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {resolvedTasks.length > 0 && (
+          <ul className="mt-3 flex flex-col gap-1 text-xs text-text-muted">
+            {resolvedTasks.map((t) => (
+              <li key={t.id}>
+                {t.vaccineType}: {t.status === "Waived" ? `waived - ${t.waivedReason}` : "given"}
+                {t.resolvedByName ? ` (${t.resolvedByName})` : ""}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <h3 className="mt-4 text-sm font-semibold text-text">Vaccination records</h3>
+        {vaccinations.length === 0 ? (
+          <p className="mt-1 text-sm text-text-muted">No vaccinations recorded yet.</p>
+        ) : (
+          <ul className="mt-2 flex flex-col gap-2">
             {vaccinations.map((v) => (
               <li key={v.id} className="rounded-[12px] border border-border bg-page p-3 text-sm">
                 <p className="font-semibold text-text">{v.vaccineType}</p>
@@ -752,7 +919,10 @@ function MedicalContent({
         {canAct && !showVaccinationForm && (
           <button
             type="button"
-            onClick={() => setShowVaccinationForm(true)}
+            onClick={() => {
+              setAdministering(null);
+              setShowVaccinationForm(true);
+            }}
             className="mt-4 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
           >
             Record Vaccination

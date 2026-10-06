@@ -46,6 +46,8 @@ const READS = {
   "/api/microchip-implants": [A, S, V], "/api/microchip-implants?status=Pending": [A, S, V],
   "/api/medical/antibody-checks": [A, S, V], "/api/medical/antibody-checks?animalId=A-0006": [A, S, V], "/api/assessment-tasks?animalId=A-0006": [A, S, V],
   "/api/files/rules": ROLES,
+  "/api/medical/vaccination-checks": [A, S, V], "/api/medical/vaccination-checks?animalId=A-0006": [A, S, V],
+  "/api/medical/vaccination-tasks": [A, S, V], "/api/medical/vaccination-tasks?animalId=A-0006": [A, S, V],
 };
 // Write probes that must be refused for the listed roles (bodies are
 // harmless placeholders; the guard rejects before any write).
@@ -82,6 +84,8 @@ const FORBIDDEN_WRITES = [
   ["POST", "/api/fitness-reviews", [V, C, D]],
   ["POST", "/api/microchip-implants", [V, C, D]],
   ["POST", "/api/medical/antibody-checks", [A, S, C, D]],
+  ["POST", "/api/medical/vaccination-checks", [A, S, C, D]],
+  ["POST", "/api/medical/vaccination-tasks/X/waive", [A, S, C, D]],
   ["POST", "/api/microchip-implants/X/complete", [A, S, C, D]],
   ["GET", "/api/audit-log", [S, V, C, D]],
 ];

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'bb7a077d8ae1aef9f7c1fd79ab783cb0d519b82d4b2d08890c55f04b49f87a14'>;
+  StorageHashBase<'68cc069f2799bd0117fbf0fc312d415906e937812c4ccca585306015599519c4'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -697,6 +697,19 @@ export type FieldOutputTypes = {
       readonly failedLoginAttempts: CodecTypes['pg/int4@1']['output'];
       readonly lockedAt: TimestamptzString<6> | null;
     };
+    readonly VaccinationCheck: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly checkDate: CodecTypes['pg/text@1']['output'];
+      readonly report: CodecTypes['pg/text@1']['output'];
+      readonly outcome: CodecTypes['pg/text@1']['output'];
+      readonly evidence: CodecTypes['pg/text@1']['output'];
+      readonly coverage: CodecTypes['pg/text@1']['output'];
+      readonly notApplicable: CodecTypes['pg/text@1']['output'];
+      readonly checkedByEmail: CodecTypes['pg/text@1']['output'];
+      readonly checkedByName: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
+    };
     readonly VaccinationRecord: {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly animalId: CodecTypes['pg/text@1']['output'];
@@ -709,6 +722,22 @@ export type FieldOutputTypes = {
       readonly createdAt: TimestamptzString<6>;
       readonly antibodyOverrideReason: CodecTypes['pg/text@1']['output'] | null;
       readonly antibodyOverrideNote: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly VaccinationTask: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly checkId: CodecTypes['pg/text@1']['output'];
+      readonly vaccineType: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly dueDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly waivedReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdByEmail: CodecTypes['pg/text@1']['output'];
+      readonly createdByName: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
+      readonly completedVaccinationId: CodecTypes['pg/text@1']['output'] | null;
+      readonly resolvedByEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly resolvedByName: CodecTypes['pg/text@1']['output'] | null;
+      readonly resolvedAt: TimestamptzString<6> | null;
     };
   };
 };
@@ -1170,6 +1199,19 @@ export type FieldInputTypes = {
       readonly failedLoginAttempts: CodecTypes['pg/int4@1']['input'];
       readonly lockedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
     };
+    readonly VaccinationCheck: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly checkDate: CodecTypes['pg/text@1']['input'];
+      readonly report: CodecTypes['pg/text@1']['input'];
+      readonly outcome: CodecTypes['pg/text@1']['input'];
+      readonly evidence: CodecTypes['pg/text@1']['input'];
+      readonly coverage: CodecTypes['pg/text@1']['input'];
+      readonly notApplicable: CodecTypes['pg/text@1']['input'];
+      readonly checkedByEmail: CodecTypes['pg/text@1']['input'];
+      readonly checkedByName: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly VaccinationRecord: {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly animalId: CodecTypes['pg/text@1']['input'];
@@ -1182,6 +1224,22 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly antibodyOverrideReason: CodecTypes['pg/text@1']['input'] | null;
       readonly antibodyOverrideNote: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly VaccinationTask: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly checkId: CodecTypes['pg/text@1']['input'];
+      readonly vaccineType: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly dueDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly waivedReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdByEmail: CodecTypes['pg/text@1']['input'];
+      readonly createdByName: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly completedVaccinationId: CodecTypes['pg/text@1']['input'] | null;
+      readonly resolvedByEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly resolvedByName: CodecTypes['pg/text@1']['input'] | null;
+      readonly resolvedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
     };
   };
 };
@@ -1643,6 +1701,19 @@ export type StorageColumnTypes = {
       readonly statusUpdatedBy: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
     };
+    readonly vaccinationCheck: {
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly checkDate: CodecTypes['pg/text@1']['output'];
+      readonly checkedByEmail: CodecTypes['pg/text@1']['output'];
+      readonly checkedByName: CodecTypes['pg/text@1']['output'];
+      readonly coverage: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
+      readonly evidence: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notApplicable: CodecTypes['pg/text@1']['output'];
+      readonly outcome: CodecTypes['pg/text@1']['output'];
+      readonly report: CodecTypes['pg/text@1']['output'];
+    };
     readonly vaccinationRecord: {
       readonly administrationDate: CodecTypes['pg/text@1']['output'];
       readonly animalId: CodecTypes['pg/text@1']['output'];
@@ -1655,6 +1726,22 @@ export type StorageColumnTypes = {
       readonly vaccineType: CodecTypes['pg/text@1']['output'];
       readonly veterinarianEmail: CodecTypes['pg/text@1']['output'];
       readonly veterinarianName: CodecTypes['pg/text@1']['output'];
+    };
+    readonly vaccinationTask: {
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly checkId: CodecTypes['pg/text@1']['output'];
+      readonly completedVaccinationId: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: TimestamptzString<6>;
+      readonly createdByEmail: CodecTypes['pg/text@1']['output'];
+      readonly createdByName: CodecTypes['pg/text@1']['output'];
+      readonly dueDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly resolvedAt: TimestamptzString<6> | null;
+      readonly resolvedByEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly resolvedByName: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly vaccineType: CodecTypes['pg/text@1']['output'];
+      readonly waivedReason: CodecTypes['pg/text@1']['output'] | null;
     };
   };
 };
@@ -2116,6 +2203,19 @@ export type StorageColumnInputTypes = {
       readonly statusUpdatedBy: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
     };
+    readonly vaccinationCheck: {
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly checkDate: CodecTypes['pg/text@1']['input'];
+      readonly checkedByEmail: CodecTypes['pg/text@1']['input'];
+      readonly checkedByName: CodecTypes['pg/text@1']['input'];
+      readonly coverage: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly evidence: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notApplicable: CodecTypes['pg/text@1']['input'];
+      readonly outcome: CodecTypes['pg/text@1']['input'];
+      readonly report: CodecTypes['pg/text@1']['input'];
+    };
     readonly vaccinationRecord: {
       readonly administrationDate: CodecTypes['pg/text@1']['input'];
       readonly animalId: CodecTypes['pg/text@1']['input'];
@@ -2128,6 +2228,22 @@ export type StorageColumnInputTypes = {
       readonly vaccineType: CodecTypes['pg/text@1']['input'];
       readonly veterinarianEmail: CodecTypes['pg/text@1']['input'];
       readonly veterinarianName: CodecTypes['pg/text@1']['input'];
+    };
+    readonly vaccinationTask: {
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly checkId: CodecTypes['pg/text@1']['input'];
+      readonly completedVaccinationId: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdByEmail: CodecTypes['pg/text@1']['input'];
+      readonly createdByName: CodecTypes['pg/text@1']['input'];
+      readonly dueDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly resolvedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly resolvedByEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly resolvedByName: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly vaccineType: CodecTypes['pg/text@1']['input'];
+      readonly waivedReason: CodecTypes['pg/text@1']['input'] | null;
     };
   };
 };
@@ -2601,6 +2717,37 @@ export namespace Models {
     data: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type public_VaccinationCheck = {
+    id: CodecTypes['pg/text@1']['output'];
+    animalId: CodecTypes['pg/text@1']['output'];
+    checkDate: CodecTypes['pg/text@1']['output'];
+    report: CodecTypes['pg/text@1']['output'];
+    outcome: CodecTypes['pg/text@1']['output'];
+    evidence: CodecTypes['pg/text@1']['output'];
+    coverage: CodecTypes['pg/text@1']['output'];
+    notApplicable: CodecTypes['pg/text@1']['output'];
+    checkedByEmail: CodecTypes['pg/text@1']['output'];
+    checkedByName: CodecTypes['pg/text@1']['output'];
+    createdAt: TimestamptzString<6>;
+    readonly [RelationKeys]?: never;
+  };
+  export type public_VaccinationTask = {
+    id: CodecTypes['pg/text@1']['output'];
+    animalId: CodecTypes['pg/text@1']['output'];
+    checkId: CodecTypes['pg/text@1']['output'];
+    vaccineType: CodecTypes['pg/text@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    dueDate: CodecTypes['pg/text@1']['output'] | null;
+    waivedReason: CodecTypes['pg/text@1']['output'] | null;
+    createdByEmail: CodecTypes['pg/text@1']['output'];
+    createdByName: CodecTypes['pg/text@1']['output'];
+    createdAt: TimestamptzString<6>;
+    completedVaccinationId: CodecTypes['pg/text@1']['output'] | null;
+    resolvedByEmail: CodecTypes['pg/text@1']['output'] | null;
+    resolvedByName: CodecTypes['pg/text@1']['output'] | null;
+    resolvedAt: TimestamptzString<6> | null;
+    readonly [RelationKeys]?: never;
+  };
   export type public_AntibodyCheck = {
     id: CodecTypes['pg/text@1']['output'];
     animalId: CodecTypes['pg/text@1']['output'];
@@ -2667,6 +2814,8 @@ export declare const models: {
     FitnessReview: Models.public_FitnessReview;
     StoredFile: Models.public_StoredFile;
     StoredFileChunk: Models.public_StoredFileChunk;
+    VaccinationCheck: Models.public_VaccinationCheck;
+    VaccinationTask: Models.public_VaccinationTask;
     AntibodyCheck: Models.public_AntibodyCheck;
     MicrochipImplantTask: Models.public_MicrochipImplantTask;
     NotificationReadOverride: Models.public_NotificationReadOverride;
@@ -4972,6 +5121,70 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly vaccinationCheck: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly checkDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly report: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly outcome: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly evidence: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly coverage: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly notApplicable: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly checkedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly checkedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly vaccinationRecord: {
               columns: {
                 readonly id: {
@@ -5029,6 +5242,86 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly vaccinationTask: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly checkId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly vaccineType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly dueDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly waivedReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly createdByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+                readonly completedVaccinationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly resolvedByEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly resolvedByName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly resolvedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 6 };
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -5153,6 +5446,14 @@ type ContractBase = Omit<
     readonly storedFileChunk: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'StoredFileChunk';
+    };
+    readonly vaccinationCheck: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'VaccinationCheck';
+    };
+    readonly vaccinationTask: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'VaccinationTask';
     };
     readonly antibodyCheck: {
       readonly namespace: 'public' & NamespaceId;
@@ -7730,6 +8031,76 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly VaccinationCheck: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly checkDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly report: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly outcome: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly evidence: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly coverage: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notApplicable: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly checkedByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly checkedByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'vaccinationCheck';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly checkDate: { readonly column: 'checkDate' };
+                readonly report: { readonly column: 'report' };
+                readonly outcome: { readonly column: 'outcome' };
+                readonly evidence: { readonly column: 'evidence' };
+                readonly coverage: { readonly column: 'coverage' };
+                readonly notApplicable: { readonly column: 'notApplicable' };
+                readonly checkedByEmail: { readonly column: 'checkedByEmail' };
+                readonly checkedByName: { readonly column: 'checkedByName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
           readonly VaccinationRecord: {
             readonly fields: {
               readonly id: {
@@ -7797,6 +8168,95 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly antibodyOverrideReason: { readonly column: 'antibodyOverrideReason' };
                 readonly antibodyOverrideNote: { readonly column: 'antibodyOverrideNote' };
+              };
+            };
+          };
+          readonly VaccinationTask: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly checkId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly vaccineType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly dueDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly waivedReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdByEmail: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdByName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              readonly completedVaccinationId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly resolvedByEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly resolvedByName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly resolvedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'vaccinationTask';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly animalId: { readonly column: 'animalId' };
+                readonly checkId: { readonly column: 'checkId' };
+                readonly vaccineType: { readonly column: 'vaccineType' };
+                readonly status: { readonly column: 'status' };
+                readonly dueDate: { readonly column: 'dueDate' };
+                readonly waivedReason: { readonly column: 'waivedReason' };
+                readonly createdByEmail: { readonly column: 'createdByEmail' };
+                readonly createdByName: { readonly column: 'createdByName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly completedVaccinationId: { readonly column: 'completedVaccinationId' };
+                readonly resolvedByEmail: { readonly column: 'resolvedByEmail' };
+                readonly resolvedByName: { readonly column: 'resolvedByName' };
+                readonly resolvedAt: { readonly column: 'resolvedAt' };
               };
             };
           };

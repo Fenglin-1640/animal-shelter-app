@@ -95,6 +95,10 @@ export interface AnimalRecords {
   lookups: MicrochipLookup[];
   implant?: { status: "Pending" | "Completed"; assignedNumber: string } | null;
   vaccinations: VaccinationRecord[];
+  // A Vaccination Check has been recorded, and the vaccine types it left
+  // pending (not yet given or waived).
+  vaccinationCheckDone?: boolean;
+  pendingVaccinations?: string[];
   desexing?: DesexingSchedule | null;
   healthAssessments: HealthAssessment[];
   clearances: MedicalClearance[];
@@ -245,19 +249,38 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
   steps.push(
     doneIfPast("implant_vaccination_desexing", [VET], () => {
       const implantPending = records.implant?.status === "Pending";
-      const vaccinated = records.vaccinations.length > 0;
+      // Vaccination is done once a Vaccination Check is recorded (animals
+      // from before checks: a vaccination record) and nothing it left
+      // pending is still waiting.
+      const pending = records.pendingVaccinations?.length ?? 0;
+      const checked = Boolean(records.vaccinationCheckDone) || records.vaccinations.length > 0;
+      const vaccinated = checked && pending === 0;
       const desexed = Boolean(records.desexing);
       if (!implantPending && vaccinated && desexed) {
-        return step("implant_vaccination_desexing", "done", [VET], "Vaccination and desexing recorded");
+        return step("implant_vaccination_desexing", "done", [VET], "Vaccination check and desexing recorded");
       }
-      const missing = [implantPending && "microchip implant", !vaccinated && "vaccination", !desexed && "desexing"].filter(Boolean);
-      const started = vaccinated || desexed || records.implant?.status === "Completed";
+      const missing = [
+        implantPending && "microchip implant",
+        !checked && "vaccination check",
+        pending > 0 && `${pending} pending vaccination${pending === 1 ? "" : "s"}`,
+        !desexed && "desexing",
+      ].filter(Boolean);
+      const started = checked || desexed || records.implant?.status === "Completed";
       return step(
         "implant_vaccination_desexing",
         started ? "in_progress" : "waiting",
         [VET],
         `Outstanding: ${missing.join(", ")}`,
-        act(VET, implantPending ? "Implant microchip" : !vaccinated ? "Record vaccination" : "Schedule desexing"),
+        act(
+          VET,
+          implantPending
+            ? "Implant microchip"
+            : !checked
+              ? "Record vaccination check"
+              : pending > 0
+                ? `Give or waive ${pending} pending vaccination${pending === 1 ? "" : "s"}`
+                : "Schedule desexing",
+        ),
       );
     }, published, "Vaccination and desexing recorded"),
   );
@@ -271,6 +294,10 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
         return step("health_clearance", "blocked", [VET], "Under treatment", act(VET, "Record treatment"));
       }
       if (!latestHealth) return step("health_clearance", "waiting", [VET], "No health assessment yet", act(VET, "Record health assessment"));
+      const pendingVaccinations = records.pendingVaccinations?.length ?? 0;
+      if (pendingVaccinations > 0) {
+        return step("health_clearance", "waiting", [VET], `Waiting for ${pendingVaccinations} pending vaccination${pendingVaccinations === 1 ? "" : "s"}`, act(VET, "Give or waive pending vaccinations"));
+      }
       if (latestHealth.healthRecheckRequired) {
         return step("health_clearance", "in_progress", [VET], "Health recheck pending", act(VET, "Record health recheck"));
       }

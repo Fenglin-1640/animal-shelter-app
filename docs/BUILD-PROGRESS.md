@@ -45,6 +45,46 @@ Checked with a browser script for every role at 1280/1440/1920 and 820 px (517 c
 
 **Intake note (2026-10-07):** "Save Intake Record" and "Finalise Intake" are now one primary action, "Save and Finalise Intake". It is enabled whenever the form is not mid-save: clicking it with missing fields lists them in an alert above the button and saves nothing. The server re-checks the same rules (photo, required fields, linked transfer with documents, transfer not linked to another intake record, record not already finalised) before its single transaction. The transaction writes "Create Intake Record" or "Save Intake Record", then "Finalise Intake" and "Create Animal (Finalise Intake)" to the audit log. Draft saves (POST/PATCH `/api/intake-records`) are now audited server-side ("Save Intake Record (Draft)"), and a finalised record's intake fields can no longer be patched (only a registered owner contact link). The client-side finalise helpers (`addAnimal`, `seedPhotosFromIntake`, `generateShelterId`) were removed. `finaliseIntake(intakeId)` remains for finalising a stored draft and calls the same endpoint.
 
+**Vaccination Check note (2026-10-07):** In the Veterinarian's microchip implant session, step 2 is now a Vaccination Check instead of giving a vaccine.
+
+**The check form.** It records:
+- a check date (defaults to the local date)
+- antibody/titre results, added inline as one or more rows and saved as `AntibodyCheck` records
+- optional evidence of vaccinations the animal already had (vaccine type, date given, source; it counts as current for 365 days)
+- a required report
+
+**Coverage and pending items.**
+- The required vaccine types are the active "Vaccine Type" options tagged with the animal's species, plus untagged ones. Today none are tagged, so the whole list applies.
+- A type is covered if every antigen it protects against has a current Protective result, or if a vaccination record or evidence for it is current. "Kennel Cough (Bordetella)" now maps to Bordetella only.
+- The rest is listed before saving with all boxes ticked. The Veterinarian can untick items that don't apply, which are recorded as not applicable.
+- The outcome reads "Fully covered", "Partially covered – N items pending" or "No vaccination cover – all items pending".
+
+**Saving.** `POST /api/medical/vaccination-checks` (Veterinarian only) recomputes coverage from the stored records and saves, in one transaction:
+- the antibody rows
+- the `VaccinationCheck` (with evidence, coverage and not-applicable lists as JSON)
+- a `VaccinationTask` (Pending) for each kept type not already pending
+
+Each row is audited. The implant session saves the check with the desexing record and the implant, as before.
+
+**The Medical Record page.** The section is now "Vaccination Check and Records". It shows:
+- the latest check, with a "Run Vaccination Check" button for animals that don't come through the implant session
+- pending items, each with "Record administration" (the vaccination form prefilled and locked to that type) and "Waive" (reason required)
+- completed and waived items
+- the vaccination records, with ad-hoc "Record Vaccination" kept
+
+Recording against an item (`vaccinationTaskId` on `POST /api/medical/vaccinations`) completes it in the same transaction, and the vaccine type must match. Waiving uses `POST /api/medical/vaccination-tasks/:id/waive` (Veterinarian only). Both are audited. The antibody question still applies, both to ad-hoc vaccinations and to pending items whose antigens are covered.
+
+**Medical Clearance.** It now requires a Vaccination Check, and no item still Pending. Animals from before checks, such as Ruby, pass with a vaccination record. Desexing and recheck rules are unchanged.
+
+**Tracker and Vet Workbench.** The process engine reads the check and pending items in the same batch load (two more parallel queries, no per-animal requests).
+- "Implant / Vaccination / Desexing" stays with the Veterinarian until the check is done and nothing is pending.
+- "Health & Medical Clearance" waits on the Veterinarian while items are pending.
+- The Vet Workbench lists the pending count and types.
+
+New read endpoints: `GET /api/medical/vaccination-checks` and `GET /api/medical/vaccination-tasks` (care team, `?animalId=`). The permission test now runs 435 checks.
+
+**Not done:** the live test used a Cat in place of the requested rabbit, because the app's species are fixed to Cat, Dog, Bird and Reptile.
+
 **Seed-data note (2026-09-26):** the PRD 12.1 seed animals (`lib/animals/mock-animals.ts`, written by `prisma/seed.ts`) demonstrate specific lifecycle states, not a full history. Luna, Charlie, Daisy, Rocky and Oliver are seeded straight into their states with none of the records a real animal would have passed through to get there (assessment tasks, Review Adoption Fitness sign-off, Medical Clearance, etc.), so they don't satisfy every gate that state implies. Ruby (A-0006, "Vet cleared, waiting for Staff to publish") is the exception: `seedRubyPrerequisites()` seeds her complete Pre-Listing history (3 completed assessment tasks backed by a No Chip lookup, a Health Assessment and a Suitable Temperament Assessment; the Staff + Veterinarian Review Adoption Fitness confirmation; Medical Clearance backed by a vaccination and a species desexing exemption; an adoption fee; and a public photo with alt text), so Staff can actually publish her in the demo.
 
 ## Summary

@@ -128,8 +128,16 @@
       "model": "User",
       "namespace": "public"
     },
+    "vaccinationCheck": {
+      "model": "VaccinationCheck",
+      "namespace": "public"
+    },
     "vaccinationRecord": {
       "model": "VaccinationRecord",
+      "namespace": "public"
+    },
+    "vaccinationTask": {
+      "model": "VaccinationTask",
       "namespace": "public"
     }
   },
@@ -4595,6 +4603,130 @@
               "table": "user"
             }
           },
+          "VaccinationCheck": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkedByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkedByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "coverage": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "evidence": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "notApplicable": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "outcome": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "report": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "checkDate": {
+                  "column": "checkDate"
+                },
+                "checkedByEmail": {
+                  "column": "checkedByEmail"
+                },
+                "checkedByName": {
+                  "column": "checkedByName"
+                },
+                "coverage": {
+                  "column": "coverage"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "evidence": {
+                  "column": "evidence"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "notApplicable": {
+                  "column": "notApplicable"
+                },
+                "outcome": {
+                  "column": "outcome"
+                },
+                "report": {
+                  "column": "report"
+                }
+              },
+              "namespaceId": "public",
+              "table": "vaccinationCheck"
+            }
+          },
           "VaccinationRecord": {
             "fields": {
               "administrationDate": {
@@ -4717,6 +4849,163 @@
               },
               "namespaceId": "public",
               "table": "vaccinationRecord"
+            }
+          },
+          "VaccinationTask": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedVaccinationId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "createdByEmail": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "dueDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "resolvedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "resolvedByEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "resolvedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "vaccineType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "waivedReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "checkId": {
+                  "column": "checkId"
+                },
+                "completedVaccinationId": {
+                  "column": "completedVaccinationId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdByEmail": {
+                  "column": "createdByEmail"
+                },
+                "createdByName": {
+                  "column": "createdByName"
+                },
+                "dueDate": {
+                  "column": "dueDate"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "resolvedAt": {
+                  "column": "resolvedAt"
+                },
+                "resolvedByEmail": {
+                  "column": "resolvedByEmail"
+                },
+                "resolvedByName": {
+                  "column": "resolvedByName"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "vaccineType": {
+                  "column": "vaccineType"
+                },
+                "waivedReason": {
+                  "column": "waivedReason"
+                }
+              },
+              "namespaceId": "public",
+              "table": "vaccinationTask"
             }
           }
         }
@@ -7269,6 +7558,76 @@
                 }
               ]
             },
+            "vaccinationCheck": {
+              "columns": {
+                "animalId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "checkDate": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "checkedByEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "checkedByName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "coverage": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "evidence": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "notApplicable": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "outcome": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "report": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "vaccinationRecord": {
               "columns": {
                 "administrationDate": {
@@ -7338,6 +7697,94 @@
                 ]
               },
               "uniques": []
+            },
+            "vaccinationTask": {
+              "columns": {
+                "animalId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "checkId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "completedVaccinationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "createdByEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdByName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "dueDate": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "resolvedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "resolvedByEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "resolvedByName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "vaccineType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "waivedReason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             }
           }
         },
@@ -7345,7 +7792,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "bb7a077d8ae1aef9f7c1fd79ab783cb0d519b82d4b2d08890c55f04b49f87a14"
+    "storageHash": "68cc069f2799bd0117fbf0fc312d415906e937812c4ccca585306015599519c4"
   },
   "capabilities": {
     "postgres": {

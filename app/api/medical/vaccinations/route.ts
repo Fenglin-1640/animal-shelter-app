@@ -19,11 +19,22 @@ export async function GET() {
 // transaction. If a current antibody check already shows protection
 // against this vaccine, one of the listed reasons is required (refused
 // with 409 antibodies_present otherwise) and saved with the record.
+// With vaccinationTaskId it administers that pending vaccination item,
+// which is marked Completed (and audited) in the same transaction.
 export async function POST(request: Request) {
   const auth = await requireRole(VETERINARIAN);
   if (auth instanceof Response) return auth;
-  const body = (await request.json()) as VaccinationRecord;
-  const checks = (await db.orm.AntibodyCheck.where({ animalId: body.animalId }).all()).map(toAntibodyCheck);
+  const body = (await request.json()) as VaccinationRecord & { vaccinationTaskId?: string };
+  const [antibodyRows, task] = await Promise.all([
+    db.orm.AntibodyCheck.where({ animalId: body.animalId }).all(),
+    body.vaccinationTaskId ? db.orm.VaccinationTask.where({ id: body.vaccinationTaskId }).first() : Promise.resolve(null),
+  ]);
+  if (body.vaccinationTaskId) {
+    if (!task || task.animalId !== body.animalId) return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
+    if (task.status !== "Pending") return NextResponse.json({ ok: false, reason: "not_pending" }, { status: 409 });
+    if (task.vaccineType !== body.vaccineType) return NextResponse.json({ ok: false, reason: "invalid", message: "The vaccine type does not match the pending item." }, { status: 400 });
+  }
+  const checks = antibodyRows.map(toAntibodyCheck);
   const covered = existingAntibodiesFor(body.vaccineType, checks);
   const reason = covered.length > 0 ? body.antibodyOverrideReason : undefined;
   const note = covered.length > 0 ? body.antibodyOverrideNote?.trim() || undefined : undefined;
@@ -57,6 +68,25 @@ export async function POST(request: Request) {
           (reason ? `; given despite existing antibodies (${covered.join(", ")}): ${reason}${note ? ` - ${note}` : ""}` : ""),
       }),
     );
+    if (task) {
+      await orm.VaccinationTask.where({ id: task.id }).update({
+        status: "Completed",
+        completedVaccinationId: row.id,
+        resolvedByEmail: auth.email,
+        resolvedByName: auth.displayName,
+        resolvedAt: toTimestamptz(new Date().toISOString()),
+      });
+      await orm.AuditLogEntry.create(
+        auditRow({
+          actor: { email: auth.email, name: auth.displayName },
+          action: "Complete Pending Vaccination",
+          entityType: "MedicalRecord",
+          entityId: row.animalId,
+          oldValue: `vaccineType=${task.vaccineType}; status=Pending`,
+          newValue: `status=Completed; vaccinationId=${row.id}`,
+        }),
+      );
+    }
     return saved;
   });
   return NextResponse.json({ ok: true, item: toVaccinationRecord(created) });

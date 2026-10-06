@@ -46,6 +46,8 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
     preRelease,
     followUps,
     implants,
+    vaccinationChecks,
+    pendingVaccinations,
   ] = await Promise.all([
     db.orm.Animal.where(by).all(),
     db.orm.AssessmentTask.where(by).all(),
@@ -65,6 +67,8 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
     db.orm.PreReleaseCheck.where(by).all(),
     db.orm.FollowUpVisit.where(by).all(),
     db.orm.MicrochipImplantTask.select("animalId", "status", "assignedNumber", "createdAt").where(by).all(),
+    db.orm.VaccinationCheck.select("animalId").where(by).all(),
+    db.orm.VaccinationTask.select("animalId", "vaccineType").where({ ...by, status: "Pending" }).all(),
   ]);
   // Checks hang off applications, not animals.
   const appIds = new Set(applications.map((a) => a.applicationId));
@@ -106,6 +110,9 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
       latestImplant.set(t.animalId, { status: t.status === "Completed" ? "Completed" : "Pending", assignedNumber: t.assignedNumber, createdAt: t.createdAt });
     }
   }
+  const checkedAnimals = new Set(vaccinationChecks.map((c) => c.animalId));
+  const pendingByAnimal = new Map<string, string[]>();
+  for (const t of pendingVaccinations) pendingByAnimal.set(t.animalId, [...(pendingByAnimal.get(t.animalId) ?? []), t.vaccineType]);
   const primaryPhoto = new Set(photos.filter((p) => p.useOnAdoptionListing === 1).map((p) => p.animalId));
   const checksByApp = new Map<string, ReturnType<typeof toSuitabilityCheck>[]>();
   for (const c of checks) {
@@ -125,6 +132,8 @@ export async function loadAnimalRecords(animalId?: string): Promise<Map<string, 
       lookups: g.lookups.get(id) ?? [],
       implant: latestImplant.get(id) ?? null,
       vaccinations: g.vaccinations.get(id) ?? [],
+      vaccinationCheckDone: checkedAnimals.has(id),
+      pendingVaccinations: pendingByAnimal.get(id) ?? [],
       desexing: g.desexing.get(id)?.[0] ?? null,
       healthAssessments: g.health.get(id) ?? [],
       clearances: g.clearances.get(id) ?? [],

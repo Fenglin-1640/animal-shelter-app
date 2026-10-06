@@ -89,7 +89,11 @@ function workbenchRow(records: AnimalRecords, steps: ProcessStep[], now: number)
 
   const due: string[] = [];
   const vacc = vetStep("implant_vaccination_desexing");
-  if (vacc) due.push(vacc.nextAction ?? vacc.detail);
+  const pending = records.pendingVaccinations?.length ?? 0;
+  // Pending vaccinations are listed with their count whatever step the
+  // animal is at; otherwise the step's own next action is shown.
+  if (vacc && !vacc.nextAction?.startsWith("Give or waive")) due.push(vacc.nextAction ?? vacc.detail);
+  if (pending > 0) due.push(`${pending} pending vaccination${pending === 1 ? "" : "s"}: ${records.pendingVaccinations!.join(", ")}`);
   if (!OUT_OF_CARE.has(animal.currentStatus)) {
     const d = records.desexing;
     if (d?.status === "Scheduled" && new Date(d.scheduledDate).getTime() <= now) due.push(`Desexing appointment due ${formatDay(d.scheduledDate)}`);

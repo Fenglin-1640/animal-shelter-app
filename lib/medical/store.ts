@@ -2,6 +2,7 @@ import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import { writeAuditLog } from "@/lib/audit/store";
 import type { AntibodyCheck } from "@/lib/medical/antibodies";
+import type { EvidenceRow, VaccinationCheck, VaccinationTask } from "@/lib/medical/vaccination-check";
 import type {
   DesexingSchedule,
   DesexingStatus,
@@ -204,6 +205,8 @@ export interface VaccinationInput {
   // Required when a current antibody check already covers this vaccine.
   antibodyOverrideReason?: string;
   antibodyOverrideNote?: string;
+  // Administers this pending vaccination item (marked Completed with it).
+  vaccinationTaskId?: string;
 }
 
 export type VaccinationResult = MutationResult | { ok: false; reason: "antibodies_present"; antigens: string[] };
@@ -233,6 +236,46 @@ export async function recordVaccination(
   if (result.reason === "antibodies_present") return { ok: false, reason: "antibodies_present", antigens: result.antigens ?? [] };
   if (!result.ok) return { ok: false, reason: result.reason ?? "failed" };
   return { ok: true };
+}
+
+export async function listVaccinationChecks(animalId: string): Promise<VaccinationCheck[]> {
+  const result = await getJson(`/api/medical/vaccination-checks?animalId=${encodeURIComponent(animalId)}`);
+  return ((result.items as VaccinationCheck[]) ?? []).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function listVaccinationTasks(animalId: string): Promise<VaccinationTask[]> {
+  const result = await getJson(`/api/medical/vaccination-tasks?animalId=${encodeURIComponent(animalId)}`);
+  return ((result.items as VaccinationTask[]) ?? []).sort((a, b) => a.vaccineType.localeCompare(b.vaccineType));
+}
+
+export interface VaccinationCheckInput {
+  checkDate: string;
+  report: string;
+  antibodyRows: { antigen: string; result: string; testDate: string; expiryDate: string }[];
+  evidence: EvidenceRow[];
+  pendingVaccineTypes: string[];
+}
+
+// Saved (and audited) by the route as the signed-in Veterinarian; the
+// vaccine types it leaves uncovered become pending vaccination items.
+export async function recordVaccinationCheck(animalId: string, input: VaccinationCheckInput): Promise<{ ok: true; check: VaccinationCheck; tasks: VaccinationTask[] } | { ok: false; reason: string; message?: string }> {
+  const response = await send("/api/medical/vaccination-checks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ animalId, ...input }),
+  });
+  const result = await response.json();
+  return result.ok ? { ok: true, check: result.item, tasks: result.tasks } : { ok: false, reason: result.reason ?? "failed", message: result.message };
+}
+
+export async function waiveVaccinationTask(taskId: string, reason: string): Promise<MutationResult> {
+  const response = await send(`/api/medical/vaccination-tasks/${encodeURIComponent(taskId)}/waive`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reason }),
+  });
+  const result = await response.json();
+  return result.ok ? { ok: true } : { ok: false, reason: result.reason ?? "failed" };
 }
 
 export async function listAntibodyChecks(animalId: string): Promise<AntibodyCheck[]> {
@@ -386,13 +429,20 @@ export async function listAllMedicalClearances(): Promise<MedicalClearance[]> {
 // and BUILD-PROGRESS.md.
 export async function getMedicalClearanceBlockers(animalId: string): Promise<string[]> {
   const blockers: string[] = [];
-  const [vaccinations, desexing, healthAssessments] = await Promise.all([
+  const [vaccinations, desexing, healthAssessments, checks, tasks] = await Promise.all([
     listVaccinations(animalId),
     getDesexingSchedule(animalId),
     listHealthAssessments(animalId),
+    listVaccinationChecks(animalId),
+    listVaccinationTasks(animalId),
   ]);
-  if (vaccinations.length === 0) {
-    blockers.push("At least one vaccination must be recorded.");
+  // Animals from before Vaccination Checks pass with a vaccination record.
+  if (checks.length === 0 && vaccinations.length === 0) {
+    blockers.push("A Vaccination Check must be completed.");
+  }
+  const pending = tasks.filter((t) => t.status === "Pending").length;
+  if (pending > 0) {
+    blockers.push(`${pending} pending vaccination${pending === 1 ? "" : "s"} must be recorded as given or waived with a reason.`);
   }
   if (!desexing) {
     blockers.push("Desexing must be scheduled or completed.");

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
-import { AntibodyOverrideModal } from "@/components/medical/antibody-override-modal";
+import { VaccinationCheckForm, type VaccinationCheckDraft } from "@/components/medical/vaccination-check-form";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
@@ -13,16 +13,16 @@ import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 import {
   getDesexingSchedule,
-  listVaccinations,
+  listVaccinationChecks,
   recordDesexingExemption,
-  recordVaccination,
+  recordVaccinationCheck,
   scheduleDesexing,
 } from "@/lib/medical/store";
-import type { DesexingSchedule, VaccinationRecord } from "@/lib/medical/types";
+import type { DesexingSchedule } from "@/lib/medical/types";
+import type { VaccinationCheck } from "@/lib/medical/vaccination-check";
 import { completeMicrochipImplant, getLatestMicrochipImplant } from "@/lib/microchip/store";
 import type { MicrochipImplantTask } from "@/lib/microchip/implant";
 import type { Role } from "@/lib/roles/roles";
-import { getActiveValues } from "@/lib/system-administration/store";
 
 // Care team can open the page; only a Veterinarian records the session.
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -59,37 +59,30 @@ function Section({ title, done, children }: { title: string; done: boolean; chil
 function MicrochipImplantContent({ animalId, email, displayName, canAct }: { animalId: string; email: string; displayName: string; canAct: boolean }) {
   const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
   const [task, setTask] = useState<MicrochipImplantTask | undefined>(undefined);
-  const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
+  const [checks, setChecks] = useState<VaccinationCheck[]>([]);
   const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
-  const [vaccineTypeOptions, setVaccineTypeOptions] = useState<string[]>([]);
 
   const [implantConfirmed, setImplantConfirmed] = useState(false);
-  const [vaccineType, setVaccineType] = useState("");
-  const [administrationDate, setAdministrationDate] = useState(todayDate());
-  const [doseOrChipId, setDoseOrChipId] = useState("");
-  const [nextBoosterDueDate, setNextBoosterDueDate] = useState("");
+  const [checkDraft, setCheckDraft] = useState<VaccinationCheckDraft>({ input: null, outcome: "" });
   const [desexingChoice, setDesexingChoice] = useState<DesexingChoice>("schedule");
   const [scheduledDate, setScheduledDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Antigens a current antibody check already covers, while the Vet is
-  // asked whether to vaccinate anyway.
-  const [antibodyAntigens, setAntibodyAntigens] = useState<string[] | null>(null);
 
   const load = async () => {
-    const [animalResult, taskResult, vaccinationResult, desexingResult] = await Promise.all([
+    const [animalResult, taskResult, checkResult, desexingResult] = await Promise.all([
       getAnimalById(animalId),
       getLatestMicrochipImplant(animalId),
-      listVaccinations(animalId),
+      listVaccinationChecks(animalId),
       getDesexingSchedule(animalId),
     ]);
-    return { animalResult, taskResult, vaccinationResult, desexingResult };
+    return { animalResult, taskResult, checkResult, desexingResult };
   };
 
   const apply = (r: Awaited<ReturnType<typeof load>>) => {
     setAnimal(r.animalResult ?? null);
     setTask(r.taskResult);
-    setVaccinations(r.vaccinationResult);
+    setChecks(r.checkResult);
     setDesexing(r.desexingResult);
   };
 
@@ -97,9 +90,6 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
     let cancelled = false;
     load().then((r) => {
       if (!cancelled) apply(r);
-    });
-    getActiveValues("Vaccine Type").then((values) => {
-      if (!cancelled) setVaccineTypeOptions(values);
     });
     return () => {
       cancelled = true;
@@ -120,43 +110,26 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
   }
 
   const pending = task?.status === "Pending";
-  const needsVaccination = vaccinations.length === 0;
+  const latestCheck = checks[0];
+  const needsCheck = !latestCheck;
   const needsDesexing = !desexing;
-  const vaccinationReady = !needsVaccination || (vaccineType && administrationDate && doseOrChipId.trim());
+  const checkReady = !needsCheck || Boolean(checkDraft.input);
   const desexingReady = !needsDesexing || desexingChoice !== "schedule" || Boolean(scheduledDate);
-  const canComplete = canAct && pending && implantConfirmed && vaccinationReady && desexingReady && !saving;
+  const canComplete = canAct && pending && implantConfirmed && checkReady && desexingReady && !saving;
 
-  // One session: vaccination and desexing are saved first (each audited),
-  // then the implant task completes on the server, which sets the
-  // animal's microchip number and completes the Microchip Check task.
-  const handleComplete = async (override?: { reason: string; note: string }) => {
+  // One session: the vaccination check (which turns what's missing into
+  // pending vaccinations) and desexing are saved first (each audited), then
+  // the implant task completes on the server, which sets the animal's
+  // microchip number and completes the Microchip Check task.
+  const handleComplete = async () => {
     if (!task) return;
     setSaving(true);
     setError(null);
     try {
-      if (needsVaccination) {
-        const result = await recordVaccination(
-          animalId,
-          {
-            vaccineType,
-            administrationDate,
-            doseOrChipId: doseOrChipId.trim(),
-            nextBoosterDueDate,
-            antibodyOverrideReason: override?.reason,
-            antibodyOverrideNote: override?.note,
-          },
-          email,
-          displayName,
-        );
-        // A current antibody check covers this vaccine: ask first, then
-        // run the session again with the chosen reason.
-        if (!result.ok && result.reason === "antibodies_present" && "antigens" in result) {
-          setAntibodyAntigens(result.antigens);
-          return;
-        }
-        if (!result.ok) throw new Error("The vaccination could not be saved.");
+      if (needsCheck && checkDraft.input) {
+        const result = await recordVaccinationCheck(animalId, checkDraft.input);
+        if (!result.ok) throw new Error(result.message ?? "The vaccination check could not be saved.");
       }
-      setAntibodyAntigens(null);
       if (needsDesexing) {
         const result =
           desexingChoice === "schedule"
@@ -203,6 +176,7 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
               Recorded by {task.completedByName} on {formatDateTime(task.completedAt)}. The Microchip Check is complete.
             </p>
           )}
+          {latestCheck && <p className="mt-1 text-text-muted">Vaccination check: {latestCheck.outcome}.</p>}
           <Link href={`/animals/${animalId}/medical`} className="mt-3 inline-block font-semibold text-secondary underline underline-offset-2 hover:no-underline">
             Open Medical Record
           </Link>
@@ -224,35 +198,18 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
             )}
           </Section>
 
-          <Section title="2. Vaccination" done={!needsVaccination}>
-            {!needsVaccination ? (
+          <Section title="2. Vaccination Check" done={!needsCheck}>
+            {latestCheck ? (
               <p className="mt-2 text-sm text-text-muted">
-                Already recorded: {vaccinations[0].vaccineType} on {formatDate(vaccinations[0].administrationDate)}.
+                Already recorded on {formatDate(latestCheck.checkDate)}: {latestCheck.outcome}.
               </p>
             ) : canAct ? (
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="imp-vac-type" className="text-xs font-semibold text-text-muted">Vaccine Type</label>
-                  <select id="imp-vac-type" value={vaccineType} onChange={(e) => setVaccineType(e.target.value)} className={inputClass}>
-                    <option value="">Select</option>
-                    {vaccineTypeOptions.map((v) => (
-                      <option key={v} value={v}>{v}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="imp-vac-date" className="text-xs font-semibold text-text-muted">Administration Date</label>
-                  <input id="imp-vac-date" type="date" value={administrationDate} max={todayDate()} onChange={(e) => setAdministrationDate(e.target.value)} className={inputClass} />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="imp-vac-dose" className="text-xs font-semibold text-text-muted">Dose or Chip ID</label>
-                  <input id="imp-vac-dose" type="text" value={doseOrChipId} onChange={(e) => setDoseOrChipId(e.target.value)} className={inputClass} />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="imp-vac-booster" className="text-xs font-semibold text-text-muted">Next Booster Due Date</label>
-                  <input id="imp-vac-booster" type="date" value={nextBoosterDueDate} onChange={(e) => setNextBoosterDueDate(e.target.value)} className={inputClass} />
-                </div>
-              </div>
+              <>
+                <p className="mt-1 text-sm text-text-muted">
+                  Record what {animal.name} is already covered for. Anything not covered becomes a pending vaccination to give later.
+                </p>
+                <VaccinationCheckForm animalId={animalId} species={animal.species} mode="embedded" onChange={setCheckDraft} />
+              </>
             ) : (
               <p className="mt-2 text-sm text-text-muted">Not yet recorded.</p>
             )}
@@ -296,16 +253,6 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
             )}
           </Section>
 
-          {antibodyAntigens && (
-            <AntibodyOverrideModal
-              animalName={animal.name}
-              antigens={antibodyAntigens}
-              saving={saving}
-              onCancel={() => setAntibodyAntigens(null)}
-              onConfirm={(reason, note) => void handleComplete({ reason, note })}
-            />
-          )}
-
           {error && (
             <p role="alert" className="rounded-[12px] border border-danger bg-danger/10 px-3 py-2 text-sm text-text">
               {error}
@@ -322,7 +269,9 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
               >
                 {saving ? "Saving..." : "Complete implant session"}
               </button>
-              <span className="text-xs text-text-muted">Saves the implant, vaccination and desexing together and completes the Microchip Check.</span>
+              <span className="text-xs text-text-muted">
+                Saves the implant, vaccination check and desexing together and completes the Microchip Check.
+              </span>
             </div>
           ) : (
             <p className="text-sm text-text-muted">Waiting on Veterinarian to implant the microchip.</p>
