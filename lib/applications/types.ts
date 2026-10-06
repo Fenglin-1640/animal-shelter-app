@@ -52,4 +52,24 @@ export interface AdoptionApplication {
   rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
+  // Shelter Staff asked the Adopter for more documents or information
+  // during review; infoRespondedAt is when the Adopter last uploaded a
+  // document after that (see isWaitingOnAdopter()).
+  infoRequestMessage?: string;
+  infoRequestedAt?: string;
+  infoRequestedByName?: string;
+  infoRespondedAt?: string;
+}
+
+// The application is with the Adopter: Staff asked for more documents or
+// information and nothing has been uploaded since.
+export function isWaitingOnAdopter(app: Pick<AdoptionApplication, "infoRequestedAt" | "infoRespondedAt" | "applicationStatus">): boolean {
+  if (!app.infoRequestedAt) return false;
+  if (!["Submitted", "Under Review", "On Hold"].includes(app.applicationStatus)) return false;
+  return !app.infoRespondedAt || new Date(app.infoRespondedAt).getTime() < new Date(app.infoRequestedAt).getTime();
+}
+
+// The Adopter answered the latest request (uploaded since it was made).
+export function hasNewAdopterResponse(app: Pick<AdoptionApplication, "infoRequestedAt" | "infoRespondedAt">): boolean {
+  return Boolean(app.infoRequestedAt && app.infoRespondedAt && new Date(app.infoRespondedAt).getTime() >= new Date(app.infoRequestedAt).getTime());
 }

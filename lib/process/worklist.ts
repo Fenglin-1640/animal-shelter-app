@@ -145,6 +145,7 @@ function hrefFor(step: StepKey, role: Role, records: AnimalRecords, applicationI
     case "publish":
       return `/animals/${a}/adoption-fitness`;
     case "suitability_checks":
+    case "application_review":
     case "meet_and_greet":
       return `/adoption-applications/${applicationId}`;
     case "agreement":
@@ -172,7 +173,7 @@ function navLabelFor(step: StepKey, role: Role): string | null {
     if (step === "pre_release_check") return "Pre-Release Checks";
     return "Animals";
   }
-  if (step === "suitability_checks" || step === "meet_and_greet") return "Adoption Applications";
+  if (step === "suitability_checks" || step === "application_review" || step === "meet_and_greet") return "Adoption Applications";
   if (step === "agreement" || step === "payment_confirmation") return "Adoptions";
   if (step === "follow_up") return "Follow Up Visits";
   return "Animals";
@@ -182,6 +183,7 @@ const APPLICATION_STAGE: StepKey[] = [
   "application",
   "documents",
   "suitability_checks",
+  "application_review",
   "meet_and_greet",
   "agreement",
   "payment",

@@ -77,11 +77,15 @@ export async function PUT(request: Request, { params }: Params) {
       contentType: file.contentType,
       stored: true,
     });
-    await orm.AdoptionApplication.where({ applicationId: file.ownerId }).update({ documents: JSON.stringify(docs) });
+    // An upload after Staff asked for more documents answers that request.
+    await orm.AdoptionApplication.where({ applicationId: file.ownerId }).update({
+      documents: JSON.stringify(docs),
+      ...(access.answersRequest ? { infoRespondedAt: toTimestamptz(now) } : {}),
+    });
     await orm.AuditLogEntry.create(
       auditRow({
         actor: { email: auth.email, name: auth.displayName },
-        action: "Upload Application Document",
+        action: access.answersRequest ? "Upload Requested Application Document" : "Upload Application Document",
         entityType: "Animal",
         entityId: access.animalId ?? file.ownerId,
         oldValue: "",

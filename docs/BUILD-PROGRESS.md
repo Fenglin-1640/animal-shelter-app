@@ -130,6 +130,25 @@ The pending list on the Medical Record page and in the implant session has check
 
 **Sidebar badge note (2026-10-07):** For Shelter Staff and Administrators, each badge now counts exactly the rows its page flags: "Animals" counts animals with a red dot on the Animals list, "Adoption Applications" counts non-draft applications with a red dot, and "Follow Up Visits" counts the scheduled visits that page lists. "Adoptions" still counts animals waiting on an agreement or payment confirmation. Previously the badges counted each animal's next step only, so Animals showed 15 against 17 dots. Follow Up Visits showed 1 for a seeded animal (Oliver) whose status is in the follow-up period but who has no visit record. The process engine now only asks Staff to complete a follow-up when a scheduled visit exists; otherwise the step reads "In follow-up period - no visit scheduled".
 
+**Application review note (2026-10-07):** The Staff application page lost its decision actions in an earlier fix. Nothing in the UI ever moved an application from Submitted to Under Review: \`markUnderReview()\` existed but only test scripts called it. The original screen let Staff decide on any undecided application. Commit 6bdfbbf (fixing a re-Approve bug) narrowed the decision panel to "Under Review" only, so every application submitted through the UI dead-ended. Commits 0ac33bf and 8dbefaf didn't touch this logic.
+
+**Review panel.** The page now has an "Application Review" panel for Shelter Staff and Administrators, driven by the existing statuses:
+- **Submitted:** Start Review. Suitability checks can still be recorded.
+- **Under Review:** Approve (only when all three checks are Pass; otherwise the missing items are listed), Reject (reason required), Place On Hold (optional note), and Request more documents / information (message required).
+- **On Hold:** Resume Review (once the animal is available again), Reject, and Request more documents / information.
+
+Veterinarians see no actions. Start/Hold/Resume/Request go through \`POST /api/applications/:id/review\` (Staff and Administrator), which checks the current status and writes the audit entry in the same transaction. Approve and Reject keep their flow; Approve now also requires every check to be Pass, and Reject also works from On Hold. The existing order is unchanged: approval, then the Meet and Greet (scheduled on the same page), then the agreement.
+
+**Document requests.** A request is stored on the application in four new nullable columns: \`infoRequestMessage\`, \`infoRequestedAt\`, \`infoRequestedByName\` and \`infoRespondedAt\`. The Adopter sees the message on their application and can upload (but not remove) documents until a decision is made. Their upload sets \`infoRespondedAt\` and is audited as "Upload Requested Application Document".
+
+**Process tracker.** A new Staff step, "Application Review", sits between Suitability Checks and Meet and Greet. It reads:
+- "Review not started" while the application is Submitted;
+- "With Adopter – waiting for documents" while a request is open (the Adopter sees "With you - Upload the requested documents");
+- "New documents from the Adopter" after they upload, with a red dot for Staff;
+- "Checks complete - decision pending" once all three checks are done.
+
+The Staff application page also has the process rail, so the next action is always visible.
+
 **Seed-data note (2026-09-26):** the PRD 12.1 seed animals (`lib/animals/mock-animals.ts`, written by `prisma/seed.ts`) demonstrate specific lifecycle states, not a full history. Luna, Charlie, Daisy, Rocky and Oliver are seeded straight into their states with none of the records a real animal would have passed through to get there (assessment tasks, Review Adoption Fitness sign-off, Medical Clearance, etc.), so they don't satisfy every gate that state implies. Ruby (A-0006, "Vet cleared, waiting for Staff to publish") is the exception: `seedRubyPrerequisites()` seeds her complete Pre-Listing history (3 completed assessment tasks backed by a No Chip lookup, a Health Assessment and a Suitable Temperament Assessment; the Staff + Veterinarian Review Adoption Fitness confirmation; Medical Clearance backed by a vaccination and a species desexing exemption; an adoption fee; and a public photo with alt text), so Staff can actually publish her in the demo.
 
 ## Summary

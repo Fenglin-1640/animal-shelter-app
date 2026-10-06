@@ -87,6 +87,7 @@ const FORBIDDEN_WRITES = [
   ["POST", "/api/medical/vaccination-checks", [A, S, C, D]],
   ["POST", "/api/medical/vaccination-tasks/X/waive", [A, S, C, D]],
   ["POST", "/api/medical/vaccinations/batch", [A, S, C, D]],
+  ["POST", "/api/applications/X/review", [V, C, D]],
   ["POST", "/api/microchip-implants/X/complete", [A, S, C, D]],
   ["GET", "/api/audit-log", [S, V, C, D]],
 ];

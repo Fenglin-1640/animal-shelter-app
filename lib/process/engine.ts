@@ -1,3 +1,4 @@
+import { hasNewAdopterResponse, isWaitingOnAdopter } from "@/lib/applications/types";
 import type { AssessmentTask, FitnessReview } from "@/lib/adoption-fitness/types";
 import type { AdoptionAgreement } from "@/lib/agreements/types";
 import type { Animal, CurrentStatus } from "@/lib/animals/types";
@@ -43,6 +44,7 @@ export type StepKey =
   | "application"
   | "documents"
   | "suitability_checks"
+  | "application_review"
   | "meet_and_greet"
   | "agreement"
   | "payment"
@@ -57,6 +59,7 @@ export const APPLICATION_STEPS: StepKey[] = [
   "application",
   "documents",
   "suitability_checks",
+  "application_review",
   "meet_and_greet",
   "agreement",
   "payment",
@@ -132,6 +135,7 @@ const LABELS: Record<StepKey, string> = {
   application: "Application",
   documents: "Documents",
   suitability_checks: "Suitability Checks",
+  application_review: "Application Review",
   meet_and_greet: "Meet and Greet",
   agreement: "Agreement",
   payment: "Payment",
@@ -379,8 +383,10 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
     })(),
   );
 
+  const waitingOnAdopter = app ? isWaitingOnAdopter(app) : false;
   steps.push(
     (() => {
+      if (waitingOnAdopter) return step("documents", "waiting", [ADOPTER], "Shelter Staff asked for more documents", act(ADOPTER, "Upload the requested documents"));
       if (docs > 0) return step("documents", "done", [ADOPTER], `Documents received (${docs})`);
       if (finalised) return step("documents", "done", [ADOPTER], "Application finalised");
       if (!live) return step("documents", "not_started", [ADOPTER], "No application yet");
@@ -393,10 +399,27 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
     (() => {
       if (approved || finalised) return step("suitability_checks", "done", [STAFF], "Application approved");
       if (!live || appStatus === "Draft") return step("suitability_checks", "not_started", [STAFF], "Waiting for a submitted application");
-      if (appStatus === "On Hold") return step("suitability_checks", "blocked", [STAFF], "Application on hold", act(STAFF, "Review application on hold"));
       const complete = checks.length > 0 && checks.every((c) => c.outcome !== "Pending");
-      if (complete) return step("suitability_checks", "in_progress", [STAFF], "Checks complete - decision pending", act(STAFF, "Decide application"));
+      if (complete) return step("suitability_checks", "done", [STAFF], checks.every((c) => c.outcome === "Pass") ? "All checks passed" : "All checks complete");
+      if (appStatus === "On Hold") return step("suitability_checks", "blocked", [STAFF], "Application on hold");
       return step("suitability_checks", checks.some((c) => c.outcome !== "Pending") ? "in_progress" : "waiting", [STAFF], "Suitability checks outstanding", act(STAFF, "Complete suitability checks"));
+    })(),
+  );
+
+  // The Staff decision on the application (Start Review, Approve / Reject,
+  // On Hold), and any request to the Adopter for more documents.
+  steps.push(
+    (() => {
+      if (approved || finalised) return step("application_review", "done", [STAFF], "Application approved");
+      if (!live || appStatus === "Draft") return step("application_review", "not_started", [STAFF], "Waiting for a submitted application");
+      if (waitingOnAdopter) return step("application_review", "waiting", [STAFF], "With Adopter – waiting for documents", { needsActionFromRoles: [ADOPTER], nextAction: "Upload the requested documents" });
+      const complete = checks.length > 0 && checks.every((c) => c.outcome !== "Pending");
+      const responded = app ? hasNewAdopterResponse(app) : false;
+      if (appStatus === "On Hold") return step("application_review", "blocked", [STAFF], "Application on hold", act(STAFF, "Review application on hold"));
+      if (appStatus === "Submitted") return step("application_review", "waiting", [STAFF], "Review not started", act(STAFF, "Start review"));
+      if (responded) return step("application_review", "waiting", [STAFF], "New documents from the Adopter", act(STAFF, "Review new documents"));
+      if (complete) return step("application_review", "waiting", [STAFF], "Checks complete - decision pending", act(STAFF, "Approve or reject application"));
+      return step("application_review", "in_progress", [STAFF], "Under review - suitability checks outstanding");
     })(),
   );
 

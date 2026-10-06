@@ -258,6 +258,13 @@ model AdoptionApplication {
   rejectionReason     String?
   createdAt           TimestamptzString(6)
   updatedAt           TimestamptzString(6)
+  // Shelter Staff asking the Adopter for more documents or information
+  // during review: the message, when and by whom, and when the Adopter
+  // last uploaded a document in response.
+  infoRequestMessage  String?
+  infoRequestedAt     TimestamptzString(6)?
+  infoRequestedByName String?
+  infoRespondedAt     TimestamptzString(6)?
 }
 
 // Mirrors lib/checks/types.ts (FR-CHK-01/02). conductedDate stays

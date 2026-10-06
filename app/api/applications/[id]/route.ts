@@ -22,6 +22,11 @@ export async function PATCH(
   // Documents are added and removed only through /api/files, which keeps
   // this list in step with the stored files.
   delete patch.documents;
+  // The documents request is set through /review and answered by uploads.
+  delete patch.infoRequestMessage;
+  delete patch.infoRequestedAt;
+  delete patch.infoRequestedByName;
+  delete patch.infoRespondedAt;
   if (auth.role === "Adopter") {
     // An Adopter may only edit - and submit - their own Draft application;
     // every later status change is a Staff decision.

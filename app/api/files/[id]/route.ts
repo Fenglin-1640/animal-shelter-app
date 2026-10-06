@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: Params) {
   return NextResponse.json({ ok: true, item: toStoredFileMeta(file) });
 }
 
-// Removes a file (the owning Adopter, while the application is a Draft),
+// Removes a file (the owning Adopter, only while the application is a Draft),
 // with its chunks, its entry on the application and an audit entry.
 export async function DELETE(_request: Request, { params }: Params) {
   const auth = await requireRole(ALL_ROLES);
@@ -30,7 +30,7 @@ export async function DELETE(_request: Request, { params }: Params) {
   const file = await db.orm.StoredFile.where({ id }).first();
   if (!file) return fail(404, "not_found");
   const access = await ownerAccess(auth, file.ownerType, file.ownerId);
-  if (!access?.canWrite) return forbidden();
+  if (!access?.canRemove) return forbidden();
 
   const chunks = await db.orm.StoredFileChunk.select("id").where({ fileId: id }).all();
   await db.transaction(async (orm) => {

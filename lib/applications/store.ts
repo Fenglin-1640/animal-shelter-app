@@ -3,6 +3,7 @@ import { getAdopterProfile } from "@/lib/adopter-profile/store";
 import { getAdopterProfileSubmissionBlockers } from "@/lib/adopter-profile/types";
 import { writeAuditLog } from "@/lib/audit/store";
 import type { AdoptionApplication, ApplicationDocument } from "@/lib/applications/types";
+import { CHECK_TYPES } from "@/lib/checks/types";
 import { getJson, send } from "@/lib/shared/http";
 
 // FR-APP-01: AdoptionApplication now lives in the database (see
@@ -168,6 +169,39 @@ export async function submitApplication(applicationId: string): Promise<SubmitRe
 // Called once a check moves off Pending (components/checks), so
 // applicationStatus reflects that review has begun - avoids a circular
 // import between lib/applications and lib/checks.
+export type ReviewAction = "start" | "hold" | "resume" | "request_info";
+
+// Start Review, Place On Hold, Resume and Request more documents /
+// information: checked and audited by the server
+// (/api/applications/:id/review).
+export async function reviewApplication(
+  applicationId: string,
+  action: ReviewAction,
+  message?: string,
+): Promise<{ ok: true } | { ok: false; reason: string; message?: string }> {
+  const response = await send(`/api/applications/${encodeURIComponent(applicationId)}/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, message }),
+  });
+  const result = await response.json().catch(() => ({ ok: false, reason: "failed" }));
+  return result.ok ? { ok: true } : { ok: false, reason: result.reason ?? "failed", message: result.message };
+}
+
+// What is still missing before an application can be approved: all
+// three Suitability Checks must have passed. (The Meet and Greet follows
+// approval.)
+export function approvalBlockers(checks: { checkType: string; outcome: string }[], requiredTypes: readonly string[]): string[] {
+  return requiredTypes
+    .map((type) => {
+      const c = checks.find((x) => x.checkType === type);
+      if (!c || c.outcome === "Pending") return `${type} is not complete yet.`;
+      if (c.outcome !== "Pass") return `${type} did not pass (${c.outcome}).`;
+      return null;
+    })
+    .filter((x): x is string => Boolean(x));
+}
+
 export async function markUnderReview(applicationId: string): Promise<void> {
   const application = await getApplication(applicationId);
   if (!application || application.applicationStatus !== "Submitted") return;
@@ -188,6 +222,8 @@ export async function approveApplication(
   const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
   if (application.applicationStatus !== "Under Review") return { ok: false, reason: "not_under_review" };
+  const checks = ((await getJson("/api/checks")).items as { applicationId: string; checkType: string; outcome: string }[]).filter((c) => c.applicationId === applicationId);
+  if (approvalBlockers(checks, CHECK_TYPES).length > 0) return { ok: false, reason: "checks_not_passed" };
 
   const now = new Date().toISOString();
   await setStatus(applicationId, {
@@ -244,7 +280,7 @@ export async function rejectApplication(
   if (!reason.trim()) return { ok: false, reason: "reason_required" };
   const application = await getApplication(applicationId);
   if (!application) return { ok: false, reason: "not_found" };
-  if (application.applicationStatus !== "Under Review") return { ok: false, reason: "not_under_review" };
+  if (application.applicationStatus !== "Under Review" && application.applicationStatus !== "On Hold") return { ok: false, reason: "not_under_review" };
 
   await setStatus(applicationId, {
     applicationStatus: "Rejected",

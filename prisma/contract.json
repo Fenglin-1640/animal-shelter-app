@@ -648,6 +648,40 @@
                   "kind": "scalar"
                 }
               },
+              "infoRequestMessage": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "infoRequestedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "infoRequestedByName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "infoRespondedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
               "motivationStatement": {
                 "nullable": false,
                 "type": {
@@ -734,6 +768,18 @@
                 },
                 "documents": {
                   "column": "documents"
+                },
+                "infoRequestMessage": {
+                  "column": "infoRequestMessage"
+                },
+                "infoRequestedAt": {
+                  "column": "infoRequestedAt"
+                },
+                "infoRequestedByName": {
+                  "column": "infoRequestedByName"
+                },
+                "infoRespondedAt": {
+                  "column": "infoRespondedAt"
                 },
                 "motivationStatement": {
                   "column": "motivationStatement"
@@ -5334,6 +5380,32 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "infoRequestMessage": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "infoRequestedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "infoRequestedByName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "infoRespondedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
                 "motivationStatement": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -7822,7 +7894,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "89f1e3b3ab2bb8fdf62166499ef0e5d8841519a90f43fb85048f0630f73c3ddd"
+    "storageHash": "d268d77138912e4c942d25999f74402c42cf971f107e9e22a83a8c8b01f13ccd"
   },
   "capabilities": {
     "postgres": {

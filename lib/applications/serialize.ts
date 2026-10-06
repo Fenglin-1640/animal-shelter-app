@@ -20,6 +20,10 @@ export interface AdoptionApplicationRow
     | "rejectionReason"
     | "createdAt"
     | "updatedAt"
+    | "infoRequestMessage"
+    | "infoRequestedAt"
+    | "infoRequestedByName"
+    | "infoRespondedAt"
   > {
   animalSpecies: string;
   adoptionFee: number | null;
@@ -33,6 +37,10 @@ export interface AdoptionApplicationRow
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
+  infoRequestMessage: string | null;
+  infoRequestedAt: string | null;
+  infoRequestedByName: string | null;
+  infoRespondedAt: string | null;
 }
 
 export function toAdoptionApplication(row: AdoptionApplicationRow): AdoptionApplication {
@@ -50,6 +58,10 @@ export function toAdoptionApplication(row: AdoptionApplicationRow): AdoptionAppl
     rejectionReason: row.rejectionReason ?? undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    infoRequestMessage: row.infoRequestMessage ?? undefined,
+    infoRequestedAt: row.infoRequestedAt ?? undefined,
+    infoRequestedByName: row.infoRequestedByName ?? undefined,
+    infoRespondedAt: row.infoRespondedAt ?? undefined,
   };
 }
 

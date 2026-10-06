@@ -14,6 +14,7 @@ import { getApplication, submitApplication, updateDraft } from "@/lib/applicatio
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication } from "@/lib/applications/types";
 import { ApplicationDocuments } from "@/components/applications/application-documents";
+import { isWaitingOnAdopter } from "@/lib/applications/types";
 import { createChecksForApplication } from "@/lib/checks/store";
 import type { Role } from "@/lib/roles/roles";
 
@@ -83,6 +84,9 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
   if (application.adopterEmail.toLowerCase() !== email.toLowerCase()) return <AccessDenied />;
 
   const isDraft = application.applicationStatus === "Draft";
+  // Shelter Staff asked for more documents: uploads stay open until a decision.
+  const requestOpen = Boolean(application.infoRequestedAt) && ["Submitted", "Under Review", "On Hold"].includes(application.applicationStatus);
+  const waiting = isWaitingOnAdopter(application);
   const liveBlockers = [
     ...(motivation.trim() ? [] : ["A motivation statement is required."]),
     ...(profile ? getAdopterProfileSubmissionBlockers(profile) : []),
@@ -161,10 +165,24 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
 
       <section className="rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]">
         <h2 className="text-lg font-bold text-text">Supporting Documents</h2>
+        {requestOpen && (
+          <div role="status" className={`mt-3 rounded-[12px] border px-3 py-2 text-sm ${waiting ? "border-gold bg-gold/10" : "border-border bg-page"}`}>
+            <p className="font-semibold text-text">
+              {waiting ? "Shelter Staff have asked for more documents or information" : "Thank you - your documents have been sent to Shelter Staff"}
+            </p>
+            <p className="mt-1 text-text">&ldquo;{application.infoRequestMessage}&rdquo;</p>
+            <p className="mt-1 text-xs text-text-muted">
+              {application.infoRequestedByName}
+              {application.infoRequestedAt ? ` · ${new Date(application.infoRequestedAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}` : ""}
+              {waiting ? " · Upload the documents below." : ""}
+            </p>
+          </div>
+        )}
         <ApplicationDocuments
           applicationId={application.applicationId}
           documents={application.documents}
-          canEdit={isDraft}
+          canEdit={isDraft || requestOpen}
+          canRemove={isDraft}
           onChanged={async () => setApplication(await getApplication(applicationId))}
         />
       </section>

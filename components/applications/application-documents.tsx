@@ -16,11 +16,15 @@ export function ApplicationDocuments({
   applicationId,
   documents,
   canEdit,
+  canRemove = canEdit,
   onChanged,
 }: {
   applicationId: string;
   documents: ApplicationDocument[];
+  // Add documents.
   canEdit: boolean;
+  // Remove documents (only while the application is a Draft).
+  canRemove?: boolean;
   onChanged?: () => void | Promise<void>;
 }) {
   const [rules, setRules] = useState<AttachmentRules | null>(null);
@@ -99,7 +103,7 @@ export function ApplicationDocuments({
                 ) : (
                   <span className="text-xs text-text-muted">File name only</span>
                 )}
-                {canEdit && (
+                {canRemove && (
                   <button
                     type="button"
                     onClick={() => void handleRemove(d.id)}

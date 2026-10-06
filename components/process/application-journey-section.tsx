@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ProcessRail } from "@/components/process/process-rail";
-import { toAdopterRailSteps, type TrackerStep } from "@/components/process/process-tracker";
+import { toAdopterRailSteps, toRailSteps, type TrackerStep } from "@/components/process/process-tracker";
 import { useWorklist } from "@/lib/process/worklist-client";
 import { getJson } from "@/lib/shared/http";
 
@@ -23,4 +23,23 @@ export function ApplicationJourneyRail({ applicationId }: { applicationId: strin
   }, [applicationId, worklist]);
   if (steps && steps.length === 0) return null;
   return <ProcessRail title="Application journey" steps={steps ? toAdopterRailSteps(steps) : null} idPrefix={`app-${applicationId}`} />;
+}
+
+// The same journey for Shelter Staff, Administrators and Veterinarians
+// beside the application page, with the role tooltips and a red dot where
+// the viewer must act.
+export function StaffApplicationRail({ applicationId }: { applicationId: string }) {
+  const [steps, setSteps] = useState<TrackerStep[] | null>(null);
+  const worklist = useWorklist();
+  useEffect(() => {
+    let cancelled = false;
+    getJson<{ ok?: boolean; steps?: TrackerStep[] }>(`/api/process/applications/${encodeURIComponent(applicationId)}`).then((result) => {
+      if (!cancelled) setSteps(result.ok !== false && result.steps ? result.steps : []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId, worklist]);
+  if (steps && steps.length === 0) return null;
+  return <ProcessRail title="Application" steps={steps ? toRailSteps(steps) : null} idPrefix={`staff-app-${applicationId}`} />;
 }
