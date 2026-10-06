@@ -264,13 +264,9 @@ export function VaccinationCheckForm({
         <section aria-label="Vaccination check result" className="rounded-[12px] border border-border bg-page p-3">
           <p className="font-semibold text-text" data-testid="vaccination-outcome">{outcome}</p>
           {result.covered.length > 0 && (
-            <ul className="mt-1 flex flex-col gap-0.5 text-xs text-text-muted">
-              {result.covered.map((c) => (
-                <li key={c.antigen}>
-                  Covered: {c.antigen} - {c.reason}
-                </li>
-              ))}
-            </ul>
+            <p className="mt-1 text-xs text-text-muted">
+              Covered: {result.covered.map((c) => `${c.antigen} (${c.reason})`).join(", ")}
+            </p>
           )}
           {result.gap.length > 0 && <p className="mt-1 text-xs text-text-muted">Not covered: {result.gap.join(", ")}</p>}
           {(proposed.length > 0 || added.length > 0) && (

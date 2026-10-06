@@ -522,110 +522,13 @@ function MedicalContent({
         />
       )}
 
-      <SectionCard title="Health Assessments" required>
-        {healthAssessments.length === 0 ? (
-          <p className="mt-2 text-sm text-text-muted">No health assessments recorded yet.</p>
-        ) : (
-          <ul className="mt-4 flex flex-col gap-2">
-            {healthAssessments.map((h) => (
-              <li key={h.id} className="rounded-[12px] border border-border bg-page p-3 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold text-text">{formatDate(h.assessmentDate)}</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {h.urgentTreatmentRequired && (
-                      <StatusChip label="Urgent Treatment Required" category="attention" />
-                    )}
-                    {h.healthRecheckRequired && (
-                      <StatusChip label="Health Recheck Required" category="caution" />
-                    )}
-                  </div>
-                </div>
-                <p className="mt-1 text-text-muted">Body condition: {h.bodyCondition}</p>
-                {h.examinationObservations && <p className="mt-1 text-text">{h.examinationObservations}</p>}
-                {h.diagnosedConditions && (
-                  <p className="mt-1 text-text-muted">Diagnosed: {h.diagnosedConditions}</p>
-                )}
-                <p className="mt-1 text-xs text-text-muted">
-                  {h.veterinarianName} &middot; {formatDateTime(h.createdAt)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-        {canAct && !showHealthForm && (
-          <button
-            type="button"
-            onClick={() => setShowHealthForm(true)}
-            className="mt-4 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-          >
-            Record Health Assessment
-          </button>
-        )}
-        {canAct && showHealthForm && (
-          <HealthAssessmentForm
-            onCancel={() => setShowHealthForm(false)}
-            onSubmit={async (input) => {
-              await recordHealthAssessment(animalId, input, email, displayName);
-              setShowHealthForm(false);
-              refresh();
-            }}
-          />
-        )}
-      </SectionCard>
-
-      {(treatmentEvents.length > 0 || underTreatment) && (
-        <SectionCard title="Treatment and Recovery">
-          {treatmentEvents.length === 0 ? (
-            <p className="mt-2 text-sm text-text-muted">No treatment events recorded yet.</p>
-          ) : (
-            <ul className="mt-4 flex flex-col gap-2">
-              {treatmentEvents.map((t) => (
-                <li key={t.id} className="rounded-[12px] border border-border bg-page p-3 text-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-semibold text-text">
-                      {t.medication} &middot; {t.dose}
-                    </span>
-                    <StatusChip
-                      label={t.furtherTreatmentRequired ? "Further Treatment Required" : "Recovery Complete"}
-                      category={t.furtherTreatmentRequired ? "caution" : "success"}
-                    />
-                  </div>
-                  <p className="mt-1 text-text">{t.outcome}</p>
-                  <p className="mt-1 text-xs text-text-muted">
-                    {formatDate(t.date)} &middot; {t.veterinarianName}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-          {canAct && underTreatment && !showTreatmentForm && (
-            <button
-              type="button"
-              onClick={() => setShowTreatmentForm(true)}
-              className="mt-4 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
-            >
-              Add Treatment Event
-            </button>
-          )}
-          {canAct && showTreatmentForm && (
-            <TreatmentEventForm
-              medicationOptions={medicationOptions}
-              onCancel={() => setShowTreatmentForm(false)}
-              onSubmit={async (input) => {
-                await addTreatmentEvent(animalId, input, email, displayName);
-                setShowTreatmentForm(false);
-                refresh();
-              }}
-            />
-          )}
-          {!underTreatment && treatmentEvents.length > 0 && (
-            <p className="mt-4 text-xs text-text-muted">
-              This treatment episode is resolved. A new Health Assessment marking urgent
-              treatment required would start another.
-            </p>
-          )}
-        </SectionCard>
-      )}
+      <AntibodyChecksSection
+        animalId={animalId}
+        checks={antibodyChecks}
+        canAct={canAct}
+        antigens={vaccineModel ? [...vaccineModel.antigenLabels.values()].sort((a, b) => a.localeCompare(b)) : []}
+        onSaved={() => void reloadMedical()}
+      />
 
       <SectionCard title="Vaccination Check and Records" required>
         {latestCheck ? (
@@ -635,7 +538,7 @@ function MedicalContent({
             </p>
             <p className="mt-1 whitespace-pre-line text-text">{latestCheck.report}</p>
             {latestCheck.coverage.length > 0 && (
-              <p className="mt-1 text-xs text-text-muted">Covered: {latestCheck.coverage.map((c) => `${c.antigen} (${c.reason})`).join("; ")}</p>
+              <p className="mt-1 text-xs text-text-muted">Covered: {latestCheck.coverage.map((c) => `${c.antigen} (${c.reason})`).join(", ")}</p>
             )}
             {latestCheck.notApplicable.length > 0 && (
               <p className="text-xs text-text-muted">Not applicable: {latestCheck.notApplicable.join(", ")}</p>
@@ -736,14 +639,6 @@ function MedicalContent({
           />
         )}
       </SectionCard>
-
-      <AntibodyChecksSection
-        animalId={animalId}
-        checks={antibodyChecks}
-        canAct={canAct}
-        antigens={vaccineModel ? [...vaccineModel.antigenLabels.values()].sort((a, b) => a.localeCompare(b)) : []}
-        onSaved={() => void reloadMedical()}
-      />
 
       <SectionCard title="Desexing" required>
         {desexing ? (
@@ -884,6 +779,111 @@ function MedicalContent({
         )}
       </SectionCard>
 
+      <SectionCard title="Health Assessments" required>
+        {healthAssessments.length === 0 ? (
+          <p className="mt-2 text-sm text-text-muted">No health assessments recorded yet.</p>
+        ) : (
+          <ul className="mt-4 flex flex-col gap-2">
+            {healthAssessments.map((h) => (
+              <li key={h.id} className="rounded-[12px] border border-border bg-page p-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold text-text">{formatDate(h.assessmentDate)}</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {h.urgentTreatmentRequired && (
+                      <StatusChip label="Urgent Treatment Required" category="attention" />
+                    )}
+                    {h.healthRecheckRequired && (
+                      <StatusChip label="Health Recheck Required" category="caution" />
+                    )}
+                  </div>
+                </div>
+                <p className="mt-1 text-text-muted">Body condition: {h.bodyCondition}</p>
+                {h.examinationObservations && <p className="mt-1 text-text">{h.examinationObservations}</p>}
+                {h.diagnosedConditions && (
+                  <p className="mt-1 text-text-muted">Diagnosed: {h.diagnosedConditions}</p>
+                )}
+                <p className="mt-1 text-xs text-text-muted">
+                  {h.veterinarianName} &middot; {formatDateTime(h.createdAt)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+        {canAct && !showHealthForm && (
+          <button
+            type="button"
+            onClick={() => setShowHealthForm(true)}
+            className="mt-4 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+          >
+            Record Health Assessment
+          </button>
+        )}
+        {canAct && showHealthForm && (
+          <HealthAssessmentForm
+            onCancel={() => setShowHealthForm(false)}
+            onSubmit={async (input) => {
+              await recordHealthAssessment(animalId, input, email, displayName);
+              setShowHealthForm(false);
+              refresh();
+            }}
+          />
+        )}
+      </SectionCard>
+
+      {(treatmentEvents.length > 0 || underTreatment) && (
+        <SectionCard title="Treatment and Recovery">
+          {treatmentEvents.length === 0 ? (
+            <p className="mt-2 text-sm text-text-muted">No treatment events recorded yet.</p>
+          ) : (
+            <ul className="mt-4 flex flex-col gap-2">
+              {treatmentEvents.map((t) => (
+                <li key={t.id} className="rounded-[12px] border border-border bg-page p-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-semibold text-text">
+                      {t.medication} &middot; {t.dose}
+                    </span>
+                    <StatusChip
+                      label={t.furtherTreatmentRequired ? "Further Treatment Required" : "Recovery Complete"}
+                      category={t.furtherTreatmentRequired ? "caution" : "success"}
+                    />
+                  </div>
+                  <p className="mt-1 text-text">{t.outcome}</p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {formatDate(t.date)} &middot; {t.veterinarianName}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+          {canAct && underTreatment && !showTreatmentForm && (
+            <button
+              type="button"
+              onClick={() => setShowTreatmentForm(true)}
+              className="mt-4 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
+            >
+              Add Treatment Event
+            </button>
+          )}
+          {canAct && showTreatmentForm && (
+            <TreatmentEventForm
+              medicationOptions={medicationOptions}
+              onCancel={() => setShowTreatmentForm(false)}
+              onSubmit={async (input) => {
+                await addTreatmentEvent(animalId, input, email, displayName);
+                setShowTreatmentForm(false);
+                refresh();
+              }}
+            />
+          )}
+          {!underTreatment && treatmentEvents.length > 0 && (
+            <p className="mt-4 text-xs text-text-muted">
+              This treatment episode is resolved. A new Health Assessment marking urgent
+              treatment required would start another.
+            </p>
+          )}
+        </SectionCard>
+      )}
+
       <SectionCard title="Medical Clearance">
         {clearance ? (
           <div className="mt-4 rounded-[12px] border border-border bg-page p-3 text-sm">
@@ -915,9 +915,8 @@ function MedicalContent({
                   ))}
                 </ul>
                 <p className="mt-1 text-xs text-text-muted">
-                  At least one recorded vaccination counts as &quot;required vaccines
-                  complete&quot;, since there is no configurable list of required vaccine
-                  types.
+                  Vaccinations are complete once a Vaccination Check is recorded and every
+                  pending vaccination has been given or waived.
                 </p>
               </div>
             )}
