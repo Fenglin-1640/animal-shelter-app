@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getSystemSettings, updateSystemSettings } from "@/lib/system-administration/settings-store";
-import type { SystemSettings } from "@/lib/system-administration/settings-types";
+import { MAX_ATTACHMENT_SIZE_MB, type SystemSettings } from "@/lib/system-administration/settings-types";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
@@ -14,18 +14,16 @@ function formatDateTime(iso: string): string {
 // and reminder lead days are read live by lib/statutory-hold/store.ts
 // (closing the scope boundary FR-MC-02 disclosed) and the Agreement
 // template version is stamped onto every new AdoptionAgreement
-// (lib/agreements/store.ts). Attachment type/size rules are stored and
-// shown here for real, but not enforced anywhere: every attachment
-// upload in this prototype (Council Transfer, Intake, Photos,
-// Applications) already discloses that it records file name/size
-// metadata only, with no real file content stored to validate against -
-// enforcing a byte-level rule against data that doesn't exist would be
-// theatre, so these two fields stay informational/for-reference.
+// (lib/agreements/store.ts). The attachment types and size limit are
+// enforced on adoption application document uploads (lib/files) and on
+// Council Transfer attachments; the size can only be set from 1 to 5 MB,
+// the most the system stores.
 export function RuleConfigurationPanel() {
   const { user } = useAuth();
   const [settings, setSettings] = useState<SystemSettings | undefined>(undefined);
   const [savedAt, setSavedAt] = useState<string | undefined>(undefined);
   const [attachmentTypesInput, setAttachmentTypesInput] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,8 +46,12 @@ export function RuleConfigurationPanel() {
     );
   }
 
+  const sizeValid =
+    Number.isInteger(settings.maxAttachmentSizeMB) && settings.maxAttachmentSizeMB >= 1 && settings.maxAttachmentSizeMB <= MAX_ATTACHMENT_SIZE_MB;
+
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !sizeValid) return;
+    setSaveError(null);
     const next: SystemSettings = {
       ...settings,
       allowedAttachmentTypes: attachmentTypesInput
@@ -57,7 +59,11 @@ export function RuleConfigurationPanel() {
         .map((t) => t.trim().toUpperCase())
         .filter(Boolean),
     };
-    await updateSystemSettings(next, user.email, user.displayName);
+    const result = await updateSystemSettings(next, user.email, user.displayName);
+    if (!result.ok) {
+      setSaveError(result.message);
+      return;
+    }
     setSettings(next);
     setSavedAt(new Date().toISOString());
   };
@@ -117,10 +123,17 @@ export function RuleConfigurationPanel() {
             id="max-attachment-size"
             type="number"
             min={1}
+            max={MAX_ATTACHMENT_SIZE_MB}
+            step={1}
             value={settings.maxAttachmentSizeMB}
+            aria-invalid={!sizeValid}
+            aria-describedby="max-attachment-size-help"
             onChange={(e) => setSettings({ ...settings, maxAttachmentSizeMB: Number(e.target.value) })}
-            className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className={`h-9 rounded-[12px] border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${sizeValid ? "border-border" : "border-danger"}`}
           />
+          <p id="max-attachment-size-help" className={`text-xs ${sizeValid ? "text-text-muted" : "text-danger"}`}>
+            {sizeValid ? `1 to ${MAX_ATTACHMENT_SIZE_MB} MB.` : `Enter a whole number from 1 to ${MAX_ATTACHMENT_SIZE_MB} MB.`}
+          </p>
         </div>
         <div className="flex flex-col gap-1 sm:col-span-2">
           <label htmlFor="agreement-template-version" className="text-xs font-semibold text-text-muted">
@@ -137,18 +150,23 @@ export function RuleConfigurationPanel() {
       </div>
 
       <p className="mt-3 text-xs text-text-muted">
-        Attachment rules are stored for reference only: attachments record the file name and
-        size, not the file content, so size and file type limits are not enforced.
+        Allowed types and maximum size are enforced when documents are uploaded.
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={handleSave}
-          className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90"
+          disabled={!sizeValid}
+          className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Save Configuration
         </button>
+        {saveError && (
+          <span role="alert" className="text-xs text-danger">
+            {saveError}
+          </span>
+        )}
         {savedAt && (
           <span className="text-xs text-text-muted">Saved {formatDateTime(savedAt)}</span>
         )}

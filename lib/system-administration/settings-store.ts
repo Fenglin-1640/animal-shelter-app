@@ -18,13 +18,20 @@ function formatSettings(settings: SystemSettings): string {
 }
 
 // PRD: "所有配置变化写入 AuditLog."
-export async function updateSystemSettings(next: SystemSettings, email: string, name: string): Promise<void> {
+// Refused settings (e.g. a size outside 1-5 MB) are not saved or audited.
+export async function updateSystemSettings(
+  next: SystemSettings,
+  email: string,
+  name: string,
+): Promise<{ ok: true } | { ok: false; message: string }> {
   const previous = await getSystemSettings();
-  await send("/api/system-settings", {
+  const response = await send("/api/system-settings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(next),
   });
+  const result = await response.json().catch(() => ({ ok: false }));
+  if (!result.ok) return { ok: false, message: result.message ?? "The configuration could not be saved." };
 
   await writeAuditLog({
     userId: email,
@@ -36,4 +43,5 @@ export async function updateSystemSettings(next: SystemSettings, email: string, 
     newValue: formatSettings(next),
     result: "Success",
   });
+  return { ok: true };
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { toSystemSettings } from "@/lib/system-administration/serialize";
-import type { SystemSettings } from "@/lib/system-administration/settings-types";
+import { MAX_ATTACHMENT_SIZE_MB, type SystemSettings } from "@/lib/system-administration/settings-types";
 import { requireRole } from "@/lib/auth/server-session";
 import { ADMINISTRATOR, CARE_TEAM } from "@/lib/auth/api-roles";
 
@@ -23,6 +23,13 @@ export async function POST(request: Request) {
   const auth = await requireRole(ADMINISTRATOR);
   if (auth instanceof Response) return auth;
   const body = (await request.json()) as SystemSettings;
+  const size = body.maxAttachmentSizeMB;
+  if (!Number.isInteger(size) || size < 1 || size > MAX_ATTACHMENT_SIZE_MB) {
+    return NextResponse.json({ ok: false, reason: "invalid", message: `Max Attachment Size must be a whole number from 1 to ${MAX_ATTACHMENT_SIZE_MB} MB.` }, { status: 400 });
+  }
+  if (!Array.isArray(body.allowedAttachmentTypes) || body.allowedAttachmentTypes.length === 0) {
+    return NextResponse.json({ ok: false, reason: "invalid", message: "At least one allowed attachment type is required." }, { status: 400 });
+  }
   const row = {
     id: SETTINGS_ID,
     holdingPeriodDays: body.holdingPeriodDays,

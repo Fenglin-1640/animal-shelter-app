@@ -232,6 +232,13 @@ const FORBIDDEN_WRITES = [
     expect("Adopter cannot list another Adopter documents", (await call(adopter, "GET", filesFor(otherAppForJourney.applicationId))).status === 403);
   }
 
+  // 5d. Rule Configuration: the attachment size can only be set from 1 to 5 MB.
+  const current = (await json(sessions[A].cookie, "/api/system-settings")).item;
+  if (current) {
+    expect("Admin cannot save a max attachment size above 5 MB", (await call(sessions[A].cookie, "POST", "/api/system-settings", { ...current, maxAttachmentSizeMB: 10 })).status === 400);
+    expect("Admin cannot save a max attachment size of 0", (await call(sessions[A].cookie, "POST", "/api/system-settings", { ...current, maxAttachmentSizeMB: 0 })).status === 400);
+  }
+
   // 6. Session endpoint and independence of sessions.
   expect("session endpoint reports the signed-in user", (await json(staff, "/api/auth/session")).user?.role === S);
   const second = await signIn(ACCOUNTS[S]);
