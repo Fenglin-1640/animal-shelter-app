@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/auth/server-session";
 import { db } from "@/lib/db/client";
 import { toTimestamptz } from "@/lib/db/temporal";
 import { ANTIBODY_RESULTS, toAntibodyCheck } from "@/lib/medical/antibodies";
+import { antigenKey } from "@/lib/medical/vaccine-model";
+import { invalid, loadVaccineModel } from "@/lib/medical/vaccine-model-server";
 
 // Antibody (titre) checks. ?animalId= narrows the list to one animal.
 export async function GET(request: Request) {
@@ -36,13 +38,17 @@ export async function POST(request: Request) {
   if (body.expiryDate && new Date(body.expiryDate).getTime() < new Date(body.testDate).getTime()) {
     return NextResponse.json({ ok: false, reason: "expiry_before_test" }, { status: 400 });
   }
-  const animal = await db.orm.Animal.select("animalId").where({ animalId: body.animalId }).first();
+  const animal = await db.orm.Animal.select("animalId", "species").where({ animalId: body.animalId }).first();
   if (!animal) return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
+  // Only antigens of the vaccine types that apply to this species.
+  const model = await loadVaccineModel(animal.species);
+  const label = model.antigenLabels.get(antigenKey(antigen));
+  if (!label) return invalid(`${antigen} is not an antigen for ${animal.species}.`);
 
   const row = {
     id: `AB-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
     animalId: body.animalId,
-    antigen,
+    antigen: label,
     result: body.result!,
     testDate: body.testDate,
     expiryDate: body.expiryDate || null,

@@ -38,4 +38,9 @@ export interface DropdownOption {
   systemLocked: boolean;
   createdAt: string;
   updatedAt: string;
+  // Vaccine Type options only, both optional: the Species option ids the
+  // vaccine applies to and the antigens it covers (see
+  // lib/medical/vaccine-model.ts for how empty values resolve).
+  applicableSpecies?: string[];
+  coversAntigens?: string[];
 }

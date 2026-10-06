@@ -1866,8 +1866,22 @@
           },
           "DropdownOption": {
             "fields": {
+              "applicableSpecies": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "category": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "coversAntigens": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1939,8 +1953,14 @@
             "relations": {},
             "storage": {
               "fields": {
+                "applicableSpecies": {
+                  "column": "applicableSpecies"
+                },
                 "category": {
                   "column": "category"
+                },
+                "coversAntigens": {
+                  "column": "coversAntigens"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -5995,10 +6015,20 @@
             },
             "dropdownOption": {
               "columns": {
+                "applicableSpecies": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "category": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "coversAntigens": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -7792,7 +7822,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "68cc069f2799bd0117fbf0fc312d415906e937812c4ccca585306015599519c4"
+    "storageHash": "89f1e3b3ab2bb8fdf62166499ef0e5d8841519a90f43fb85048f0630f73c3ddd"
   },
   "capabilities": {
     "postgres": {

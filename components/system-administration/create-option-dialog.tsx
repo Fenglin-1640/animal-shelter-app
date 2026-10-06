@@ -4,8 +4,9 @@ import { useState, type FormEvent } from "react";
 import type { Species } from "@/lib/animals/types";
 import { createOption } from "@/lib/system-administration/store";
 import type { DropdownCategory } from "@/lib/system-administration/types";
-
-const SPECIES_OPTIONS: Species[] = ["Cat", "Dog", "Bird", "Reptile"];
+import { useSpeciesOptions } from "@/lib/system-administration/use-species";
+import { VaccineMetadataFields } from "@/components/system-administration/vaccine-metadata-fields";
+import { parseAntigenList } from "@/lib/medical/vaccine-model";
 
 export function CreateOptionDialog({
   category,
@@ -17,6 +18,10 @@ export function CreateOptionDialog({
   onCreated: () => void;
 }) {
   const isBreed = category === "Breed and Description";
+  const isVaccine = category === "Vaccine Type";
+  const speciesOptions = useSpeciesOptions();
+  const [applicableSpecies, setApplicableSpecies] = useState<string[]>([]);
+  const [covers, setCovers] = useState("");
   const [value, setValue] = useState("");
   const [description, setDescription] = useState("");
   const [speciesId, setSpeciesId] = useState<Species | "">("");
@@ -47,14 +52,17 @@ export function CreateOptionDialog({
       value,
       description,
       speciesId: isBreed && speciesId ? speciesId : undefined,
+      ...(isVaccine ? { applicableSpecies, coversAntigens: parseAntigenList(covers) } : {}),
     });
     setIsSubmitting(false);
 
     if (!result.ok) {
       setFormError(
-        isBreed
-          ? "This value already exists for the selected species."
-          : "This value already exists in this category.",
+        result.reason === "invalid"
+          ? result.message
+          : isBreed
+            ? "This value already exists for the selected species."
+            : "This value already exists in this category.",
       );
       return;
     }
@@ -121,12 +129,23 @@ export function CreateOptionDialog({
                 className={`h-10 rounded-[12px] border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${errors.speciesId ? "border-danger" : "border-border"}`}
               >
                 <option value="">Select</option>
-                {SPECIES_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                {speciesOptions.filter((s) => !s.isRetired).map((s) => (
+                  <option key={s.id} value={s.value}>{s.value}</option>
                 ))}
               </select>
               {errors.speciesId && <p className="text-sm text-danger">{errors.speciesId}</p>}
             </div>
+          )}
+
+          {isVaccine && (
+            <VaccineMetadataFields
+              idPrefix="create-option"
+              speciesOptions={speciesOptions}
+              applicableSpecies={applicableSpecies}
+              onSpeciesChange={setApplicableSpecies}
+              covers={covers}
+              onCoversChange={setCovers}
+            />
           )}
 
           <div className="mt-2 flex gap-2">

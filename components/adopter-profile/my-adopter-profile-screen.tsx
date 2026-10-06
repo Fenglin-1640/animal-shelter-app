@@ -14,9 +14,9 @@ import {
 } from "@/lib/adopter-profile/options";
 import type { Species } from "@/lib/animals/types";
 import type { Role } from "@/lib/roles/roles";
+import { useSpeciesOptions } from "@/lib/system-administration/use-species";
 
 const ALLOWED_ROLES: Role[] = ["Adopter"];
-const PREFERRED_SPECIES_OPTIONS: Species[] = ["Cat", "Dog", "Bird", "Reptile"];
 const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -62,6 +62,8 @@ function AlertIcon() {
 }
 
 function MyAdopterProfileContent({ email }: { email: string }) {
+  // Species from the Species dropdown options, including added ones.
+  const speciesOptions = useSpeciesOptions();
   const [profile, setProfile] = useState<AdopterProfile | undefined>(undefined);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -482,7 +484,7 @@ function MyAdopterProfileContent({ email }: { email: string }) {
               Preferred Species <span aria-hidden="true">*</span>
             </span>
             <div className="flex flex-wrap gap-4">
-              {PREFERRED_SPECIES_OPTIONS.map((species) => (
+              {speciesOptions.filter((s) => !s.isRetired).map((s) => s.value as Species).map((species) => (
                 <label key={species} className="flex items-center gap-2 text-sm text-text">
                   <input
                     type="checkbox"

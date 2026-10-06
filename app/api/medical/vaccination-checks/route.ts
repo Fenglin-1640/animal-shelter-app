@@ -5,10 +5,11 @@ import { requireRole } from "@/lib/auth/server-session";
 import { db } from "@/lib/db/client";
 import { toTimestamptz } from "@/lib/db/temporal";
 import { ANTIBODY_RESULTS, toAntibodyCheck, type AntibodyCheck, type AntibodyResult } from "@/lib/medical/antibodies";
+import { antigenKey, findType, isApplicable, type ResolvedVaccineType } from "@/lib/medical/vaccine-model";
+import { invalid, loadVaccineModel } from "@/lib/medical/vaccine-model-server";
 import { toVaccinationRecord } from "@/lib/medical/serialize";
 import {
-  applicableVaccineTypes,
-  computeCoverage,
+  computeGap,
   outcomeLabel,
   toVaccinationCheck,
   toVaccinationTask,
@@ -34,8 +35,8 @@ interface CheckInput {
   report?: string;
   antibodyRows?: { antigen?: string; result?: string; testDate?: string; expiryDate?: string }[];
   evidence?: EvidenceRow[];
-  // The uncovered vaccine types the Veterinarian kept as pending (the
-  // rest of the uncovered list is recorded as not applicable).
+  // The vaccine types the Veterinarian chose to make pending: proposed
+  // ones they kept plus any other applicable ones they added.
   pendingVaccineTypes?: string[];
 }
 
@@ -44,12 +45,12 @@ function bad(message: string) {
 }
 
 // Records a Vaccination Check as the signed-in Veterinarian: any new
-// antibody results, the outside evidence and the report, then turns the
-// vaccine types still not covered (and kept by the Veterinarian) into
-// Pending vaccination items. Coverage is recomputed here from the stored
-// records, so the result does not depend on what the form showed. One
-// transaction, with an audit entry for the check, each antibody result
-// and each pending item.
+// antibody results, the outside evidence and the report, and the vaccine
+// types chosen as Pending vaccination items. Antigens and vaccine types
+// must apply to the animal's species (422 otherwise). Coverage (the
+// antigen gap and the proposed types) is recomputed here from the stored
+// records. One transaction, with an audit entry for the check, each
+// antibody result and each pending item.
 export async function POST(request: Request) {
   const auth = await requireRole(VETERINARIAN);
   if (auth instanceof Response) return auth;
@@ -77,20 +78,34 @@ export async function POST(request: Request) {
     .filter((e) => e.vaccineType || e.dateGiven || e.source);
   if (evidence.some((e) => !e.vaccineType || !e.dateGiven || e.dateGiven > today)) return bad("Each vaccination evidence row needs a vaccine type and a date given (not in the future).");
 
-  const [animal, options, storedAntibodies, vaccinations, existingTasks] = await Promise.all([
-    db.orm.Animal.select("animalId", "species").where({ animalId }).first(),
-    db.orm.DropdownOption.where({ category: "Vaccine Type" }).all(),
+  const animal = await db.orm.Animal.select("animalId", "species").where({ animalId }).first();
+  if (!animal) return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
+  const [model, storedAntibodies, vaccinations, existingTasks] = await Promise.all([
+    loadVaccineModel(animal.species),
     db.orm.AntibodyCheck.where({ animalId }).all(),
     db.orm.VaccinationRecord.where({ animalId }).all(),
     db.orm.VaccinationTask.select("vaccineType", "status").where({ animalId }).all(),
   ]);
-  if (!animal) return NextResponse.json({ ok: false, reason: "not_found" }, { status: 404 });
+
+  // Only antigens and vaccine types that apply to this species.
+  for (const r of antibodyRows) {
+    if (!model.antigenLabels.has(antigenKey(r.antigen))) return invalid(`${r.antigen} is not an antigen for ${animal.species}.`);
+  }
+  for (const e of evidence) {
+    if (!isApplicable(e.vaccineType, model)) return invalid(`${e.vaccineType} is not a vaccine type for ${animal.species}.`);
+  }
+  const selected: ResolvedVaccineType[] = [];
+  for (const name of body.pendingVaccineTypes ?? []) {
+    const type = findType(name, model.types);
+    if (!type) return invalid(`${name} is not a vaccine type for ${animal.species}.`);
+    if (!selected.includes(type)) selected.push(type);
+  }
 
   const now = new Date().toISOString();
   const newAntibodies = antibodyRows.map((r) => ({
     id: randomId("AB"),
     animalId,
-    antigen: r.antigen,
+    antigen: model.antigenLabels.get(antigenKey(r.antigen)) ?? r.antigen,
     result: r.result,
     testDate: r.testDate,
     expiryDate: r.expiryDate || null,
@@ -99,26 +114,19 @@ export async function POST(request: Request) {
     recordedByName: auth.displayName,
     createdAt: toTimestamptz(now),
   }));
-  const required = applicableVaccineTypes(
-    options.map((o) => ({ value: o.value, speciesId: o.speciesId, isRetired: o.isRetired === 1 })),
-    animal.species,
-  );
   const allAntibodies: AntibodyCheck[] = [
     ...storedAntibodies.map(toAntibodyCheck),
-    ...newAntibodies.map((a) => ({ ...a, result: a.result as AntibodyResult, expiryDate: a.expiryDate ?? undefined, createdAt: now })),
+    ...newAntibodies.map((x) => ({ ...x, result: x.result as AntibodyResult, expiryDate: x.expiryDate ?? undefined, createdAt: now })),
   ];
-  const { covered, uncovered } = computeCoverage(required, {
-    checkDate,
-    antibodyChecks: allAntibodies,
-    vaccinations: vaccinations.map(toVaccinationRecord),
-    evidence,
-  });
+  const result = computeGap(model, { checkDate, antibodyChecks: allAntibodies, vaccinations: vaccinations.map(toVaccinationRecord), evidence });
+  // The Veterinarian's selection: the proposed types they kept plus any
+  // other applicable types they added. Proposed ones left out are
+  // recorded as not applicable.
   const alreadyPending = new Set(existingTasks.filter((t) => t.status === "Pending").map((t) => t.vaccineType));
-  const kept = new Set(body.pendingVaccineTypes ?? uncovered);
-  if ([...kept].some((t) => !uncovered.includes(t))) return bad("Only vaccine types that are not covered can be pending.");
-  const pending = uncovered.filter((t) => kept.has(t) && !alreadyPending.has(t));
-  const notApplicable = uncovered.filter((t) => !kept.has(t));
-  const outcome = outcomeLabel(required.length, uncovered.filter((t) => kept.has(t)).length);
+  const pending = selected.filter((t) => !alreadyPending.has(t.value)).map((t) => t.value);
+  const notApplicable = result.proposed.filter((t) => !selected.includes(t)).map((t) => t.value);
+  const covered = result.covered;
+  const outcome = outcomeLabel(result, selected.length);
 
   const actor = { email: auth.email, name: auth.displayName };
   const checkRow = {
@@ -149,7 +157,7 @@ export async function POST(request: Request) {
         entityType: "MedicalRecord",
         entityId: animalId,
         oldValue: "",
-        newValue: `checkDate=${checkDate}; outcome=${outcome}; covered=${covered.map((c) => c.vaccineType).join("/") || "none"}; pending=${pending.join("/") || "none"}${notApplicable.length ? `; not applicable=${notApplicable.join("/")}` : ""}`,
+        newValue: `checkDate=${checkDate}; outcome=${outcome}; covered=${covered.map((c) => c.antigen).join("/") || "none"}; pending=${pending.join("/") || "none"}${notApplicable.length ? `; not applicable=${notApplicable.join("/")}` : ""}`,
       }),
     );
     const tasks = [];

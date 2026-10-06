@@ -24,24 +24,24 @@ import {
   listAntibodyChecks,
   listVaccinationChecks,
   listVaccinationTasks,
-  waiveVaccinationTask,
   listHealthAssessments,
   listTreatmentEvents,
   listVaccinations,
   recordDesexingExemption,
   recordHealthAssessment,
-  recordVaccination,
+  getVaccineModel,
   scheduleDesexing,
   updateDesexingScheduledDate,
   type HealthAssessmentInput,
   type TreatmentEventInput,
-  type VaccinationInput,
 } from "@/lib/medical/store";
 import { DESEXING_STATUS_CATEGORY } from "@/lib/medical/status";
 import type { AntibodyCheck } from "@/lib/medical/antibodies";
 import { AntibodyChecksSection } from "@/components/medical/antibody-checks-section";
-import { AntibodyOverrideModal } from "@/components/medical/antibody-override-modal";
 import { VaccinationCheckForm } from "@/components/medical/vaccination-check-form";
+import { PendingVaccinationsPanel } from "@/components/medical/pending-vaccinations-panel";
+import { VaccinationAdministrationForm } from "@/components/medical/vaccination-administration-form";
+import type { VaccineModel } from "@/lib/medical/vaccine-model";
 import type { VaccinationCheck, VaccinationTask } from "@/lib/medical/vaccination-check";
 import type {
   DesexingSchedule,
@@ -362,98 +362,6 @@ function TreatmentEventForm({
   );
 }
 
-function VaccinationForm({
-  vaccineTypeOptions,
-  initialVaccineType,
-  onSubmit,
-  onCancel,
-}: {
-  vaccineTypeOptions: string[];
-  // Administering a pending vaccination: the type is fixed.
-  initialVaccineType?: string;
-  onSubmit: (input: VaccinationInput) => void;
-  onCancel: () => void;
-}) {
-  const [vaccineType, setVaccineType] = useState(initialVaccineType ?? "");
-  const [administrationDate, setAdministrationDate] = useState(todayDate());
-  const [doseOrChipId, setDoseOrChipId] = useState("");
-  const [nextBoosterDueDate, setNextBoosterDueDate] = useState("");
-
-  const canSubmit = vaccineType && administrationDate && doseOrChipId.trim();
-
-  return (
-    <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="vac-type" className="text-xs font-semibold text-text-muted">Vaccine Type</label>
-          <select
-            id="vac-type"
-            value={vaccineType}
-            disabled={Boolean(initialVaccineType)}
-            onChange={(e) => setVaccineType(e.target.value)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            <option value="">Select</option>
-            {vaccineTypeOptions.map((v) => (
-              <option key={v} value={v}>{v}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="vac-admin-date" className="text-xs font-semibold text-text-muted">Administration Date</label>
-          <input
-            id="vac-admin-date"
-            type="date"
-            value={administrationDate}
-            max={todayDate()}
-            onChange={(e) => setAdministrationDate(e.target.value)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="vac-dose-chip" className="text-xs font-semibold text-text-muted">Dose or Chip ID</label>
-          <input
-            id="vac-dose-chip"
-            type="text"
-            value={doseOrChipId}
-            onChange={(e) => setDoseOrChipId(e.target.value)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="vac-next-booster" className="text-xs font-semibold text-text-muted">Next Booster Due Date</label>
-          <input
-            id="vac-next-booster"
-            type="date"
-            value={nextBoosterDueDate}
-            onChange={(e) => setNextBoosterDueDate(e.target.value)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          disabled={!canSubmit}
-          onClick={() =>
-            onSubmit({ vaccineType, administrationDate, doseOrChipId, nextBoosterDueDate })
-          }
-          className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Save Vaccination
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function MedicalContent({
   animalId,
   email,
@@ -473,13 +381,8 @@ function MedicalContent({
   const [vaccinationChecks, setVaccinationChecks] = useState<VaccinationCheck[]>([]);
   const [vaccinationTasks, setVaccinationTasks] = useState<VaccinationTask[]>([]);
   const [showCheckForm, setShowCheckForm] = useState(false);
-  // The pending vaccination being given, and the one being waived.
-  const [administering, setAdministering] = useState<VaccinationTask | null>(null);
-  const [waiving, setWaiving] = useState<{ taskId: string; reason: string; error?: string } | null>(null);
-  // A vaccination waiting on the antibody question (the route refused it
-  // because a current antibody check already covers it).
-  const [pendingOverride, setPendingOverride] = useState<{ input: VaccinationInput; antigens: string[] } | null>(null);
-  const [savingVaccination, setSavingVaccination] = useState(false);
+  // Which vaccine types and antigens apply to this animal's species.
+  const [vaccineModel, setVaccineModel] = useState<VaccineModel | null>(null);
   const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
   const [clearance, setClearance] = useState<MedicalClearance | undefined>(undefined);
   // The Veterinarian half of Review Adoption Fitness, which issuing the
@@ -497,7 +400,6 @@ function MedicalContent({
   const [editedScheduledDate, setEditedScheduledDate] = useState(todayDate());
 
   const [medicationOptions, setMedicationOptions] = useState<string[]>([]);
-  const [vaccineTypeOptions, setVaccineTypeOptions] = useState<string[]>([]);
   const canAct = CAN_ACT_ROLES.includes(role);
 
   const [clearanceBlockers, setClearanceBlockers] = useState<string[]>([]);
@@ -530,44 +432,16 @@ function MedicalContent({
     setVaccinationTasks(tasksResult);
   };
 
-  const handleWaive = async () => {
-    if (!waiving) return;
-    if (!waiving.reason.trim()) {
-      setWaiving({ ...waiving, error: "A reason is required." });
-      return;
-    }
-    const result = await waiveVaccinationTask(waiving.taskId, waiving.reason.trim());
-    if (!result.ok) {
-      setWaiving({ ...waiving, error: "The vaccination could not be waived." });
-      return;
-    }
-    setWaiving(null);
-    refresh();
-  };
-
-  const saveVaccination = async (input: VaccinationInput) => {
-    setSavingVaccination(true);
-    try {
-      const result = await recordVaccination(animalId, input, email, displayName);
-      if (!result.ok && result.reason === "antibodies_present" && "antigens" in result) {
-        setPendingOverride({ input, antigens: result.antigens });
-        return;
-      }
-      setPendingOverride(null);
-      setShowVaccinationForm(false);
-      setAdministering(null);
-      refresh();
-    } finally {
-      setSavingVaccination(false);
-    }
-  };
-
   useEffect(() => {
     let cancelled = false;
     getAnimalById(animalId).then(async (result) => {
       if (cancelled) return;
       setAnimal(result ?? null);
-      if (result) await reloadMedical();
+      if (result) {
+        await reloadMedical();
+        const model = await getVaccineModel(result.species);
+        if (!cancelled) setVaccineModel(model);
+      }
     });
     return () => {
       cancelled = true;
@@ -579,9 +453,6 @@ function MedicalContent({
     let cancelled = false;
     getActiveValues("Medication").then((result) => {
       if (!cancelled) setMedicationOptions(result);
-    });
-    getActiveValues("Vaccine Type").then((result) => {
-      if (!cancelled) setVaccineTypeOptions(result);
     });
     return () => {
       cancelled = true;
@@ -598,8 +469,6 @@ function MedicalContent({
   if (!animal) return <NotFound />;
 
   const latestCheck = vaccinationChecks[0];
-  const pendingTasks = vaccinationTasks.filter((t) => t.status === "Pending");
-  const resolvedTasks = vaccinationTasks.filter((t) => t.status !== "Pending");
 
   const refresh = async () => {
     await reloadMedical();
@@ -766,7 +635,7 @@ function MedicalContent({
             </p>
             <p className="mt-1 whitespace-pre-line text-text">{latestCheck.report}</p>
             {latestCheck.coverage.length > 0 && (
-              <p className="mt-1 text-xs text-text-muted">Covered: {latestCheck.coverage.map((c) => `${c.vaccineType} (${c.reason})`).join("; ")}</p>
+              <p className="mt-1 text-xs text-text-muted">Covered: {latestCheck.coverage.map((c) => `${c.antigen} (${c.reason})`).join("; ")}</p>
             )}
             {latestCheck.notApplicable.length > 0 && (
               <p className="text-xs text-text-muted">Not applicable: {latestCheck.notApplicable.join(", ")}</p>
@@ -802,88 +671,15 @@ function MedicalContent({
           />
         )}
 
-        {pendingTasks.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-semibold text-text">Pending vaccinations</h3>
-            <ul className="mt-2 flex flex-col gap-2">
-              {pendingTasks.map((t) => (
-                <li key={t.id} className="rounded-[12px] border border-gold bg-gold/10 p-3 text-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="flex items-center gap-2 font-semibold text-text">
-                      {t.vaccineType}
-                      <StatusChip label="Pending" category="attention" />
-                    </span>
-                    {canAct && administering?.id !== t.id && waiving?.taskId !== t.id && (
-                      <span className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setWaiving(null);
-                            setShowVaccinationForm(false);
-                            setAdministering(t);
-                          }}
-                          className="h-8 rounded-[12px] bg-primary px-3 text-xs font-semibold text-page hover:opacity-90"
-                        >
-                          Record administration
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAdministering(null);
-                            setWaiving({ taskId: t.id, reason: "" });
-                          }}
-                          className="h-8 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active"
-                        >
-                          Waive
-                        </button>
-                      </span>
-                    )}
-                  </div>
-                  {canAct && administering?.id === t.id && (
-                    <VaccinationForm
-                      vaccineTypeOptions={vaccineTypeOptions.includes(t.vaccineType) ? vaccineTypeOptions : [...vaccineTypeOptions, t.vaccineType]}
-                      initialVaccineType={t.vaccineType}
-                      onCancel={() => setAdministering(null)}
-                      onSubmit={(input) => void saveVaccination({ ...input, vaccinationTaskId: t.id })}
-                    />
-                  )}
-                  {canAct && waiving?.taskId === t.id && (
-                    <div className="mt-2 flex flex-col gap-2">
-                      <label htmlFor={`waive-${t.id}`} className="text-xs font-semibold text-text-muted">
-                        Reason for waiving (required)
-                      </label>
-                      <textarea
-                        id={`waive-${t.id}`}
-                        rows={2}
-                        value={waiving.reason}
-                        onChange={(e) => setWaiving({ taskId: t.id, reason: e.target.value })}
-                        className="rounded-[12px] border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                      />
-                      {waiving.error && <p role="alert" className="text-xs text-danger">{waiving.error}</p>}
-                      <span className="flex gap-2">
-                        <button type="button" onClick={() => void handleWaive()} className="h-8 rounded-[12px] bg-primary px-3 text-xs font-semibold text-page hover:opacity-90">
-                          Confirm waive
-                        </button>
-                        <button type="button" onClick={() => setWaiving(null)} className="h-8 rounded-[12px] border border-border bg-surface px-3 text-xs font-semibold text-text hover:bg-surface-active">
-                          Cancel
-                        </button>
-                      </span>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {resolvedTasks.length > 0 && (
-          <ul className="mt-3 flex flex-col gap-1 text-xs text-text-muted">
-            {resolvedTasks.map((t) => (
-              <li key={t.id}>
-                {t.vaccineType}: {t.status === "Waived" ? `waived - ${t.waivedReason}` : "given"}
-                {t.resolvedByName ? ` (${t.resolvedByName})` : ""}
-              </li>
-            ))}
-          </ul>
+        {vaccineModel && (
+          <PendingVaccinationsPanel
+            animalId={animalId}
+            animalName={animal.name}
+            model={vaccineModel}
+            tasks={vaccinationTasks}
+            canAct={canAct}
+            onChanged={() => void refresh()}
+          />
         )}
 
         <h3 className="mt-4 text-sm font-semibold text-text">Vaccination records</h3>
@@ -919,36 +715,35 @@ function MedicalContent({
         {canAct && !showVaccinationForm && (
           <button
             type="button"
-            onClick={() => {
-              setAdministering(null);
-              setShowVaccinationForm(true);
-            }}
+            onClick={() => setShowVaccinationForm(true)}
             className="mt-4 h-9 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active"
           >
             Record Vaccination
           </button>
         )}
-        {canAct && showVaccinationForm && (
-          <VaccinationForm
-            vaccineTypeOptions={vaccineTypeOptions}
-            onCancel={() => setShowVaccinationForm(false)}
-            onSubmit={(input) => void saveVaccination(input)}
-          />
-        )}
-        {pendingOverride && (
-          <AntibodyOverrideModal
+        {canAct && showVaccinationForm && vaccineModel && (
+          <VaccinationAdministrationForm
+            animalId={animalId}
             animalName={animal.name}
-            antigens={pendingOverride.antigens}
-            saving={savingVaccination}
-            onCancel={() => setPendingOverride(null)}
-            onConfirm={(reason, note) =>
-              void saveVaccination({ ...pendingOverride.input, antibodyOverrideReason: reason, antibodyOverrideNote: note })
-            }
+            model={vaccineModel}
+            pendingTasks={vaccinationTasks}
+            preselected={[]}
+            onCancel={() => setShowVaccinationForm(false)}
+            onSaved={() => {
+              setShowVaccinationForm(false);
+              void refresh();
+            }}
           />
         )}
       </SectionCard>
 
-      <AntibodyChecksSection animalId={animalId} checks={antibodyChecks} canAct={canAct} onSaved={() => void reloadMedical()} />
+      <AntibodyChecksSection
+        animalId={animalId}
+        checks={antibodyChecks}
+        canAct={canAct}
+        antigens={vaccineModel ? [...vaccineModel.antigenLabels.values()].sort((a, b) => a.localeCompare(b)) : []}
+        onSaved={() => void reloadMedical()}
+      />
 
       <SectionCard title="Desexing" required>
         {desexing ? (

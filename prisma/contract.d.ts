@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'68cc069f2799bd0117fbf0fc312d415906e937812c4ccca585306015599519c4'>;
+  StorageHashBase<'89f1e3b3ab2bb8fdf62166499ef0e5d8841519a90f43fb85048f0630f73c3ddd'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -425,6 +425,8 @@ export type FieldOutputTypes = {
       readonly systemLocked: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: TimestamptzString<6>;
       readonly updatedAt: TimestamptzString<6>;
+      readonly applicableSpecies: CodecTypes['pg/text@1']['output'] | null;
+      readonly coversAntigens: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly FitnessReview: {
       readonly animalId: CodecTypes['pg/text@1']['output'];
@@ -927,6 +929,8 @@ export type FieldInputTypes = {
       readonly systemLocked: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly applicableSpecies: CodecTypes['pg/text@1']['input'] | null;
+      readonly coversAntigens: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly FitnessReview: {
       readonly animalId: CodecTypes['pg/text@1']['input'];
@@ -1420,7 +1424,9 @@ export type StorageColumnTypes = {
       readonly veterinarianName: CodecTypes['pg/text@1']['output'];
     };
     readonly dropdownOption: {
+      readonly applicableSpecies: CodecTypes['pg/text@1']['output'] | null;
       readonly category: CodecTypes['pg/text@1']['output'];
+      readonly coversAntigens: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: TimestamptzString<6>;
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -1922,7 +1928,9 @@ export type StorageColumnInputTypes = {
       readonly veterinarianName: CodecTypes['pg/text@1']['input'];
     };
     readonly dropdownOption: {
+      readonly applicableSpecies: CodecTypes['pg/text@1']['input'] | null;
       readonly category: CodecTypes['pg/text@1']['input'];
+      readonly coversAntigens: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -2651,6 +2659,8 @@ export namespace Models {
     systemLocked: CodecTypes['pg/int4@1']['output'];
     createdAt: TimestamptzString<6>;
     updatedAt: TimestamptzString<6>;
+    applicableSpecies: CodecTypes['pg/text@1']['output'] | null;
+    coversAntigens: CodecTypes['pg/text@1']['output'] | null;
     readonly [RelationKeys]?: never;
   };
   export type public_SystemSettings = {
@@ -3762,6 +3772,16 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 6 };
+                };
+                readonly applicableSpecies: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly coversAntigens: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -6503,6 +6523,14 @@ type ContractBase = Omit<
                   readonly typeParams: { readonly precision: 6 };
                 };
               };
+              readonly applicableSpecies: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly coversAntigens: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
             };
             readonly relations: Record<string, never>;
             readonly storage: {
@@ -6518,6 +6546,8 @@ type ContractBase = Omit<
                 readonly systemLocked: { readonly column: 'systemLocked' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly applicableSpecies: { readonly column: 'applicableSpecies' };
+                readonly coversAntigens: { readonly column: 'coversAntigens' };
               };
             };
           };

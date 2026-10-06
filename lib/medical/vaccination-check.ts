@@ -1,4 +1,5 @@
-import { antigensForVaccine, protectiveAntigens, type AntibodyCheck } from "@/lib/medical/antibodies";
+import { protectiveAntigens, type AntibodyCheck } from "@/lib/medical/antibodies";
+import { findType, proposeTypes, type ResolvedVaccineType, type VaccineModel } from "@/lib/medical/vaccine-model";
 import type { VaccinationRecord } from "@/lib/medical/types";
 
 // Vaccination Check: which of the animal's required vaccine types it is
@@ -17,8 +18,9 @@ export interface EvidenceRow {
   source: string;
 }
 
+// One covered antigen and why it is covered.
 export interface CoverageEntry {
-  vaccineType: string;
+  antigen: string;
   reason: string;
 }
 
@@ -92,13 +94,6 @@ export function toVaccinationTask(row: VaccinationTaskRow): VaccinationTask {
   };
 }
 
-// Vaccine Type options for the animal's species: those tagged with it plus
-// untagged ones (which apply to every species). With no species tags the
-// whole active list applies.
-export function applicableVaccineTypes(options: { value: string; speciesId?: string | null; isRetired?: boolean }[], species: string): string[] {
-  return options.filter((o) => !o.isRetired && (!o.speciesId || o.speciesId === species)).map((o) => o.value);
-}
-
 function day(iso: string): number {
   return new Date(iso.slice(0, 10)).getTime();
 }
@@ -110,39 +105,56 @@ export interface CoverageContext {
   evidence: EvidenceRow[];
 }
 
-// Why a vaccine type is already covered, or null if it isn't: every
-// antigen it protects against has a current Protective antibody result,
-// or it was given (here or elsewhere) and is still current on the check
-// date.
-export function coverageReason(vaccineType: string, ctx: CoverageContext): string | null {
+// Antigen key -> why it is covered on the check date: a current
+// Protective antibody result, a vaccination still current (until its
+// booster date, or for a year when it has none), or outside evidence
+// given within the last year. Vaccines are resolved with the vaccine
+// model; names it does not know cover nothing.
+export function coveredAntigens(model: VaccineModel, ctx: CoverageContext): Map<string, string> {
   const at = day(ctx.checkDate);
-  const antigens = antigensForVaccine(vaccineType);
-  const protective = protectiveAntigens(ctx.antibodyChecks, at);
-  if (antigens.length > 0 && antigens.every((a) => protective.has(a))) return `Protective antibodies (${antigens.join(", ")})`;
-  for (const v of ctx.vaccinations.filter((r) => r.vaccineType === vaccineType)) {
+  const covered = new Map<string, string>();
+  for (const key of protectiveAntigens(ctx.antibodyChecks, at)) covered.set(key, "Protective antibodies");
+  const add = (type: ResolvedVaccineType | undefined, reason: string) => {
+    for (const a of type?.antigens ?? []) if (!covered.has(a)) covered.set(a, reason);
+  };
+  for (const v of ctx.vaccinations) {
     const until = v.nextBoosterDueDate ? day(v.nextBoosterDueDate) : day(v.administrationDate) + EVIDENCE_VALID_DAYS * DAY_MS;
-    if (day(v.administrationDate) <= at && until >= at) return `Vaccinated ${v.administrationDate.slice(0, 10)}`;
+    if (day(v.administrationDate) <= at && until >= at) add(findType(v.vaccineType, model.all), `${v.vaccineType} given ${v.administrationDate.slice(0, 10)}`);
   }
-  for (const e of ctx.evidence.filter((r) => r.vaccineType === vaccineType && r.dateGiven)) {
+  for (const e of ctx.evidence.filter((r) => r.vaccineType && r.dateGiven)) {
     const given = day(e.dateGiven);
-    if (given <= at && given + EVIDENCE_VALID_DAYS * DAY_MS >= at) return `Given ${e.dateGiven.slice(0, 10)}${e.source ? ` (${e.source})` : ""}`;
+    if (given <= at && given + EVIDENCE_VALID_DAYS * DAY_MS >= at) add(findType(e.vaccineType, model.all), `${e.vaccineType} given ${e.dateGiven.slice(0, 10)}${e.source ? ` (${e.source})` : ""}`);
   }
-  return null;
+  return covered;
 }
 
-export function computeCoverage(required: string[], ctx: CoverageContext): { covered: CoverageEntry[]; uncovered: string[] } {
-  const covered: CoverageEntry[] = [];
-  const uncovered: string[] = [];
-  for (const vaccineType of required) {
-    const reason = coverageReason(vaccineType, ctx);
-    if (reason) covered.push({ vaccineType, reason });
-    else uncovered.push(vaccineType);
-  }
-  return { covered, uncovered };
+export interface GapResult {
+  required: string[];
+  covered: CoverageEntry[];
+  gap: string[];
+  proposed: ResolvedVaccineType[];
 }
 
-export function outcomeLabel(requiredCount: number, pendingCount: number): string {
-  if (pendingCount === 0) return "Fully covered";
-  if (pendingCount >= requiredCount) return "No vaccination cover – all items pending";
+// Required antigens = every antigen of the vaccine types applicable to
+// the species; the gap is what is not covered, and the proposed vaccine
+// types cover it (greedy, see proposeTypes).
+export function computeGap(model: VaccineModel, ctx: CoverageContext): GapResult {
+  const required = new Set(model.types.flatMap((t) => t.antigens));
+  const covered = coveredAntigens(model, ctx);
+  const label = (k: string) => model.antigenLabels.get(k) ?? k;
+  const gap = new Set([...required].filter((a) => !covered.has(a)));
+  return {
+    required: [...required],
+    covered: [...required].filter((a) => covered.has(a)).map((a) => ({ antigen: label(a), reason: covered.get(a)! })),
+    gap: [...gap].map(label),
+    proposed: proposeTypes(gap, model.types),
+  };
+}
+
+export function outcomeLabel(result: Pick<GapResult, "required" | "covered" | "gap">, pendingCount: number): string {
+  if (result.required.length === 0) return "No vaccine types configured for this species";
+  if (result.gap.length === 0) return "Fully covered";
+  if (pendingCount === 0) return "Not fully covered – no items pending";
+  if (result.covered.length === 0) return "No vaccination cover – all items pending";
   return `Partially covered – ${pendingCount} item${pendingCount === 1 ? "" : "s"} pending`;
 }

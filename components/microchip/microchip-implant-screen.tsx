@@ -13,13 +13,17 @@ import type { Animal } from "@/lib/animals/types";
 import { evaluatePreListingEligibility } from "@/lib/adoption-listings/pre-listing";
 import {
   getDesexingSchedule,
+  getVaccineModel,
   listVaccinationChecks,
+  listVaccinationTasks,
   recordDesexingExemption,
   recordVaccinationCheck,
   scheduleDesexing,
 } from "@/lib/medical/store";
 import type { DesexingSchedule } from "@/lib/medical/types";
-import type { VaccinationCheck } from "@/lib/medical/vaccination-check";
+import type { VaccinationCheck, VaccinationTask } from "@/lib/medical/vaccination-check";
+import type { VaccineModel } from "@/lib/medical/vaccine-model";
+import { PendingVaccinationsPanel } from "@/components/medical/pending-vaccinations-panel";
 import { completeMicrochipImplant, getLatestMicrochipImplant } from "@/lib/microchip/store";
 import type { MicrochipImplantTask } from "@/lib/microchip/implant";
 import type { Role } from "@/lib/roles/roles";
@@ -60,6 +64,8 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
   const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
   const [task, setTask] = useState<MicrochipImplantTask | undefined>(undefined);
   const [checks, setChecks] = useState<VaccinationCheck[]>([]);
+  const [tasks, setTasks] = useState<VaccinationTask[]>([]);
+  const [model, setModel] = useState<VaccineModel | null>(null);
   const [desexing, setDesexing] = useState<DesexingSchedule | undefined>(undefined);
 
   const [implantConfirmed, setImplantConfirmed] = useState(false);
@@ -70,13 +76,15 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
   const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    const [animalResult, taskResult, checkResult, desexingResult] = await Promise.all([
+    const [animalResult, taskResult, checkResult, desexingResult, vaccinationTasks] = await Promise.all([
       getAnimalById(animalId),
       getLatestMicrochipImplant(animalId),
       listVaccinationChecks(animalId),
       getDesexingSchedule(animalId),
+      listVaccinationTasks(animalId),
     ]);
-    return { animalResult, taskResult, checkResult, desexingResult };
+    const modelResult = animalResult ? await getVaccineModel(animalResult.species) : null;
+    return { animalResult, taskResult, checkResult, desexingResult, vaccinationTasks, modelResult };
   };
 
   const apply = (r: Awaited<ReturnType<typeof load>>) => {
@@ -84,6 +92,8 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
     setTask(r.taskResult);
     setChecks(r.checkResult);
     setDesexing(r.desexingResult);
+    setTasks(r.vaccinationTasks);
+    setModel(r.modelResult);
   };
 
   useEffect(() => {
@@ -169,14 +179,17 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
           No microchip implant has been requested for {animal.name}. A request is created when Scan Microchip finds no chip.
         </p>
       ) : !pending ? (
-        <section role="status" className="rounded-[12px] border border-border bg-surface p-6 text-sm text-text">
-          <p className="font-semibold">Microchip {task.assignedNumber} implanted.</p>
+        <section className="rounded-[12px] border border-border bg-surface p-6 text-sm text-text">
+          <p role="status" className="font-semibold">Microchip {task.assignedNumber} implanted.</p>
           {task.completedAt && (
             <p className="mt-1 text-text-muted">
               Recorded by {task.completedByName} on {formatDateTime(task.completedAt)}. The Microchip Check is complete.
             </p>
           )}
           {latestCheck && <p className="mt-1 text-text-muted">Vaccination check: {latestCheck.outcome}.</p>}
+          {model && (
+            <PendingVaccinationsPanel animalId={animalId} animalName={animal.name} model={model} tasks={tasks} canAct={canAct} onChanged={() => void load().then(apply)} />
+          )}
           <Link href={`/animals/${animalId}/medical`} className="mt-3 inline-block font-semibold text-secondary underline underline-offset-2 hover:no-underline">
             Open Medical Record
           </Link>
@@ -200,9 +213,14 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
 
           <Section title="2. Vaccination Check" done={!needsCheck}>
             {latestCheck ? (
-              <p className="mt-2 text-sm text-text-muted">
-                Already recorded on {formatDate(latestCheck.checkDate)}: {latestCheck.outcome}.
-              </p>
+              <>
+                <p className="mt-2 text-sm text-text-muted">
+                  Already recorded on {formatDate(latestCheck.checkDate)}: {latestCheck.outcome}.
+                </p>
+                {model && (
+                  <PendingVaccinationsPanel animalId={animalId} animalName={animal.name} model={model} tasks={tasks} canAct={canAct} onChanged={() => void load().then(apply)} />
+                )}
+              </>
             ) : canAct ? (
               <>
                 <p className="mt-1 text-sm text-text-muted">

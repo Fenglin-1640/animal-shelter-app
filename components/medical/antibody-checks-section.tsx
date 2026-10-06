@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { StatusChip } from "@/components/shared/status-chip";
-import { ANTIBODY_RESULTS, ANTIGENS, type AntibodyCheck, type AntibodyResult } from "@/lib/medical/antibodies";
+import { ANTIBODY_RESULTS, type AntibodyCheck, type AntibodyResult } from "@/lib/medical/antibodies";
+import { NO_VACCINES_MESSAGE } from "@/lib/medical/vaccine-model";
 import { recordAntibodyCheck } from "@/lib/medical/store";
 
 const RESULT_CATEGORY: Record<AntibodyResult, "success" | "caution" | "attention" | "neutral"> = {
@@ -27,7 +28,7 @@ function isExpired(check: AntibodyCheck): boolean {
   return Boolean(check.expiryDate) && new Date(check.expiryDate!).getTime() < Date.now();
 }
 
-function AntibodyCheckForm({ animalId, onSaved, onCancel }: { animalId: string; onSaved: () => void; onCancel: () => void }) {
+function AntibodyCheckForm({ animalId, antigens, onSaved, onCancel }: { animalId: string; antigens: string[]; onSaved: () => void; onCancel: () => void }) {
   const [antigen, setAntigen] = useState("");
   const [result, setResult] = useState("");
   const [testDate, setTestDate] = useState(todayDate());
@@ -43,10 +44,10 @@ function AntibodyCheckForm({ animalId, onSaved, onCancel }: { animalId: string; 
     <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
-          <label htmlFor="ab-antigen" className="text-xs font-semibold text-text-muted">Antigen / Disease</label>
+          <label htmlFor="ab-antigen" className="text-xs font-semibold text-text-muted">Antigen</label>
           <select id="ab-antigen" value={antigen} onChange={(e) => setAntigen(e.target.value)} className={inputClass}>
             <option value="">Select</option>
-            {ANTIGENS.map((a) => (
+            {antigens.map((a) => (
               <option key={a} value={a}>{a}</option>
             ))}
           </select>
@@ -105,11 +106,14 @@ export function AntibodyChecksSection({
   animalId,
   checks,
   canAct,
+  antigens,
   onSaved,
 }: {
   animalId: string;
   checks: AntibodyCheck[];
   canAct: boolean;
+  // The antigens of the vaccine types that apply to the animal species.
+  antigens: string[];
   onSaved: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
@@ -141,7 +145,8 @@ export function AntibodyChecksSection({
           ))}
         </ul>
       )}
-      {canAct && !showForm && (
+      {canAct && antigens.length === 0 && <p className="mt-3 text-sm text-text-muted">{NO_VACCINES_MESSAGE}</p>}
+      {canAct && antigens.length > 0 && !showForm && (
         <button
           type="button"
           onClick={() => setShowForm(true)}
@@ -150,9 +155,10 @@ export function AntibodyChecksSection({
           Record Antibody Check
         </button>
       )}
-      {canAct && showForm && (
+      {canAct && antigens.length > 0 && showForm && (
         <AntibodyCheckForm
           animalId={animalId}
+          antigens={antigens}
           onCancel={() => setShowForm(false)}
           onSaved={() => {
             setShowForm(false);

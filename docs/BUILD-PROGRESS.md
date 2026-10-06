@@ -85,6 +85,47 @@ New read endpoints: `GET /api/medical/vaccination-checks` and `GET /api/medical/
 
 **Not done:** the live test used a Cat in place of the requested rabbit, because the app's species are fixed to Cat, Dog, Bird and Reptile.
 
+**Vaccine model note (2026-10-07):** Vaccine types are now data-driven, so types an Administrator adds work without code changes.
+
+**Admin fields (Vaccine Type options only).** In Admin > Dropdown Options, each Vaccine Type option has two optional fields:
+- "Applicable species": checkboxes from the live Species list, stored as Species option ids, so species are compared by stable key and newly added species such as Rabbit appear.
+- "Covers (antigens)": comma-separated short names, normalised and de-duplicated.
+
+They are stored as JSON in the new nullable \`DropdownOption.applicableSpecies\` / \`coversAntigens\` columns, validated on the server, and shown resolved on the option's view, marked "(built-in default)" where applicable. The helper text reads "Vaccine types without an applicable species are not offered to Veterinarians." Dropdown option create, edit, retire and restore are now audited on the server in the same transaction (they weren't audited before). Changing an option never alters existing vaccination records.
+
+**Resolution** (\`lib/medical/vaccine-model.ts\`, shared by screens and routes):
+- Administrator values win.
+- Otherwise the built-in options use a default map keyed by their seeded id (\`Vaccine Type:C5\` etc.), because some display values have since been edited:
+  - C3 = Dog: parvovirus, distemper, hepatitis. C4 = C3 + parainfluenza. C5 = C4 + bordetella. C7 = C5 + leptospirosis strains.
+  - Kennel Cough (Bordetella) = Dog: bordetella.
+  - F3 = Cat: feline enteritis, herpesvirus, calicivirus. F4 = F3 + FeLV. F5 = F3 + chlamydia + FeLV.
+  - Reptile Preventive Health Check = Reptile, covering itself.
+- Otherwise an option covers one antigen named after its value and has no species, so it is never offered.
+- Older long antigen names (e.g. "Canine parvovirus") map to the short ones, so earlier antibody results still count.
+
+**Vaccination Check.**
+- Required antigens = all antigens of the active types for the species.
+- Covered antigens = current Protective antibody results, current recorded vaccinations, and evidence rows from the check (365 days).
+- Pending items (still one per vaccine type) are proposed by greedy cover of the gap. Among the types lying wholly inside the gap, the one covering most is chosen, ties alphabetical; if none fits, the one with the largest overlap. Proposals are ticked by default, and the Vet can untick them or add other applicable types; unticked ones are recorded as not applicable.
+- A species with no configured types shows "No vaccine types are configured for this species. An Administrator can add them under Dropdown Options." The check and report can still be saved, and the implant session completes.
+
+**Multi-vaccine administration.** \`POST /api/medical/vaccinations/batch\` (Veterinarian only; the single route now uses the same logic) saves several vaccines given together: one shared date, and a dose/batch ID and booster date per vaccine. It is all or nothing:
+- Each vaccine completes its pending item, and any other pending item whose antigens are now all covered is completed too (e.g. giving C5 completes Canine Parainfluenza and Kennel Cough).
+- Vaccines covering an antigen with a current Protective result need a reason each. Missing any means 409 with every flagged vaccine listed, and the form shows one modal with a reason per vaccine.
+- A pending item already completed meanwhile rolls the whole batch back.
+- Overlapping antigens between selected vaccines show a non-blocking notice.
+
+The pending list on the Medical Record page and in the implant session has checkboxes and "Record administration for selected".
+
+**Species enforcement.**
+- Every vaccine picker (record vaccination, pending items, evidence rows, "add another") lists only the species' types.
+- The antibody antigen field is a dropdown of the species' antigens.
+- The server rejects with 422 a vaccine, antibody antigen, evidence row or pending item that doesn't apply to the animal's species. Existing records are untouched and still display (Ruby unchanged).
+
+**Species lists.** The species lists on the intake form, the breed option dialogs and the adopter profile now come from the Species options. The permission test (449 checks) covers the batch route and the 422/400 rejection cases.
+
+**Setup and cleanup.** The four dog and cat single-component types were configured through the Admin UI. RHDV2 and Myxomatosis need "Rabbit" set as their applicable species once that species exists; a throwaway test species used for the rabbit checks was removed afterwards.
+
 **Seed-data note (2026-09-26):** the PRD 12.1 seed animals (`lib/animals/mock-animals.ts`, written by `prisma/seed.ts`) demonstrate specific lifecycle states, not a full history. Luna, Charlie, Daisy, Rocky and Oliver are seeded straight into their states with none of the records a real animal would have passed through to get there (assessment tasks, Review Adoption Fitness sign-off, Medical Clearance, etc.), so they don't satisfy every gate that state implies. Ruby (A-0006, "Vet cleared, waiting for Staff to publish") is the exception: `seedRubyPrerequisites()` seeds her complete Pre-Listing history (3 completed assessment tasks backed by a No Chip lookup, a Health Assessment and a Suitable Temperament Assessment; the Staff + Veterinarian Review Adoption Fitness confirmation; Medical Clearance backed by a vaccination and a species desexing exemption; an adoption fee; and a public photo with alt text), so Staff can actually publish her in the demo.
 
 ## Summary

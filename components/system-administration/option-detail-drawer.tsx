@@ -6,8 +6,9 @@ import type { Species } from "@/lib/animals/types";
 import { setRetired, updateOption } from "@/lib/system-administration/store";
 import { OPTION_STATUS_CATEGORY } from "@/lib/system-administration/status";
 import type { DropdownOption } from "@/lib/system-administration/types";
-
-const SPECIES_OPTIONS: Species[] = ["Cat", "Dog", "Bird", "Reptile"];
+import { useSpeciesOptions } from "@/lib/system-administration/use-species";
+import { VaccineMetadataFields } from "@/components/system-administration/vaccine-metadata-fields";
+import { parseAntigenList, resolveVaccineType } from "@/lib/medical/vaccine-model";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
@@ -31,6 +32,11 @@ export function OptionDetailDrawer({
   onSaved: () => void;
 }) {
   const isBreed = option.category === "Breed and Description";
+  const isVaccine = option.category === "Vaccine Type";
+  const speciesOptions = useSpeciesOptions();
+  const [applicableSpecies, setApplicableSpecies] = useState<string[]>(option.applicableSpecies ?? []);
+  const [covers, setCovers] = useState((option.coversAntigens ?? []).join(", "));
+  const resolved = isVaccine && speciesOptions.length > 0 ? resolveVaccineType(option, speciesOptions) : null;
   const [value, setValue] = useState(option.value);
   const [description, setDescription] = useState(option.description);
   const [speciesId, setSpeciesId] = useState<Species | "">(option.speciesId ?? "");
@@ -52,6 +58,7 @@ export function OptionDetailDrawer({
       value,
       description,
       speciesId: isBreed && speciesId ? speciesId : undefined,
+      ...(isVaccine ? { applicableSpecies, coversAntigens: parseAntigenList(covers) } : {}),
     });
     setIsSaving(false);
 
@@ -59,7 +66,9 @@ export function OptionDetailDrawer({
       setError(
         result.reason === "duplicate"
           ? "This value already exists in this category."
-          : "Option not found.",
+          : result.reason === "invalid"
+            ? result.message
+            : "Option not found.",
       );
       return;
     }
@@ -134,6 +143,26 @@ export function OptionDetailDrawer({
               <dt className="text-xs font-semibold uppercase tracking-wide text-text-muted">Last Updated</dt>
               <dd className="text-sm text-text">{formatDateTime(option.updatedAt)}</dd>
             </div>
+            {resolved && (
+              <>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-text-muted">Applicable species</dt>
+                  <dd className="text-sm text-text">
+                    {resolved.speciesIds.length > 0
+                      ? resolved.speciesIds.map((id) => speciesOptions.find((s) => s.id === id)?.value ?? id).join(", ")
+                      : "None - not offered to Veterinarians"}
+                    {resolved.source === "built-in" && resolved.speciesIds.length > 0 ? " (built-in default)" : ""}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-text-muted">Covers (antigens)</dt>
+                  <dd className="text-sm text-text">
+                    {resolved.antigenLabels.join(", ")}
+                    {resolved.source === "built-in" ? " (built-in default)" : !option.coversAntigens?.length ? " (named after the value)" : ""}
+                  </dd>
+                </div>
+              </>
+            )}
           </dl>
 
           <div className="flex flex-col gap-3 rounded-[12px] border border-border bg-surface p-3">
@@ -177,11 +206,23 @@ export function OptionDetailDrawer({
                   className="h-9 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
                   <option value="">Select</option>
-                  {SPECIES_OPTIONS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                  {speciesOptions.filter((s) => !s.isRetired || s.value === speciesId).map((s) => (
+                    <option key={s.id} value={s.value}>{s.value}</option>
                   ))}
                 </select>
               </div>
+            )}
+
+            {isVaccine && (
+              <VaccineMetadataFields
+                idPrefix="edit-option"
+                option={option}
+                speciesOptions={speciesOptions}
+                applicableSpecies={applicableSpecies}
+                onSpeciesChange={setApplicableSpecies}
+                covers={covers}
+                onCoversChange={setCovers}
+              />
             )}
 
             {error && (

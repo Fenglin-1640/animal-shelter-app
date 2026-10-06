@@ -2,6 +2,8 @@ import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
 import { completeTaskByType } from "@/lib/adoption-fitness/store";
 import { writeAuditLog } from "@/lib/audit/store";
 import type { AntibodyCheck } from "@/lib/medical/antibodies";
+import { buildVaccineModel, type VaccineModel } from "@/lib/medical/vaccine-model";
+import { listAllOptions } from "@/lib/system-administration/store";
 import type { EvidenceRow, VaccinationCheck, VaccinationTask } from "@/lib/medical/vaccination-check";
 import type {
   DesexingSchedule,
@@ -210,6 +212,46 @@ export interface VaccinationInput {
 }
 
 export type VaccinationResult = MutationResult | { ok: false; reason: "antibodies_present"; antigens: string[] };
+
+export interface FlaggedVaccine {
+  vaccineType: string;
+  antigens: string[];
+}
+
+export interface VaccinationBatchItem {
+  vaccineType: string;
+  doseOrChipId: string;
+  nextBoosterDueDate: string;
+  antibodyOverrideReason?: string;
+  antibodyOverrideNote?: string;
+  vaccinationTaskId?: string;
+}
+
+export type VaccinationBatchResult =
+  | { ok: true; records: VaccinationRecord[] }
+  | { ok: false; reason: "antibodies_present"; flagged: FlaggedVaccine[] }
+  | { ok: false; reason: string; message?: string };
+
+// Several vaccines given together: one shared date, all saved or none.
+// The route stamps the Veterinarian, checks the species and the antibody
+// reasons, completes pending items and audits everything.
+export async function recordVaccinations(animalId: string, administrationDate: string, items: VaccinationBatchItem[]): Promise<VaccinationBatchResult> {
+  const response = await send("/api/medical/vaccinations/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ animalId, administrationDate, items }),
+  });
+  const result = await response.json().catch(() => ({ ok: false, reason: "failed" }));
+  if (result.ok) return { ok: true, records: result.items as VaccinationRecord[] };
+  if (result.reason === "antibodies_present") return { ok: false, reason: "antibodies_present", flagged: result.flagged ?? [] };
+  return { ok: false, reason: result.reason ?? "failed", message: result.message };
+}
+
+// The vaccine model (species and antigens of each Vaccine Type) for an
+// animal's species, from the dropdown options.
+export async function getVaccineModel(species: string): Promise<VaccineModel> {
+  return buildVaccineModel(await listAllOptions(), species);
+}
 
 export async function recordVaccination(
   animalId: string,

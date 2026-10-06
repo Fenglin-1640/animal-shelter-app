@@ -554,6 +554,10 @@ model DropdownOption {
   systemLocked Int
   createdAt    TimestamptzString(6)
   updatedAt    TimestamptzString(6)
+  // Vaccine Type options only (optional): JSON lists of the Species
+  // option ids the vaccine applies to and the antigens it covers.
+  applicableSpecies String?
+  coversAntigens    String?
 }
 
 // Mirrors lib/system-administration/settings-types.ts (FR-SA-02). A

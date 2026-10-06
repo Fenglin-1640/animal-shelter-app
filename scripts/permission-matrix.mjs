@@ -86,6 +86,7 @@ const FORBIDDEN_WRITES = [
   ["POST", "/api/medical/antibody-checks", [A, S, C, D]],
   ["POST", "/api/medical/vaccination-checks", [A, S, C, D]],
   ["POST", "/api/medical/vaccination-tasks/X/waive", [A, S, C, D]],
+  ["POST", "/api/medical/vaccinations/batch", [A, S, C, D]],
   ["POST", "/api/microchip-implants/X/complete", [A, S, C, D]],
   ["GET", "/api/audit-log", [S, V, C, D]],
 ];
@@ -230,6 +231,29 @@ const FORBIDDEN_WRITES = [
   }
   if (otherAppForJourney) {
     expect("Adopter cannot list another Adopter documents", (await call(adopter, "GET", filesFor(otherAppForJourney.applicationId))).status === 403);
+  }
+
+  // 5e. Vaccines are limited to the animal's species (all refused, nothing written).
+  const vet = sessions[V].cookie;
+  const dog = (await json(vet, "/api/animals")).animals.find((a) => a.species === "Dog");
+  if (dog) {
+    const today = new Date().toISOString().slice(0, 10);
+    expect("a cat vaccine for a dog is refused (422)", (await call(vet, "POST", "/api/medical/vaccinations/batch", { animalId: dog.animalId, administrationDate: today, items: [{ vaccineType: "F3", doseOrChipId: "1 mL" }] })).status === 422);
+    expect("a cat vaccine for a dog is refused on the single route (422)", (await call(vet, "POST", "/api/medical/vaccinations", { animalId: dog.animalId, vaccineType: "F3", administrationDate: today, doseOrChipId: "1 mL", nextBoosterDueDate: "" })).status === 422);
+    expect("a cat antigen for a dog is refused (422)", (await call(vet, "POST", "/api/medical/antibody-checks", { animalId: dog.animalId, antigen: "FeLV", result: "Protective", testDate: today })).status === 422);
+    expect("cat vaccine evidence for a dog is refused (422)", (await call(vet, "POST", "/api/medical/vaccination-checks", { animalId: dog.animalId, checkDate: today, report: "x", evidence: [{ vaccineType: "F3", dateGiven: today, source: "" }], pendingVaccineTypes: [] })).status === 422);
+    expect("a cat pending item for a dog is refused (422)", (await call(vet, "POST", "/api/medical/vaccination-checks", { animalId: dog.animalId, checkDate: today, report: "x", evidence: [], pendingVaccineTypes: ["F3"] })).status === 422);
+  }
+  // Vaccine metadata on dropdown options is validated (refused, nothing written).
+  const options = await json(sessions[A].cookie, "/api/dropdown-options");
+  const vaccineOption = options.items.find((o) => o.category === "Vaccine Type");
+  const otherOption = options.items.find((o) => o.category === "Temperament");
+  if (vaccineOption) {
+    expect("an unknown applicable species is refused", (await call(sessions[A].cookie, "PATCH", `/api/dropdown-options/${encodeURIComponent(vaccineOption.id)}`, { applicableSpecies: ["Species:NoSuchSpecies"] })).status === 400);
+    expect("an over-long antigen is refused", (await call(sessions[A].cookie, "PATCH", `/api/dropdown-options/${encodeURIComponent(vaccineOption.id)}`, { coversAntigens: ["x".repeat(41)] })).status === 400);
+  }
+  if (otherOption) {
+    expect("antigens on a non-vaccine option are refused", (await call(sessions[A].cookie, "PATCH", `/api/dropdown-options/${encodeURIComponent(otherOption.id)}`, { coversAntigens: ["x"] })).status === 400);
   }
 
   // 5d. Rule Configuration: the attachment size can only be set from 1 to 5 MB.

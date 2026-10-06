@@ -16,13 +16,14 @@ async function fetchAll(): Promise<DropdownOption[]> {
   return result.items as DropdownOption[];
 }
 
-async function patchOption(id: string, patch: Partial<DropdownOption>): Promise<DropdownOption | undefined> {
+async function patchOption(id: string, patch: Partial<DropdownOption>): Promise<DropdownOption | { invalid: string } | undefined> {
   const response = await send(`/api/dropdown-options/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
   });
   const result = await response.json();
+  if (result.reason === "invalid") return { invalid: result.message ?? "Invalid value." };
   if (!result.ok) return undefined;
   return result.item as DropdownOption;
 }
@@ -52,13 +53,17 @@ export interface CreateOptionInput {
   value: string;
   description: string;
   speciesId?: Species;
+  // Vaccine Type options only.
+  applicableSpecies?: string[];
+  coversAntigens?: string[];
 }
 
 export type MutationResult =
   | { ok: true }
   | { ok: false; reason: "duplicate" }
   | { ok: false; reason: "locked" }
-  | { ok: false; reason: "not_found" };
+  | { ok: false; reason: "not_found" }
+  | { ok: false; reason: "invalid"; message: string };
 
 function isDuplicate(
   options: DropdownOption[],
@@ -98,12 +103,15 @@ export async function createOption(input: CreateOptionInput): Promise<MutationRe
     systemLocked: false,
     createdAt: now,
     updatedAt: now,
+    ...(input.category === "Vaccine Type" ? { applicableSpecies: input.applicableSpecies ?? [], coversAntigens: input.coversAntigens ?? [] } : {}),
   };
-  await send("/api/dropdown-options", {
+  const response = await send("/api/dropdown-options", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(option),
   });
+  const result = await response.json().catch(() => ({ ok: false }));
+  if (result.reason === "invalid") return { ok: false, reason: "invalid", message: result.message ?? "Invalid value." };
   return { ok: true };
 }
 
@@ -111,6 +119,9 @@ export interface UpdateOptionInput {
   value: string;
   description: string;
   speciesId?: Species;
+  // Vaccine Type options only.
+  applicableSpecies?: string[];
+  coversAntigens?: string[];
 }
 
 export async function updateOption(id: string, patch: UpdateOptionInput): Promise<MutationResult> {
@@ -126,8 +137,10 @@ export async function updateOption(id: string, patch: UpdateOptionInput): Promis
     value: patch.value.trim(),
     description: patch.description.trim(),
     speciesId: patch.speciesId,
+    ...(existing.category === "Vaccine Type" ? { applicableSpecies: patch.applicableSpecies ?? [], coversAntigens: patch.coversAntigens ?? [] } : {}),
     updatedAt: new Date().toISOString(),
   });
+  if (updated && "invalid" in updated) return { ok: false, reason: "invalid", message: updated.invalid };
   if (!updated) return { ok: false, reason: "not_found" };
   return { ok: true };
 }
@@ -139,6 +152,6 @@ export async function setRetired(id: string, retired: boolean): Promise<Mutation
   if (retired && existing.systemLocked) return { ok: false, reason: "locked" };
 
   const updated = await patchOption(id, { isRetired: retired, updatedAt: new Date().toISOString() });
-  if (!updated) return { ok: false, reason: "not_found" };
+  if (!updated || "invalid" in updated) return { ok: false, reason: "not_found" };
   return { ok: true };
 }

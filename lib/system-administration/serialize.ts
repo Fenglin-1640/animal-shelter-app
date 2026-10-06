@@ -3,8 +3,10 @@ import type { DropdownCategory, DropdownOption } from "@/lib/system-administrati
 import type { SystemSettings } from "@/lib/system-administration/settings-types";
 
 export interface DropdownOptionRow
-  extends Omit<DropdownOption, "category" | "speciesId" | "isRetired" | "systemLocked" | "createdAt" | "updatedAt"> {
+  extends Omit<DropdownOption, "category" | "speciesId" | "isRetired" | "systemLocked" | "createdAt" | "updatedAt" | "applicableSpecies" | "coversAntigens"> {
   category: string;
+  applicableSpecies: string | null;
+  coversAntigens: string | null;
   speciesId: string | null;
   isRetired: number;
   systemLocked: number;
@@ -21,6 +23,8 @@ export function toDropdownOption(row: DropdownOptionRow): DropdownOption {
     systemLocked: row.systemLocked === 1,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    applicableSpecies: row.applicableSpecies ? (JSON.parse(row.applicableSpecies) as string[]) : undefined,
+    coversAntigens: row.coversAntigens ? (JSON.parse(row.coversAntigens) as string[]) : undefined,
   };
 }
 

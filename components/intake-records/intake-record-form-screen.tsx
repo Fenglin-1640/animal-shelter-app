@@ -28,11 +28,11 @@ import {
 import type { AnimalPhoto, Sex, Species } from "@/lib/animals/types";
 import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail";
 import { fileToDataUrl } from "@/lib/photos/upload";
+import { useSpeciesOptions } from "@/lib/system-administration/use-species";
 import type { Role } from "@/lib/roles/roles";
 import { getActiveValues } from "@/lib/system-administration/store";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
-const SPECIES_OPTIONS: Species[] = ["Cat", "Dog", "Bird", "Reptile"];
 const SEX_OPTIONS: Sex[] = ["Male", "Female"];
 
 function formatDateTime(iso: string): string {
@@ -102,6 +102,8 @@ function NotFound() {
   );
 }
 
+// Species come from the Species dropdown options, so a species an
+// Administrator adds (e.g. Rabbit) can be chosen here.
 function IntakeRecordFormContent({
   email,
   displayName,
@@ -122,6 +124,7 @@ function IntakeRecordFormContent({
   const [finalisedAt, setFinalisedAt] = useState<string | undefined>(undefined);
   // Reasons the last Save and Finalise attempt did not go through.
   const [finaliseErrors, setFinaliseErrors] = useState<string[] | null>(null);
+  const speciesOptions = useSpeciesOptions();
   const errorsRef = useRef<HTMLDivElement>(null);
   const isReadOnly = Boolean(finalisedAt);
 
@@ -522,8 +525,8 @@ function IntakeRecordFormContent({
                 className="h-10 rounded-[12px] border border-border bg-page px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               >
                 <option value="">Select</option>
-                {SPECIES_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                {speciesOptions.filter((s) => !s.isRetired || s.value === species).map((s) => (
+                  <option key={s.id} value={s.value}>{s.value}</option>
                 ))}
               </select>
             </div>
