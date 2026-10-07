@@ -4,16 +4,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
+import { ReleasePanel } from "@/components/adoptions/release-panel";
 import { AppShell } from "@/components/layout/app-shell";
 import { ReadOnlyNoticeModal } from "@/components/shared/read-only-notice-modal";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAnimalById } from "@/lib/animals/animal-store";
 import type { Animal } from "@/lib/animals/types";
-import { releaseAnimal, type ReleaseInput } from "@/lib/follow-up-visits/store";
-import type { FollowUpType } from "@/lib/follow-up-visits/types";
 import {
-  isFitForRelease,
   listPreReleaseChecks,
   recordPreReleaseCheck,
   type PreReleaseCheckInput,
@@ -22,17 +20,10 @@ import type { PreReleaseCheck, PreReleaseFitnessResult } from "@/lib/medical/typ
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
-// PRD 9: Pre-Release Check is 只读 for Administrator, 只读并执行 release for
-// Shelter Staff Member (the "执行 release" part is FR-REL-02's Release
-// action, built here), and 创建、finalise for Veterinarian only.
+// Only the Veterinarian records the check; Shelter Staff and Administrator
+// read it and release the animal once it is Fit for Release.
 const CAN_ACT_ROLES: Role[] = ["Veterinarian"];
-const CAN_RELEASE_ROLES: Role[] = ["Shelter Staff Member"];
-
-function addDays(iso: string, days: number): string {
-  const date = new Date(iso);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
+const CAN_RELEASE_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
@@ -166,106 +157,6 @@ function PreReleaseCheckForm({
   );
 }
 
-function ReleaseForm({
-  defaultReceivingAdopter,
-  onSubmit,
-  onCancel,
-}: {
-  defaultReceivingAdopter: string;
-  onSubmit: (input: ReleaseInput) => void;
-  onCancel: () => void;
-}) {
-  const [careInstructionsProvided, setCareInstructionsProvided] = useState(false);
-  const [releaseDate, setReleaseDate] = useState(todayDate());
-  const [receivingAdopter, setReceivingAdopter] = useState(defaultReceivingAdopter);
-  const [targetDate, setTargetDate] = useState(addDays(todayDate(), 7));
-  const [followUpType, setFollowUpType] = useState<FollowUpType>("Phone Call");
-
-  const canSubmit = careInstructionsProvided && receivingAdopter.trim() && releaseDate && targetDate;
-
-  return (
-    <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4">
-      <label className="flex items-start gap-2 text-sm text-text">
-        <input
-          type="checkbox"
-          checked={careInstructionsProvided}
-          onChange={(e) => setCareInstructionsProvided(e.target.checked)}
-          className="mt-0.5"
-        />
-        Care instructions have been provided to the Adopter.
-      </label>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="release-date" className="text-xs font-semibold text-text-muted">Release Date</label>
-          <input
-            id="release-date"
-            type="date"
-            value={releaseDate}
-            max={todayDate()}
-            onChange={(e) => setReleaseDate(e.target.value)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="receiving-adopter" className="text-xs font-semibold text-text-muted">
-            Receiving Adopter
-          </label>
-          <input
-            id="receiving-adopter"
-            type="text"
-            value={receivingAdopter}
-            onChange={(e) => setReceivingAdopter(e.target.value)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="target-date" className="text-xs font-semibold text-text-muted">
-            Follow-Up Target Date
-          </label>
-          <input
-            id="target-date"
-            type="date"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="follow-up-type" className="text-xs font-semibold text-text-muted">Follow-Up Type</label>
-          <select
-            id="follow-up-type"
-            value={followUpType}
-            onChange={(e) => setFollowUpType(e.target.value as FollowUpType)}
-            className="h-9 rounded-[12px] border border-border bg-surface px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            <option value="Phone Call">Phone Call</option>
-            <option value="Home Visit">Home Visit</option>
-          </select>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          disabled={!canSubmit}
-          onClick={() =>
-            onSubmit({ careInstructionsProvided, releaseDate, receivingAdopter, targetDate, followUpType })
-          }
-          className="h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Release Animal to Adopter
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="h-9 rounded-[12px] border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-active"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function PreReleaseCheckContent({
   animalId,
   email,
@@ -280,22 +171,17 @@ function PreReleaseCheckContent({
   const [animal, setAnimal] = useState<Animal | null | undefined>(undefined);
   const [checks, setChecks] = useState<PreReleaseCheck[]>([]);
   const [latest, setLatest] = useState<PreReleaseCheck | undefined>(undefined);
-  const [fitForRelease, setFitForRelease] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [showReleaseForm, setShowReleaseForm] = useState(false);
-  const [releaseError, setReleaseError] = useState("");
+  // Remounts the Release panel after a new check is recorded.
+  const [version, setVersion] = useState(0);
 
   const canAct = CAN_ACT_ROLES.includes(role);
   const canRelease = CAN_RELEASE_ROLES.includes(role);
 
   const reloadChecks = async () => {
-    const [checksResult, fitResult] = await Promise.all([
-      listPreReleaseChecks(animalId),
-      isFitForRelease(animalId),
-    ]);
+    const checksResult = await listPreReleaseChecks(animalId);
     setChecks(checksResult);
     setLatest(checksResult[0]);
-    setFitForRelease(fitResult);
   };
 
   useEffect(() => {
@@ -323,11 +209,12 @@ function PreReleaseCheckContent({
   const refresh = async () => {
     setAnimal((await getAnimalById(animalId)) ?? null);
     await reloadChecks();
+    setVersion((v) => v + 1);
   };
 
   const canConduct = animal.currentStatus === "Awaiting Release";
   const underTreatment = animal.currentStatus === "Under Treatment";
-  const released = animal.currentStatus === "inFollowUpPeriod" || animal.currentStatus === "Rehomed";
+  const showRelease = canConduct || animal.currentStatus === "inFollowUpPeriod" || animal.currentStatus === "Rehomed";
 
   return (
     <div className="flex flex-col gap-6">
@@ -349,64 +236,20 @@ function PreReleaseCheckContent({
           storageKey={`pre-release-check:${role}`}
           title="Read-only access"
           message={
-            role === "Shelter Staff Member"
-              ? "Shelter Staff Member can read the Pre-Release Check history and execute the Release action once Fit for Release - only Veterinarian can create or finalise the check itself."
+            canRelease
+              ? "Shelter Staff can read the Pre-Release Check history and release the animal once it is Fit for Release - only the Veterinarian records the check itself."
               : "Only Veterinarian can create or finalise a Pre-Release Check."
           }
         />
       )}
 
-      {released && (
-        <div className="rounded-[12px] border border-primary bg-primary/10 p-4 text-sm text-text">
-          This animal has been released to its Adopter.{" "}
-          <Link
-            href={`/animals/${animalId}/follow-up-visit`}
-            className="font-semibold underline underline-offset-2"
-          >
-            View the Follow-Up Visit
-          </Link>
-          .
-        </div>
-      )}
-      {fitForRelease && !released && (
-        <div className="rounded-[12px] border border-primary bg-primary/10 p-4 text-sm text-text">
-          <p>Fit for Release - Shelter Staff can now proceed with releasing this animal to the Adopter.</p>
-          {canRelease && !showReleaseForm && (
-            <button
-              type="button"
-              onClick={() => setShowReleaseForm(true)}
-              className="mt-3 h-9 rounded-[12px] bg-primary px-4 text-sm font-semibold text-page hover:opacity-90"
-            >
-              Release Animal to Adopter
-            </button>
-          )}
-          {canRelease && showReleaseForm && (
-            <>
-              {releaseError && <p className="mt-2 text-sm text-danger">{releaseError}</p>}
-              <ReleaseForm
-                defaultReceivingAdopter={animal.linkedPerson?.name ?? ""}
-                onCancel={() => {
-                  setShowReleaseForm(false);
-                  setReleaseError("");
-                }}
-                onSubmit={async (input) => {
-                  const result = await releaseAnimal(animalId, input, email, displayName);
-                  if (!result.ok) {
-                    setReleaseError(
-                      result.reason === "no_finalised_application"
-                        ? "No Finalised Adoption Application was found for this animal."
-                        : "Unable to release this animal. Please try again.",
-                    );
-                    return;
-                  }
-                  setShowReleaseForm(false);
-                  setReleaseError("");
-                  refresh();
-                }}
-              />
-            </>
-          )}
-        </div>
+      {showRelease && (
+        <ReleasePanel
+          key={version}
+          animalId={animalId}
+          adopterName={animal.linkedPerson?.name ?? ""}
+          canRelease={canRelease}
+        />
       )}
       {underTreatment && (
         <div className="rounded-[12px] border border-gold bg-gold/10 p-4 text-sm text-text">

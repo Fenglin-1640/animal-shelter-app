@@ -1,9 +1,5 @@
-import { changeAnimalStatus, getAnimalById } from "@/lib/animals/animal-store";
-import type { Animal } from "@/lib/animals/types";
-import { listApplicationsForAnimal } from "@/lib/applications/store";
+import { changeAnimalStatus } from "@/lib/animals/animal-store";
 import { writeAuditLog } from "@/lib/audit/store";
-import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
-import { isFitForRelease } from "@/lib/medical/store";
 import type { FollowUpType, FollowUpVisit, WelfareOutcome } from "@/lib/follow-up-visits/types";
 import { getJson, send } from "@/lib/shared/http";
 
@@ -14,10 +10,6 @@ import { getJson, send } from "@/lib/shared/http";
 async function fetchAll(): Promise<FollowUpVisit[]> {
   const result = await getJson("/api/follow-up-visits");
   return result.items as FollowUpVisit[];
-}
-
-function generateId(): string {
-  return `FUV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
 export async function listFollowUpVisitsForAnimal(animalId: string): Promise<FollowUpVisit[]> {
@@ -51,36 +43,7 @@ export async function listMyFollowUpVisits(email: string): Promise<FollowUpVisit
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-// The 10 PRD 12.1 seed animals predate the real AdoptionApplication
-// workflow - Daisy (A-0008) is seeded directly into Awaiting Release
-// with only an Animal.linkedPerson name, no backing Finalised
-// Application. Matching that name against the seeded demo Adopter
-// account (PRD 12.1's Daisy scenario deliberately names the same
-// "Jordan Taylor" as U-DEMO-ADOPTER) lets this seed scenario be
-// exercised for real - the same precedent as
-// lib/adoption-fitness/store.ts's lazy AssessmentTask backfill for
-// animals that predate that workflow too.
-async function resolveAdopterForAnimal(
-  animal: Animal,
-): Promise<{ applicationId: string; adopterEmail: string; adopterName: string } | undefined> {
-  const finalised = (await listApplicationsForAnimal(animal.animalId)).find((a) => a.applicationStatus === "Finalised");
-  if (finalised) {
-    return { applicationId: finalised.applicationId, adopterEmail: finalised.adopterEmail, adopterName: finalised.adopterName };
-  }
-
-  if (animal.linkedPerson?.role === "Adopter") {
-    const demoAdopter = DEMO_ACCOUNTS.find(
-      (a) => a.role === "Adopter" && `${a.firstName} ${a.lastName}` === animal.linkedPerson?.name,
-    );
-    if (demoAdopter) {
-      return { applicationId: `SEED-${animal.animalId}`, adopterEmail: demoAdopter.email, adopterName: animal.linkedPerson.name };
-    }
-  }
-
-  return undefined;
-}
-
-export type MutationResult = { ok: true } | { ok: false; reason: string };
+export type MutationResult = { ok: true } | { ok: false; reason: string; message?: string };
 
 export interface ReleaseInput {
   careInstructionsProvided: boolean;
@@ -88,83 +51,35 @@ export interface ReleaseInput {
   receivingAdopter: string;
   targetDate: string;
   followUpType: FollowUpType;
+  handoverNotes?: string;
 }
 
-// PRD 6.14 FR-REL-02: "放行时 Staff 确认 care instructions 已提供，并记录 releaseDate
-// 和 receivingAdopter。随后 currentStatus = inFollowUpPeriod，创建 FollowUpVisit".
-// Gated to Shelter Staff Member only at the call site (PRD 9's Pre-Release
-// Check row: Administrator 只读, only Staff "执行 release") - this function
-// itself only enforces the state-machine and data preconditions, matching
-// changeAnimalStatus()'s "role checks live at the call site" convention.
+// Release to Adopter (Shelter Staff Member or Administrator). The server
+// checks the animal is Awaiting Release with a Fit for Release Pre-Release
+// Check, then in one transaction sets it to inFollowUpPeriod, schedules the
+// Follow-Up Visit for the finalised Adopter and writes the audit entries
+// as the signed-in user.
 export async function releaseAnimal(
   animalId: string,
   input: ReleaseInput,
-  actorEmail: string,
-  actorName: string,
-): Promise<MutationResult> {
-  const animal = await getAnimalById(animalId);
-  if (!animal) return { ok: false, reason: "not_found" };
-  if (animal.currentStatus !== "Awaiting Release") return { ok: false, reason: "not_awaiting_release" };
-  if (!(await isFitForRelease(animalId))) return { ok: false, reason: "not_fit_for_release" };
-  if (!input.careInstructionsProvided) return { ok: false, reason: "care_instructions_required" };
-  if (!input.receivingAdopter.trim()) return { ok: false, reason: "receiving_adopter_required" };
-
-  const adopter = await resolveAdopterForAnimal(animal);
-  if (!adopter) return { ok: false, reason: "no_finalised_application" };
-
-  const now = new Date().toISOString();
-  const visit: FollowUpVisit = {
-    followUpVisitId: generateId(),
-    animalId,
-    animalName: animal.name,
-    applicationId: adopter.applicationId,
-    adopterEmail: adopter.adopterEmail,
-    adopterName: adopter.adopterName,
-    careInstructionsProvided: input.careInstructionsProvided,
-    releaseDate: input.releaseDate,
-    receivingAdopter: input.receivingAdopter.trim(),
-    releasedByEmail: actorEmail,
-    releasedByName: actorName,
-    targetDate: input.targetDate,
-    followUpType: input.followUpType,
-    assignedStaffEmail: actorEmail,
-    assignedStaffName: actorName,
-    status: "Scheduled",
-    outcomeNotes: "",
-    createdAt: now,
-  };
-  await send("/api/follow-up-visits", {
+): Promise<{ ok: true; visit: FollowUpVisit } | { ok: false; reason: string; message?: string }> {
+  const response = await send("/api/follow-up-visits", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(visit),
+    body: JSON.stringify({ animalId, ...input }),
   });
-
-  const result = await changeAnimalStatus(
-    animalId,
-    { currentStatus: "inFollowUpPeriod", statusUpdatedAt: now },
-    { email: actorEmail, name: actorName },
-    "Release Animal to Adopter",
-  );
-  if (!result.ok) return { ok: false, reason: result.reason };
-
-  await writeAuditLog({
-    userId: actorEmail,
-    userName: actorName,
-    action: "Release Animal to Adopter",
-    entityType: "FollowUpVisit",
-    entityId: visit.followUpVisitId,
-    oldValue: "",
-    newValue: `releaseDate=${input.releaseDate}, receivingAdopter=${visit.receivingAdopter}, targetDate=${input.targetDate}, followUpType=${input.followUpType}`,
-    result: "Success",
-  });
-
-  return { ok: true };
+  const result = (await response.json().catch(() => ({ ok: false, reason: "error" }))) as {
+    ok: boolean;
+    reason?: string;
+    message?: string;
+    item?: FollowUpVisit;
+  };
+  if (!result.ok || !result.item) return { ok: false, reason: result.reason ?? "error", message: result.message };
+  return { ok: true, visit: result.item };
 }
 
-// PRD: "Staff 完成回访并记录 welfare outcome 后，currentStatus = Rehomed."
-// Available to both Administrator and Shelter Staff Member per PRD 9's
-// FollowUpVisit row ("安排、完成" for both), unlike the Release action
-// itself which the Pre-Release Check row restricts to Staff only.
+// Completing the Follow-Up Visit with a welfare outcome moves the animal to
+// Rehomed. Shelter Staff Member and Administrator.
 export async function completeFollowUpVisit(
   followUpVisitId: string,
   outcome: WelfareOutcome,

@@ -37,6 +37,8 @@ export interface FollowUpVisit {
   status: FollowUpVisitStatus;
   outcome?: WelfareOutcome;
   outcomeNotes: string;
+  // Optional notes recorded by Shelter Staff at the handover.
+  handoverNotes?: string;
   completedByEmail?: string;
   completedByName?: string;
   completedAt?: string;

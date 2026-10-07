@@ -365,6 +365,8 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
   const app = application ?? pickActiveApplication(records.applications);
   const appStatus = app?.applicationStatus;
   const live = app && appStatus !== "Rejected";
+  // The journey of one given application that was not successful ends there.
+  const rejectedApplication = application?.applicationStatus === "Rejected";
   const forApp = <T extends { applicationId: string }>(items: T[]) => (app ? items.filter((i) => i.applicationId === app.applicationId) : []);
   const mg = newestFirst(forApp(records.meetAndGreets))[0];
   const agreement = newestFirst(forApp(records.agreements))[0];
@@ -375,6 +377,7 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
 
   steps.push(
     (() => {
+      if (rejectedApplication) return step("application", "blocked", [], "Application not successful");
       if (finalised) return step("application", "done", [ADOPTER], "Application finalised");
       if (!published) return step("application", "not_started", [ADOPTER], "Not listed yet");
       if (!live) return step("application", "waiting", [ADOPTER], app ? "Previous application rejected - open for applications" : "Open for applications");
@@ -502,8 +505,13 @@ export function computeJourney(records: AnimalRecords, application?: AdoptionApp
 
   steps.push(status === "Rehomed" ? step("rehomed", "done", [STAFF], "Rehomed") : step("rehomed", "not_started", [STAFF], "Not rehomed yet"));
 
-  // A closed journey (returned to owner, permanently unsuitable) has
-  // nothing left for anyone to do downstream.
+  // A closed journey (returned to owner, permanently unsuitable, or this
+  // application not successful) has nothing left for anyone to do downstream.
+  if (rejectedApplication) {
+    // Nobody works on this application any more.
+    const at = steps.findIndex((s) => s.key === "application");
+    return steps.map((s, i) => (i <= at || s.state === "done" ? s : { ...s, state: "not_started", responsibleRoles: [], needsActionFromRoles: [], nextAction: undefined }));
+  }
   if (returnedToOwner || closedUnsuitable) {
     return steps.map((s) => (s.state === "done" || s.state === "blocked" ? s : { ...s, needsActionFromRoles: [], nextAction: undefined }));
   }

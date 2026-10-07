@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ProcessRail } from "@/components/process/process-rail";
 import { toAdopterRailSteps, toRailSteps, type TrackerStep } from "@/components/process/process-tracker";
+import { getMeetAndGreet } from "@/lib/meet-and-greets/store";
 import { useWorklist } from "@/lib/process/worklist-client";
 import { getJson } from "@/lib/shared/http";
 
@@ -42,4 +43,19 @@ export function StaffApplicationRail({ applicationId }: { applicationId: string 
   }, [applicationId, worklist]);
   if (steps && steps.length === 0) return null;
   return <ProcessRail title="Application" steps={steps ? toRailSteps(steps) : null} idPrefix={`staff-app-${applicationId}`} />;
+}
+
+// The Adopter's journey beside a Meet and Greet, found from its application.
+export function MeetAndGreetJourneyRail({ meetAndGreetId }: { meetAndGreetId: string }) {
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getMeetAndGreet(meetAndGreetId).then((mg) => {
+      if (!cancelled) setApplicationId(mg?.applicationId ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [meetAndGreetId]);
+  return applicationId ? <ApplicationJourneyRail applicationId={applicationId} /> : null;
 }

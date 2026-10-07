@@ -28,7 +28,7 @@ function withRoles(step: TrackerStep): Role[] {
 
 function tooltipText(step: TrackerStep): string[] {
   const lines: string[] = [];
-  if (step.state === "waiting" || step.state === "in_progress" || step.state === "blocked") {
+  if ((step.state === "waiting" || step.state === "in_progress" || step.state === "blocked") && withRoles(step).length > 0) {
     const prefix = step.state === "blocked" ? "Blocked - with" : step.state === "in_progress" ? "In progress - with" : "Waiting on";
     lines.push(`${prefix}: ${withRoles(step).map(roleName).join(" and ")}`);
   } else {
@@ -57,6 +57,8 @@ function adopterWording(step: TrackerStep): string {
     return roles.length > 0 ? `With ${roles.map(roleName).join(" and ")} - not started` : "Not started";
   }
   const roles = withRoles(step);
+  // Nobody to wait on (e.g. an application that was not successful).
+  if (roles.length === 0) return step.detail;
   if (roles.includes("Adopter")) return step.nextAction ? `With you - ${step.nextAction}` : "With you - action needed";
   const where = step.state === "blocked" ? "on hold" : step.state === "in_progress" ? "in progress" : "waiting";
   return `With ${roles.map(roleName).join(" and ")} - ${where}`;

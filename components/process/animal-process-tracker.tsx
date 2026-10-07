@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ProcessRail } from "@/components/process/process-rail";
 import { toRailSteps, type TrackerStep } from "@/components/process/process-tracker";
+import { getIntakeRecord } from "@/lib/intake-records/store";
 import { useWorklist } from "@/lib/process/worklist-client";
 import { getJson } from "@/lib/shared/http";
 
@@ -35,4 +36,19 @@ export function AnimalProcessTracker({ animalId }: { animalId: string }) {
 
   if (steps && steps.length === 0) return null;
   return <ProcessRail steps={steps ? toRailSteps(steps) : null} idPrefix={`animal-${animalId}`} />;
+}
+
+// The intake record's animal journey (the record page lives outside /animals).
+export function IntakeAnimalRail({ intakeId }: { intakeId: string }) {
+  const [animalId, setAnimalId] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getIntakeRecord(intakeId).then((record) => {
+      if (!cancelled) setAnimalId(record?.animalId ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [intakeId]);
+  return animalId ? <AnimalProcessTracker animalId={animalId} /> : null;
 }

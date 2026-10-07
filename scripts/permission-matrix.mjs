@@ -66,7 +66,7 @@ const FORBIDDEN_WRITES = [
   ["POST", "/api/intake-records/finalise", [V, C, D]],
   ["POST", "/api/microchip-lookups", [V, C, D]],
   ["POST", "/api/statutory-holds", [V, C, D]],
-  ["POST", "/api/follow-up-visits", [A, V, C, D]],
+  ["POST", "/api/follow-up-visits", [V, C, D]],
   ["PATCH", "/api/payments/X", [V, C, D]],
   ["POST", "/api/agreements", [V, C, D]],
   ["POST", "/api/meet-and-greets", [V, C, D]],
@@ -263,6 +263,13 @@ const FORBIDDEN_WRITES = [
     expect("Admin cannot save a max attachment size above 5 MB", (await call(sessions[A].cookie, "POST", "/api/system-settings", { ...current, maxAttachmentSizeMB: 10 })).status === 400);
     expect("Admin cannot save a max attachment size of 0", (await call(sessions[A].cookie, "POST", "/api/system-settings", { ...current, maxAttachmentSizeMB: 0 })).status === 400);
   }
+
+  // 5e. Release to Adopter: Staff and Administrator only, and only for an
+  // animal that is Awaiting Release with a Fit for Release check.
+  const releaseBody = { animalId: "A-0001", careInstructionsProvided: true, releaseDate: new Date().toISOString().slice(0, 10), receivingAdopter: "Probe", targetDate: new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10), followUpType: "Phone Call" };
+  expect("release without the handover confirmation is refused (400)", (await call(staff, "POST", "/api/follow-up-visits", { ...releaseBody, careInstructionsProvided: false })).status === 400);
+  expect("release with a follow-up before the release date is refused (400)", (await call(sessions[A].cookie, "POST", "/api/follow-up-visits", { ...releaseBody, targetDate: "2000-01-01" })).status === 400);
+  expect("release of an animal not awaiting release is refused (409)", (await call(sessions[A].cookie, "POST", "/api/follow-up-visits", releaseBody)).status === 409);
 
   // 6. Session endpoint and independence of sessions.
   expect("session endpoint reports the signed-in user", (await json(staff, "/api/auth/session")).user?.role === S);

@@ -396,6 +396,7 @@ model FollowUpVisit {
   status                    String
   outcome                   String?
   outcomeNotes              String
+  handoverNotes             String?
   completedByEmail          String?
   completedByName           String?
   completedAt               TimestamptzString(6)?

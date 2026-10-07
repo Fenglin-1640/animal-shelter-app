@@ -151,8 +151,10 @@ function hrefFor(step: StepKey, role: Role, records: AnimalRecords, applicationI
     case "agreement":
     case "payment_confirmation":
       return `/adoptions/${applicationId}`;
-    case "pre_release_check":
     case "release":
+      // Released from the finalised adoption's page.
+      return applicationId ? `/adoptions/${applicationId}#release` : `/animals/${a}/pre-release-check`;
+    case "pre_release_check":
       return `/animals/${a}/pre-release-check`;
     case "follow_up":
       return `/animals/${a}/follow-up-visit`;
@@ -174,10 +176,13 @@ function navLabelFor(step: StepKey, role: Role): string | null {
     return "Animals";
   }
   if (step === "suitability_checks" || step === "application_review" || step === "meet_and_greet") return "Adoption Applications";
-  if (step === "agreement" || step === "payment_confirmation") return "Adoptions";
+  if (step === "agreement" || step === "payment_confirmation" || step === "release") return "Adoptions";
   if (step === "follow_up") return "Follow Up Visits";
   return "Animals";
 }
+
+// Steps taken on the Adoptions page (a red dot on the adoption's row).
+export const ADOPTIONS_STAGE: StepKey[] = ["agreement", "payment_confirmation", "release"];
 
 const APPLICATION_STAGE: StepKey[] = [
   "application",
@@ -252,11 +257,14 @@ export async function buildWorklist(role: Role, email: string): Promise<Worklist
       }
     }
     if (next) {
-      const appId = APPLICATION_STAGE.includes(next.key) ? active?.applicationId : undefined;
+      const appId = APPLICATION_STAGE.includes(next.key) || next.key === "release" ? active?.applicationId : undefined;
       items.push({ key: `animal-${animal.animalId}`, animalId: animal.animalId, applicationId: appId, title: animal.name, nextAction: next.nextAction ?? next.label, stepKey: next.key, href: hrefFor(next.key, acting, records, active?.applicationId) });
-      // Staff badges are counted from the lists below; Adoptions has no
-      // per-row flags, so it keeps counting animals at that stage.
-      if (!workbench && (!staffSide || navLabelFor(next.key, acting) === "Adoptions")) bump(navLabelFor(next.key, acting));
+      // Staff badges are counted from the lists below; Adoptions counts the
+      // adoptions whose next step is on that page (its rows' red dots). A
+      // seeded animal awaiting release without an application has no
+      // Adoptions row; it is released from its Pre-Release Check page.
+      const label = next.key === "release" && !appId ? "Animals" : navLabelFor(next.key, acting);
+      if (!workbench && (!staffSide || label === "Adoptions")) bump(label);
     }
     // Application list flags (Staff/Admin/Vet views of applications).
     for (const app of records.applications) {

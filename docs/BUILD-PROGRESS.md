@@ -91,11 +91,11 @@ New read endpoints: `GET /api/medical/vaccination-checks` and `GET /api/medical/
 - "Applicable species": checkboxes from the live Species list, stored as Species option ids, so species are compared by stable key and newly added species such as Rabbit appear.
 - "Covers (antigens)": comma-separated short names, normalised and de-duplicated.
 
-They are stored as JSON in the new nullable \`DropdownOption.applicableSpecies\` / \`coversAntigens\` columns, validated on the server, and shown resolved on the option's view, marked "(built-in default)" where applicable. The helper text reads "Vaccine types without an applicable species are not offered to Veterinarians." Dropdown option create, edit, retire and restore are now audited on the server in the same transaction (they weren't audited before). Changing an option never alters existing vaccination records.
+They are stored as JSON in the new nullable `DropdownOption.applicableSpecies` / `coversAntigens` columns, validated on the server, and shown resolved on the option's view, marked "(built-in default)" where applicable. The helper text reads "Vaccine types without an applicable species are not offered to Veterinarians." Dropdown option create, edit, retire and restore are now audited on the server in the same transaction (they weren't audited before). Changing an option never alters existing vaccination records.
 
-**Resolution** (\`lib/medical/vaccine-model.ts\`, shared by screens and routes):
+**Resolution** (`lib/medical/vaccine-model.ts`, shared by screens and routes):
 - Administrator values win.
-- Otherwise the built-in options use a default map keyed by their seeded id (\`Vaccine Type:C5\` etc.), because some display values have since been edited:
+- Otherwise the built-in options use a default map keyed by their seeded id (`Vaccine Type:C5` etc.), because some display values have since been edited:
   - C3 = Dog: parvovirus, distemper, hepatitis. C4 = C3 + parainfluenza. C5 = C4 + bordetella. C7 = C5 + leptospirosis strains.
   - Kennel Cough (Bordetella) = Dog: bordetella.
   - F3 = Cat: feline enteritis, herpesvirus, calicivirus. F4 = F3 + FeLV. F5 = F3 + chlamydia + FeLV.
@@ -109,7 +109,7 @@ They are stored as JSON in the new nullable \`DropdownOption.applicableSpecies\`
 - Pending items (still one per vaccine type) are proposed by greedy cover of the gap. Among the types lying wholly inside the gap, the one covering most is chosen, ties alphabetical; if none fits, the one with the largest overlap. Proposals are ticked by default, and the Vet can untick them or add other applicable types; unticked ones are recorded as not applicable.
 - A species with no configured types shows "No vaccine types are configured for this species. An Administrator can add them under Dropdown Options." The check and report can still be saved, and the implant session completes.
 
-**Multi-vaccine administration.** \`POST /api/medical/vaccinations/batch\` (Veterinarian only; the single route now uses the same logic) saves several vaccines given together: one shared date, and a dose/batch ID and booster date per vaccine. It is all or nothing:
+**Multi-vaccine administration.** `POST /api/medical/vaccinations/batch` (Veterinarian only; the single route now uses the same logic) saves several vaccines given together: one shared date, and a dose/batch ID and booster date per vaccine. It is all or nothing:
 - Each vaccine completes its pending item, and any other pending item whose antigens are now all covered is completed too (e.g. giving C5 completes Canine Parainfluenza and Kennel Cough).
 - Vaccines covering an antigen with a current Protective result need a reason each. Missing any means 409 with every flagged vaccine listed, and the form shows one modal with a reason per vaccine.
 - A pending item already completed meanwhile rolls the whole batch back.
@@ -130,16 +130,16 @@ The pending list on the Medical Record page and in the implant session has check
 
 **Sidebar badge note (2026-10-07):** For Shelter Staff and Administrators, each badge now counts exactly the rows its page flags: "Animals" counts animals with a red dot on the Animals list, "Adoption Applications" counts non-draft applications with a red dot, and "Follow Up Visits" counts the scheduled visits that page lists. "Adoptions" still counts animals waiting on an agreement or payment confirmation. Previously the badges counted each animal's next step only, so Animals showed 15 against 17 dots. Follow Up Visits showed 1 for a seeded animal (Oliver) whose status is in the follow-up period but who has no visit record. The process engine now only asks Staff to complete a follow-up when a scheduled visit exists; otherwise the step reads "In follow-up period - no visit scheduled".
 
-**Application review note (2026-10-07):** The Staff application page lost its decision actions in an earlier fix. Nothing in the UI ever moved an application from Submitted to Under Review: \`markUnderReview()\` existed but only test scripts called it. The original screen let Staff decide on any undecided application. Commit 6bdfbbf (fixing a re-Approve bug) narrowed the decision panel to "Under Review" only, so every application submitted through the UI dead-ended. Commits 0ac33bf and 8dbefaf didn't touch this logic.
+**Application review note (2026-10-07):** The Staff application page lost its decision actions in an earlier fix. Nothing in the UI ever moved an application from Submitted to Under Review: `markUnderReview()` existed but only test scripts called it. The original screen let Staff decide on any undecided application. Commit 6bdfbbf (fixing a re-Approve bug) narrowed the decision panel to "Under Review" only, so every application submitted through the UI dead-ended. Commits 0ac33bf and 8dbefaf didn't touch this logic.
 
 **Review panel.** The page now has an "Application Review" panel for Shelter Staff and Administrators, driven by the existing statuses:
 - **Submitted:** Start Review. Suitability checks can still be recorded.
 - **Under Review:** Approve (only when all three checks are Pass; otherwise the missing items are listed), Reject (reason required), Place On Hold (optional note), and Request more documents / information (message required).
 - **On Hold:** Resume Review (once the animal is available again), Reject, and Request more documents / information.
 
-Veterinarians see no actions. Start/Hold/Resume/Request go through \`POST /api/applications/:id/review\` (Staff and Administrator), which checks the current status and writes the audit entry in the same transaction. Approve and Reject keep their flow; Approve now also requires every check to be Pass, and Reject also works from On Hold. The existing order is unchanged: approval, then the Meet and Greet (scheduled on the same page), then the agreement.
+Veterinarians see no actions. Start/Hold/Resume/Request go through `POST /api/applications/:id/review` (Staff and Administrator), which checks the current status and writes the audit entry in the same transaction. Approve and Reject keep their flow; Approve now also requires every check to be Pass, and Reject also works from On Hold. The existing order is unchanged: approval, then the Meet and Greet (scheduled on the same page), then the agreement.
 
-**Document requests.** A request is stored on the application in four new nullable columns: \`infoRequestMessage\`, \`infoRequestedAt\`, \`infoRequestedByName\` and \`infoRespondedAt\`. The Adopter sees the message on their application and can upload (but not remove) documents until a decision is made. Their upload sets \`infoRespondedAt\` and is audited as "Upload Requested Application Document".
+**Document requests.** A request is stored on the application in four new nullable columns: `infoRequestMessage`, `infoRequestedAt`, `infoRequestedByName` and `infoRespondedAt`. The Adopter sees the message on their application and can upload (but not remove) documents until a decision is made. Their upload sets `infoRespondedAt` and is audited as "Upload Requested Application Document".
 
 **Process tracker.** A new Staff step, "Application Review", sits between Suitability Checks and Meet and Greet. It reads:
 - "Review not started" while the application is Submitted;
@@ -148,6 +148,27 @@ Veterinarians see no actions. Start/Hold/Resume/Request go through \`POST /api/a
 - "Checks complete - decision pending" once all three checks are done.
 
 The Staff application page also has the process rail, so the next action is always visible.
+
+**Release to Adopter note (2026-10-07):** The Release action was never lost, only wired to one place. Since f5360ba it lived only on the animal's Pre-Release Check page, for Shelter Staff Member. The Adoption page, where Staff manage the rest of the adoption, never got it and kept a stale "Pre-Release Check is required" line. Administrators were blocked twice: by the page's role list, and by `POST /api/follow-up-visits`, which only admitted Shelter Staff Member.
+
+**Release panel.** A shared "Release to Adopter" panel (`components/adoptions/release-panel.tsx`) now sits on the Adoption page (once Finalised) and on the Pre-Release Check page. It is driven by the animal's status and its latest Pre-Release Check:
+- **No check yet:** "Waiting for the Pre-Release Check (Veterinarian)", with no button.
+- **Latest check not fit:** the Veterinarian's result is shown, and release is blocked until a new check.
+- **Fit for Release:** a form with the handover date (defaults to today), receiving Adopter, follow-up date and type, optional handover notes, a confirmation checkbox, and the "Release to Adopter" button.
+- **After release:** a message giving the scheduled follow-up date, and a link to the Follow-Up Visit.
+
+Shelter Staff and Administrators can release. Veterinarians see the status only; Council Officers and Adopters cannot open the page.
+
+**Release endpoint.** `POST /api/follow-up-visits` is now the release itself (Staff and Administrator). It checks the animal is Awaiting Release with a Fit for Release check and resolves the finalised Adopter (or the seeded Adopter for seed animals). Then, in one transaction, it moves the animal to inFollowUpPeriod, creates the Scheduled Follow-Up Visit and writes both audit entries, so a double submit cannot create two visits. Handover notes are stored in a new nullable `FollowUpVisit.handoverNotes` column. The permission matrix covers the new roles plus 400 and 409 refusals.
+
+**Red dots.** A Fit-for-Release adoption that hasn't been released counts towards the Adoptions sidebar badge. It shows a red dot on its Adoptions list row, as do agreement and payment steps, and on the Release node of the Adoption page's process rail. Seed animals awaiting release with no application still count under Animals and are released from their Pre-Release Check page.
+
+**Process rail on more pages:** Adoption detail (Staff/Admin/Vet), intake record detail, and the Adopter's agreement and Meet and Greet detail pages.
+
+**Dead-end audit fixes.** I drove the full lifecycle in a browser on throwaway data: Council transfer → intake → chip and no-chip scans → every Vet medical step → behaviour → fitness → publish → register/profile/apply/upload → review/hold/reject/request documents/approve → Meet and Greet → agreement → failed and cleared payment → finalise → Health Concern and Fit pre-release checks → release → follow-up → Rehomed. It found and fixed:
+- A rejected application (including after an Incompatible Meet and Greet) showed the Adopter "Application - With you - action needed". That journey now ends at "Application not successful", with nothing pending.
+- After confirming a payment, Finalise stayed disabled until a page reload, and a newly generated agreement didn't reach the payment section. Sections on the Adoption page now re-read after any write.
+- After recording a Meet and Greet outcome, the application header kept its old status until reload.
 
 **Seed-data note (2026-09-26):** the PRD 12.1 seed animals (`lib/animals/mock-animals.ts`, written by `prisma/seed.ts`) demonstrate specific lifecycle states, not a full history. Luna, Charlie, Daisy, Rocky and Oliver are seeded straight into their states with none of the records a real animal would have passed through to get there (assessment tasks, Review Adoption Fitness sign-off, Medical Clearance, etc.), so they don't satisfy every gate that state implies. Ruby (A-0006, "Vet cleared, waiting for Staff to publish") is the exception: `seedRubyPrerequisites()` seeds her complete Pre-Listing history (3 completed assessment tasks backed by a No Chip lookup, a Health Assessment and a Suitable Temperament Assessment; the Staff + Veterinarian Review Adoption Fitness confirmation; Medical Clearance backed by a vaccination and a species desexing exemption; an adoption fee; and a public photo with alt text), so Staff can actually publish her in the demo.
 

@@ -7,6 +7,7 @@ import { AccessDenied } from "@/components/access/access-denied";
 import { BreedSelect } from "@/components/animals/breed-select";
 import { TemperamentCheckboxes } from "@/components/animals/temperament-checkboxes";
 import { AppShell } from "@/components/layout/app-shell";
+import { IntakeAnimalRail } from "@/components/process/animal-process-tracker";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { listAllTransfers } from "@/lib/council-transfers/store";
@@ -76,7 +77,7 @@ function IntakeRecordFormInner() {
   }
 
   return (
-    <AppShell>
+    <AppShell rightPanel={intakeId ? <IntakeAnimalRail intakeId={intakeId} /> : undefined}>
       <IntakeRecordFormContent
         email={user.email}
         displayName={user.displayName}

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
+import { ReleasePanel } from "@/components/adoptions/release-panel";
 import { AppShell } from "@/components/layout/app-shell";
+import { StaffApplicationRail } from "@/components/process/application-journey-section";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { finaliseAdoption, getFinaliseBlockers } from "@/lib/adoptions/finalise";
@@ -19,9 +21,23 @@ import { getLatestPaymentForAgreement, verifyPayment } from "@/lib/payments/stor
 import { PAYMENT_STATUS_CATEGORY } from "@/lib/payments/status";
 import type { AdoptionPayment } from "@/lib/payments/types";
 import type { Role } from "@/lib/roles/roles";
+import { DATA_CHANGED_EVENT } from "@/lib/shared/http";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 const CAN_MANAGE_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
+
+// Bumps after every write in this tab (lib/shared/http.ts send()), so each
+// section re-reads what another section just changed - e.g. Finalise
+// becomes available right after the payment is confirmed.
+function useDataVersion(): number {
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    const bump = () => setVersion((v) => v + 1);
+    window.addEventListener(DATA_CHANGED_EVENT, bump);
+    return () => window.removeEventListener(DATA_CHANGED_EVENT, bump);
+  }, []);
+  return version;
+}
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
@@ -141,6 +157,7 @@ function PaymentSection({
   const [payment, setPayment] = useState<AdoptionPayment | undefined>(undefined);
   const [failureReason, setFailureReason] = useState("");
   const [showFailForm, setShowFailForm] = useState(false);
+  const dataVersion = useDataVersion();
 
   useEffect(() => {
     if (!agreementId) return;
@@ -151,7 +168,7 @@ function PaymentSection({
     return () => {
       cancelled = true;
     };
-  }, [agreementId]);
+  }, [agreementId, dataVersion]);
 
   const refresh = async () => setPayment(agreementId ? await getLatestPaymentForAgreement(agreementId) : undefined);
 
@@ -265,10 +282,11 @@ function FinaliseSection({
   const [fetchedBlockers, setFetchedBlockers] = useState<string[]>([]);
   const [blockersKey, setBlockersKey] = useState(0);
   const blockers = isFinalised ? [] : fetchedBlockers;
+  const dataVersion = useDataVersion();
 
-  // Refetched whenever this section (re)mounts, isFinalised changes, or a
-  // finalise attempt fails - so it reflects the latest Agreement/Payment
-  // state after those sections' own actions without polling.
+  // Refetched whenever this section (re)mounts, isFinalised changes, any
+  // write completes (e.g. the payment is confirmed above) or a finalise
+  // attempt fails.
   useEffect(() => {
     if (isFinalised) return;
     let cancelled = false;
@@ -278,7 +296,7 @@ function FinaliseSection({
     return () => {
       cancelled = true;
     };
-  }, [applicationId, isFinalised, blockersKey]);
+  }, [applicationId, isFinalised, blockersKey, dataVersion]);
 
   const handleFinalise = async () => {
     const result = await finaliseAdoption(applicationId, email, displayName);
@@ -299,8 +317,8 @@ function FinaliseSection({
 
       {isFinalised ? (
         <p className="mt-2 text-sm text-text">
-          This adoption has been finalised. The Animal is now Awaiting Release, and a
-          Pre-Release Check is required before the Animal can be released to the Adopter.
+          This adoption has been finalised. Release to the Adopter follows below, once the
+          Veterinarian&apos;s Pre-Release Check is Fit for Release.
         </p>
       ) : (
         <>
@@ -346,6 +364,7 @@ function AdoptionDetailContent({
   const [application, setApplication] = useState<AdoptionApplication | null | undefined>(undefined);
   const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | undefined>(undefined);
   const [agreement, setAgreement] = useState<AdoptionAgreement | undefined>(undefined);
+  const dataVersion = useDataVersion();
 
   useEffect(() => {
     let cancelled = false;
@@ -361,7 +380,7 @@ function AdoptionDetailContent({
     return () => {
       cancelled = true;
     };
-  }, [applicationId]);
+  }, [applicationId, dataVersion]);
 
   if (application === undefined) {
     return (
@@ -433,6 +452,10 @@ function AdoptionDetailContent({
           onFinalised={refreshApplication}
         />
       )}
+
+      {isFinalised && (
+        <ReleasePanel animalId={application.animalId} adopterName={application.adopterName} canRelease={canManage} />
+      )}
     </div>
   );
 }
@@ -451,7 +474,7 @@ export function AdoptionDetailScreen() {
   }
 
   return (
-    <AppShell>
+    <AppShell rightPanel={<StaffApplicationRail applicationId={params.applicationId} />}>
       <AdoptionDetailContent
         applicationId={params.applicationId}
         email={user.email}

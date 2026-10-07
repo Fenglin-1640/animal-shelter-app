@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { NeedsActionLabel } from "@/components/process/needs-action-label";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getActiveAgreementForApplication } from "@/lib/agreements/store";
@@ -12,6 +13,7 @@ import { listAllApplications } from "@/lib/applications/store";
 import type { AdoptionApplication } from "@/lib/applications/types";
 import { getMeetAndGreetForApplication } from "@/lib/meet-and-greets/store";
 import { getLatestPaymentForAgreement } from "@/lib/payments/store";
+import { ensureWorklist, useWorklist } from "@/lib/process/worklist-client";
 import type { AdoptionPayment } from "@/lib/payments/types";
 import type { Role } from "@/lib/roles/roles";
 import type { StatusCategory } from "@/lib/shared/status-category";
@@ -25,8 +27,8 @@ interface AdoptionRow {
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 
-// Adoptions only lists applications past the point PRD 6.12 names as the
-// entry into this stage: "Compatible 进入协议和付款阶段".
+// Adoptions lists applications from a Compatible Meet and Greet onwards
+// (agreement, payment, finalisation and release).
 function isInAdoptionsStage(applicationStatus: string, meetAndGreetStatus: string | undefined): boolean {
   if (applicationStatus === "Finalised") return true;
   return applicationStatus === "Approved" && meetAndGreetStatus === "Compatible";
@@ -49,7 +51,11 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
 }
 
+// Steps taken on an adoption's page; a pending one puts a red dot on its row.
+const ADOPTIONS_STEPS = new Set(["agreement", "payment_confirmation", "release"]);
+
 function AdoptionsContent() {
+  const worklist = useWorklist();
   const [search, setSearch] = useState("");
   const [rows, setRows] = useState<AdoptionRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +86,7 @@ function AdoptionsContent() {
         ).sort((a, b) => new Date(b.application.updatedAt).getTime() - new Date(a.application.updatedAt).getTime());
         if (cancelled) return;
         setRows(result);
+        ensureWorklist();
         setLoadError(null);
       })
       .catch(() => {
@@ -94,6 +101,12 @@ function AdoptionsContent() {
       cancelled = true;
     };
   }, [refreshKey]);
+
+  // Next action per adoption, from the same worklist as the sidebar badge.
+  const pending = new Map<string, string>();
+  for (const item of worklist?.items ?? []) {
+    if (item.applicationId && item.stepKey && ADOPTIONS_STEPS.has(item.stepKey)) pending.set(item.applicationId, item.nextAction);
+  }
 
   const filtered = rows.filter((row) => {
     const query = search.trim().toLowerCase();
@@ -168,6 +181,7 @@ function AdoptionsContent() {
                     {application.applicationId}
                     {application.decisionDate ? ` · Approved ${formatDate(application.decisionDate)}` : ""}
                   </p>
+                  {pending.has(application.applicationId) && <NeedsActionLabel label={pending.get(application.applicationId)} />}
                 </div>
                 <StatusChip label={stage.label} category={stage.category} />
               </Link>

@@ -152,11 +152,14 @@ function MeetAndGreetSection({
   canAct,
   email,
   displayName,
+  onChanged,
 }: {
   applicationId: string;
   canAct: boolean;
   email: string;
   displayName: string;
+  // The outcome can change the application's status (Incompatible rejects it).
+  onChanged: () => void;
 }) {
   const [meetAndGreet, setMeetAndGreet] = useState<MeetAndGreet | null | undefined>(undefined);
   const [slots, setSlots] = useState([{ dateTime: "", location: "" }]);
@@ -197,6 +200,7 @@ function MeetAndGreetSection({
     await recordOutcome(meetAndGreet.meetAndGreetId, outcome, outcomeReason, staffNotes, email, displayName);
     setShowOutcomeForm(false);
     await refresh();
+    onChanged();
   };
 
   if (meetAndGreet === undefined) {
@@ -536,6 +540,7 @@ function AdoptionApplicationDetailContent({
             canAct={canAct}
             email={email}
             displayName={displayName}
+            onChanged={() => void refresh()}
           />
         </>
       )}

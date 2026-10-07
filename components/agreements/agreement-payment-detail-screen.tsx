@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { ApplicationJourneyRail } from "@/components/process/application-journey-section";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getActiveAgreementForApplication, signAgreement } from "@/lib/agreements/store";
@@ -224,7 +225,7 @@ export function AgreementPaymentDetailScreen() {
   }
 
   return (
-    <AppShell>
+    <AppShell rightPanel={<ApplicationJourneyRail applicationId={params.applicationId} />}>
       <AgreementPaymentDetailContent
         applicationId={params.applicationId}
         email={user.email}

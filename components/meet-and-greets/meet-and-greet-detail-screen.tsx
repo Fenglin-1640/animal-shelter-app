@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { MeetAndGreetJourneyRail } from "@/components/process/application-journey-section";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
 import { confirmAttendance, getMeetAndGreet, selectSlot } from "@/lib/meet-and-greets/store";
@@ -172,7 +173,7 @@ export function MeetAndGreetDetailScreen() {
   }
 
   return (
-    <AppShell>
+    <AppShell rightPanel={<MeetAndGreetJourneyRail meetAndGreetId={params.meetAndGreetId} />}>
       <MeetAndGreetDetailContent meetAndGreetId={params.meetAndGreetId} email={user.email} />
     </AppShell>
   );

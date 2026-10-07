@@ -583,8 +583,6 @@ export async function runAnimalWorkflow(
         targetDate: release.followUpTargetDate || new Date(Date.now() + 14 * 86400000).toISOString(),
         followUpType: (release.followUpType || "Phone Call") as "Phone Call" | "Home Visit",
       },
-      STAFF.email,
-      STAFF.name,
     );
     if (!ok(result)) return fail(`releaseAnimal failed: ${(result as { reason: string }).reason}`);
     const animal = await getAnimalById(animalId);

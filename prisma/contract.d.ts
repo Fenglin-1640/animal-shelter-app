@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d268d77138912e4c942d25999f74402c42cf971f107e9e22a83a8c8b01f13ccd'>;
+  StorageHashBase<'ec8d5cba100418e6f8c698e4eb4fa58fa73615f21e75f5e099ad6dbc3d876a5a'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -461,6 +461,7 @@ export type FieldOutputTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly outcome: CodecTypes['pg/text@1']['output'] | null;
       readonly outcomeNotes: CodecTypes['pg/text@1']['output'];
+      readonly handoverNotes: CodecTypes['pg/text@1']['output'] | null;
       readonly completedByEmail: CodecTypes['pg/text@1']['output'] | null;
       readonly completedByName: CodecTypes['pg/text@1']['output'] | null;
       readonly completedAt: TimestamptzString<6> | null;
@@ -969,6 +970,7 @@ export type FieldInputTypes = {
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly outcome: CodecTypes['pg/text@1']['input'] | null;
       readonly outcomeNotes: CodecTypes['pg/text@1']['input'];
+      readonly handoverNotes: CodecTypes['pg/text@1']['input'] | null;
       readonly completedByEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly completedByName: CodecTypes['pg/text@1']['input'] | null;
       readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
@@ -1473,6 +1475,7 @@ export type StorageColumnTypes = {
       readonly createdAt: TimestamptzString<6>;
       readonly followUpType: CodecTypes['pg/text@1']['output'];
       readonly followUpVisitId: CodecTypes['pg/text@1']['output'];
+      readonly handoverNotes: CodecTypes['pg/text@1']['output'] | null;
       readonly outcome: CodecTypes['pg/text@1']['output'] | null;
       readonly outcomeNotes: CodecTypes['pg/text@1']['output'];
       readonly receivingAdopter: CodecTypes['pg/text@1']['output'];
@@ -1981,6 +1984,7 @@ export type StorageColumnInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly followUpType: CodecTypes['pg/text@1']['input'];
       readonly followUpVisitId: CodecTypes['pg/text@1']['input'];
+      readonly handoverNotes: CodecTypes['pg/text@1']['input'] | null;
       readonly outcome: CodecTypes['pg/text@1']['input'] | null;
       readonly outcomeNotes: CodecTypes['pg/text@1']['input'];
       readonly receivingAdopter: CodecTypes['pg/text@1']['input'];
@@ -2570,6 +2574,7 @@ export namespace Models {
     status: CodecTypes['pg/text@1']['output'];
     outcome: CodecTypes['pg/text@1']['output'] | null;
     outcomeNotes: CodecTypes['pg/text@1']['output'];
+    handoverNotes: CodecTypes['pg/text@1']['output'] | null;
     completedByEmail: CodecTypes['pg/text@1']['output'] | null;
     completedByName: CodecTypes['pg/text@1']['output'] | null;
     completedAt: TimestamptzString<6> | null;
@@ -3972,6 +3977,11 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly handoverNotes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly completedByEmail: {
                   readonly nativeType: 'text';
@@ -6754,6 +6764,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly handoverNotes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly completedByEmail: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -6802,6 +6816,7 @@ type ContractBase = Omit<
                 readonly status: { readonly column: 'status' };
                 readonly outcome: { readonly column: 'outcome' };
                 readonly outcomeNotes: { readonly column: 'outcomeNotes' };
+                readonly handoverNotes: { readonly column: 'handoverNotes' };
                 readonly completedByEmail: { readonly column: 'completedByEmail' };
                 readonly completedByName: { readonly column: 'completedByName' };
                 readonly completedAt: { readonly column: 'completedAt' };

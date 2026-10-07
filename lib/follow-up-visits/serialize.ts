@@ -10,6 +10,7 @@ export interface FollowUpVisitRow
     | "completedByEmail"
     | "completedByName"
     | "completedAt"
+    | "handoverNotes"
     | "createdAt"
   > {
   careInstructionsProvided: number;
@@ -19,6 +20,7 @@ export interface FollowUpVisitRow
   completedByEmail: string | null;
   completedByName: string | null;
   completedAt: string | null;
+  handoverNotes: string | null;
   createdAt: string;
 }
 
@@ -32,6 +34,7 @@ export function toFollowUpVisit(row: FollowUpVisitRow): FollowUpVisit {
     completedByEmail: row.completedByEmail ?? undefined,
     completedByName: row.completedByName ?? undefined,
     completedAt: row.completedAt ?? undefined,
+    handoverNotes: row.handoverNotes ?? undefined,
     createdAt: row.createdAt,
   };
 }
