@@ -24,6 +24,10 @@
       "model": "Animal",
       "namespace": "public"
     },
+    "animalTransferLink": {
+      "model": "AnimalTransferLink",
+      "namespace": "public"
+    },
     "antibodyCheck": {
       "model": "AntibodyCheck",
       "namespace": "public"
@@ -1262,6 +1266,60 @@
               },
               "namespaceId": "public",
               "table": "animal"
+            }
+          },
+          "AnimalTransferLink": {
+            "fields": {
+              "animalId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "councilTransferId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 6
+                  }
+                }
+              },
+              "intakeId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "animalId": {
+                  "column": "animalId"
+                },
+                "councilTransferId": {
+                  "column": "councilTransferId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "intakeId": {
+                  "column": "intakeId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "animalTransferLink"
             }
           },
           "AntibodyCheck": {
@@ -5718,6 +5776,47 @@
                 }
               ]
             },
+            "animalTransferLink": {
+              "columns": {
+                "animalId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "councilTransferId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 6
+                  }
+                },
+                "intakeId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "animalId"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "councilTransferId"
+                  ]
+                }
+              ]
+            },
             "antibodyCheck": {
               "columns": {
                 "animalId": {
@@ -7909,7 +8008,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ec8d5cba100418e6f8c698e4eb4fa58fa73615f21e75f5e099ad6dbc3d876a5a"
+    "storageHash": "bd8fad928f3f4bb2ff67d737b6b168c9de319ec3f96319a6b42e7dfdf091601b"
   },
   "capabilities": {
     "postgres": {

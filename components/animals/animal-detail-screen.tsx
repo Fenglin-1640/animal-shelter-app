@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
+import { SourceTransferField } from "@/components/council-transfers/source-transfer";
 import { BreedSelect } from "@/components/animals/breed-select";
 import { EmptySubscreen } from "@/components/animals/empty-subscreen";
 import { ProfilePhotoLightbox } from "@/components/animals/profile-photo-lightbox";
@@ -564,6 +565,7 @@ function AnimalDetailContent({
           label="Microchip Number"
           value={animal.microchipNumber ?? "No chip recorded"}
         />
+        <SourceTransferField animalId={animal.animalId} />
         {["Administrator", "Shelter Staff Member"].includes(role) && (
           <div className="sm:col-span-2">
             <Link

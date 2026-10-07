@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ec8d5cba100418e6f8c698e4eb4fa58fa73615f21e75f5e099ad6dbc3d876a5a'>;
+  StorageHashBase<'bd8fad928f3f4bb2ff67d737b6b168c9de319ec3f96319a6b42e7dfdf091601b'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -351,6 +351,12 @@ export type FieldOutputTypes = {
       readonly intakeSource: CodecTypes['pg/text@1']['output'];
       readonly linkedPersonRole: CodecTypes['pg/text@1']['output'] | null;
       readonly linkedPersonName: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly AnimalTransferLink: {
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly councilTransferId: CodecTypes['pg/text@1']['output'];
+      readonly intakeId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
     };
     readonly AntibodyCheck: {
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -861,6 +867,12 @@ export type FieldInputTypes = {
       readonly linkedPersonRole: CodecTypes['pg/text@1']['input'] | null;
       readonly linkedPersonName: CodecTypes['pg/text@1']['input'] | null;
     };
+    readonly AnimalTransferLink: {
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly councilTransferId: CodecTypes['pg/text@1']['input'];
+      readonly intakeId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly AntibodyCheck: {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly animalId: CodecTypes['pg/text@1']['input'];
@@ -1370,6 +1382,12 @@ export type StorageColumnTypes = {
       readonly statusUpdatedAt: TimestamptzString<6>;
       readonly temperaments: CodecTypes['pg/text@1']['output'];
     };
+    readonly animalTransferLink: {
+      readonly animalId: CodecTypes['pg/text@1']['output'];
+      readonly councilTransferId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: TimestamptzString<6>;
+      readonly intakeId: CodecTypes['pg/text@1']['output'];
+    };
     readonly antibodyCheck: {
       readonly animalId: CodecTypes['pg/text@1']['output'];
       readonly antigen: CodecTypes['pg/text@1']['output'];
@@ -1878,6 +1896,12 @@ export type StorageColumnInputTypes = {
       readonly species: CodecTypes['pg/text@1']['input'];
       readonly statusUpdatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly temperaments: CodecTypes['pg/text@1']['input'];
+    };
+    readonly animalTransferLink: {
+      readonly animalId: CodecTypes['pg/text@1']['input'];
+      readonly councilTransferId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly intakeId: CodecTypes['pg/text@1']['input'];
     };
     readonly antibodyCheck: {
       readonly animalId: CodecTypes['pg/text@1']['input'];
@@ -2596,6 +2620,13 @@ export namespace Models {
     updatedAt: TimestamptzString<6>;
     readonly [RelationKeys]?: never;
   };
+  export type public_AnimalTransferLink = {
+    animalId: CodecTypes['pg/text@1']['output'];
+    councilTransferId: CodecTypes['pg/text@1']['output'];
+    intakeId: CodecTypes['pg/text@1']['output'];
+    createdAt: TimestamptzString<6>;
+    readonly [RelationKeys]?: never;
+  };
   export type public_IntakeRecord = {
     intakeId: CodecTypes['pg/text@1']['output'];
     animalId: CodecTypes['pg/text@1']['output'];
@@ -2838,6 +2869,7 @@ export declare const models: {
     MeetAndGreet: Models.public_MeetAndGreet;
     FollowUpVisit: Models.public_FollowUpVisit;
     CouncilTransferSubmission: Models.public_CouncilTransferSubmission;
+    AnimalTransferLink: Models.public_AnimalTransferLink;
     IntakeRecord: Models.public_IntakeRecord;
     Photo: Models.public_Photo;
     AdopterProfile: Models.public_AdopterProfile;
@@ -3435,6 +3467,35 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['animalId'] };
               uniques: readonly [{ readonly columns: readonly ['shelterId'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly animalTransferLink: {
+              columns: {
+                readonly animalId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly councilTransferId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly intakeId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['animalId'] };
+              uniques: readonly [{ readonly columns: readonly ['councilTransferId'] }];
               indexes: readonly [];
               foreignKeys: readonly [];
             };
@@ -5478,6 +5539,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'CouncilTransferSubmission';
     };
+    readonly animalTransferLink: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AnimalTransferLink';
+    };
     readonly intakeRecord: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'IntakeRecord';
@@ -6173,6 +6238,41 @@ type ContractBase = Omit<
                 readonly intakeSource: { readonly column: 'intakeSource' };
                 readonly linkedPersonRole: { readonly column: 'linkedPersonRole' };
                 readonly linkedPersonName: { readonly column: 'linkedPersonName' };
+              };
+            };
+          };
+          readonly AnimalTransferLink: {
+            readonly fields: {
+              readonly animalId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly councilTransferId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly intakeId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly typeParams: { readonly precision: 6 };
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'animalTransferLink';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly animalId: { readonly column: 'animalId' };
+                readonly councilTransferId: { readonly column: 'councilTransferId' };
+                readonly intakeId: { readonly column: 'intakeId' };
+                readonly createdAt: { readonly column: 'createdAt' };
               };
             };
           };

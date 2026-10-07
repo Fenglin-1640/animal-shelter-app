@@ -424,6 +424,17 @@ model CouncilTransferSubmission {
   updatedAt                 TimestamptzString(6)
 }
 
+// The animal created from a Council Transfer: written in the same
+// transaction as Save and Finalise Intake, and backfilled from finalised
+// intake references (scripts/backfill-transfer-links.ts). Both keys are
+// unique, so a transfer leads to at most one animal and back.
+model AnimalTransferLink {
+  animalId          String @id
+  councilTransferId String @unique
+  intakeId          String
+  createdAt         TimestamptzString(6)
+}
+
 // Mirrors lib/intake-records/types.ts (FR-INT-02). photos (array of
 // small {id, fileName, fileSizeKB, uploadedAt} objects) is JSON-encoded,
 // same reasoning as CouncilTransferSubmission.attachments.

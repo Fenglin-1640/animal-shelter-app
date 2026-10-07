@@ -4,6 +4,8 @@
 // passing run. Usage (against a running app with the seed data):
 //   npm run test:permissions            (http://localhost:3000)
 //   BASE=https://... npm run test:permissions
+// Optional: COUNCIL2=email:password adds a second Council Officer for the
+// "another officer's transfer" cases (skipped without it).
 const BASE = process.env.BASE ?? "http://localhost:3000";
 const ACCOUNTS = {
   Administrator: "admin@asams.demo",
@@ -48,6 +50,7 @@ const READS = {
   "/api/files/rules": ROLES,
   "/api/medical/vaccination-checks": [A, S, V], "/api/medical/vaccination-checks?animalId=A-0006": [A, S, V],
   "/api/medical/vaccination-tasks": [A, S, V], "/api/medical/vaccination-tasks?animalId=A-0006": [A, S, V],
+  "/api/council-transfers/progress": [C], "/api/animals/A-0001/source-transfer": [A, S, V],
 };
 // Write probes that must be refused for the listed roles (bodies are
 // harmless placeholders; the guard rejects before any write).
@@ -270,6 +273,45 @@ const FORBIDDEN_WRITES = [
   expect("release without the handover confirmation is refused (400)", (await call(staff, "POST", "/api/follow-up-visits", { ...releaseBody, careInstructionsProvided: false })).status === 400);
   expect("release with a follow-up before the release date is refused (400)", (await call(sessions[A].cookie, "POST", "/api/follow-up-visits", { ...releaseBody, targetDate: "2000-01-01" })).status === 400);
   expect("release of an animal not awaiting release is refused (409)", (await call(sessions[A].cookie, "POST", "/api/follow-up-visits", releaseBody)).status === 409);
+
+  // 5f. Council Transfer progress: only the submitting Council Officer, and
+  // only whitelisted animal fields (no adopter, application, medical, fee,
+  // note or audit data; images by URL, never inline).
+  const ANIMAL_KEYS = ["breed", "currentStatus", "listingStatus", "name", "shelterId", "species", "thumbnailAlt", "thumbnailUrl"];
+  // Field names that must never appear (labels like "Medical clearance" are fine).
+  const FORBIDDEN = /"(adopter\w*|applicant\w*|application\w*|medical\w*|healthFindings|careInstructions|microchip\w*|adoptionFee|fee|\w*[nN]otes|linkedPerson\w*|intakeSource|phone|address|audit\w*|imageData|submittedByEmail)"\s*:|data:image|;base64,/i;
+  const progressList = await call(council, "GET", "/api/council-transfers/progress");
+  const progressItems = progressList.status === 200 ? (await progressList.json()).items : [];
+  expect("Council progress list covers only own transfers", progressItems.length > 0 && progressItems.every((i) => i.transfer.submittedByEmail.toLowerCase() === "council@asams.demo"), `${progressItems.length}`);
+  const withAnimal = progressItems.filter((i) => i.animal);
+  expect("Progress animals carry only whitelisted fields", withAnimal.length > 0 && withAnimal.every((i) => Object.keys(i.animal).every((k) => ANIMAL_KEYS.includes(k))), JSON.stringify(withAnimal[0]?.animal ?? null).slice(0, 120));
+  const progressPayload = JSON.stringify(progressItems.map(({ animal, milestones, outcome, steps }) => ({ animal, milestones, outcome, steps })));
+  expect("Progress payload has no adopter, medical, fee, note or audit data", !FORBIDDEN.test(progressPayload) && !progressPayload.includes("@"));
+  const ownTransfer = (withAnimal[0] ?? progressItems[0])?.transfer.id;
+  if (ownTransfer) {
+    const detail = await call(council, "GET", `/api/council-transfers/${ownTransfer}/progress`);
+    const body = detail.status === 200 ? await detail.json() : {};
+    expect("Council reads own transfer progress", detail.status === 200 && "milestones" in body);
+    const detailPayload = JSON.stringify({ animal: body.animal, milestones: body.milestones, outcome: body.outcome, steps: body.steps });
+    expect("Transfer progress detail has no adopter, medical, fee, note or audit data", !FORBIDDEN.test(detailPayload) && !detailPayload.includes("@"));
+    for (const role of [A, S, V, D]) {
+      expect(`${role} cannot read a Council Officer's transfer progress`, (await call(sessions[role].cookie, "GET", `/api/council-transfers/${ownTransfer}/progress`)).status === 403);
+    }
+    if (process.env.COUNCIL2) {
+      const [email2, password2] = process.env.COUNCIL2.split(":");
+      const r2 = await fetch(`${BASE}/api/auth/sign-in`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email2, password: password2 }) });
+      const other = `Bearer ${(await r2.json()).token}`;
+      expect("Another Council Officer cannot read this transfer's progress", (await call(other, "GET", `/api/council-transfers/${ownTransfer}/progress`)).status === 403);
+      const theirs = (await (await call(other, "GET", "/api/council-transfers/progress")).json()).items;
+      expect("Another Council Officer's progress list excludes this officer's transfers", theirs.every((i) => i.transfer.submittedByEmail.toLowerCase() === email2.toLowerCase()), `${theirs.length}`);
+    }
+  }
+  expect("Unknown transfer progress is not found", (await call(council, "GET", "/api/council-transfers/CTS-NOPE00/progress")).status === 404);
+  const linkedAnimal = (await json(staff, "/api/animals")).animals.find((a) => a.animalId === "A-NPI0HE");
+  if (linkedAnimal) {
+    const src = await json(staff, "/api/animals/A-NPI0HE/source-transfer");
+    expect("Staff sees an animal's source transfer", Boolean(src.transfer?.id) && !("submittedByEmail" in (src.transfer ?? {})));
+  }
 
   // 6. Session endpoint and independence of sessions.
   expect("session endpoint reports the signed-in user", (await json(staff, "/api/auth/session")).user?.role === S);

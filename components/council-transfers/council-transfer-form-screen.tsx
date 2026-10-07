@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AccessDenied } from "@/components/access/access-denied";
 import { AppShell } from "@/components/layout/app-shell";
+import { AnimalProgressSection } from "@/components/council-transfers/animal-progress";
 import { TransferStatusRail } from "@/components/process/transfer-status";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -305,6 +306,8 @@ function CouncilTransferFormContent({
           </p>
         )}
       </div>
+
+      {existing && existing.status !== "Draft" && <AnimalProgressSection transferId={existing.id} />}
 
       {errorEntries.length > 0 && (
         <div

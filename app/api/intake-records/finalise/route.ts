@@ -123,6 +123,9 @@ export async function POST(request: Request) {
       linkedPersonRole: null,
       linkedPersonName: null,
     });
+    if (transferId) {
+      await orm.AnimalTransferLink.create({ animalId, councilTransferId: transferId, intakeId, createdAt: toTimestamptz(now) });
+    }
     for (const taskType of TASK_TYPES) {
       await orm.AssessmentTask.create({ id: randomId("AT"), animalId, taskType, status: "Pending", markedByEmail: null, markedByName: null, markedAt: null });
     }

@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { AnimalThumb } from "@/components/council-transfers/animal-progress";
 import { StatusChip } from "@/components/shared/status-chip";
+import { CURRENT_STATUS_CATEGORY } from "@/lib/animals/status";
+import { animalStatusLabel, type TransferAnimalSummary } from "@/lib/council-transfers/progress";
 import { TRANSFER_STATUS_CATEGORY } from "@/lib/council-transfers/status";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
 import { TransferStatusSummary, type TransferStep } from "@/components/process/transfer-status";
@@ -8,7 +11,16 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
 }
 
-export function TransferCard({ transfer, statusSteps }: { transfer: CouncilTransferSubmission; statusSteps?: TransferStep[] }) {
+export function TransferCard({
+  transfer,
+  statusSteps,
+  animal,
+}: {
+  transfer: CouncilTransferSubmission;
+  statusSteps?: TransferStep[];
+  // The animal created from this transfer (null: not admitted yet).
+  animal?: TransferAnimalSummary | null;
+}) {
   const isDraft = transfer.status === "Draft";
 
   return (
@@ -38,6 +50,18 @@ export function TransferCard({ transfer, statusSteps }: { transfer: CouncilTrans
           {transfer.attachments.length === 1 ? "" : "s"}
         </p>
         {statusSteps && <TransferStatusSummary steps={statusSteps} />}
+        {animal ? (
+          <div className="flex items-center gap-3 rounded-[12px] border border-border bg-page p-2">
+            <AnimalThumb animal={animal} size="sm" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-text">{animal.name}</p>
+              <p className="text-xs text-text-muted">Shelter ID {animal.shelterId}</p>
+            </div>
+            <StatusChip label={animalStatusLabel(animal.currentStatus)} category={CURRENT_STATUS_CATEGORY[animal.currentStatus]} />
+          </div>
+        ) : (
+          !isDraft && animal === null && <p className="text-sm text-text-muted">Awaiting intake by the shelter</p>
+        )}
       </div>
 
       <div className="flex items-start sm:items-center">

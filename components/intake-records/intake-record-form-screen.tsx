@@ -7,6 +7,7 @@ import { AccessDenied } from "@/components/access/access-denied";
 import { BreedSelect } from "@/components/animals/breed-select";
 import { TemperamentCheckboxes } from "@/components/animals/temperament-checkboxes";
 import { AppShell } from "@/components/layout/app-shell";
+import { SourceTransferField } from "@/components/council-transfers/source-transfer";
 import { IntakeAnimalRail } from "@/components/process/animal-process-tracker";
 import { StatusChip } from "@/components/shared/status-chip";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -390,6 +391,11 @@ function IntakeRecordFormContent({
             All fields can be saved incrementally. Finalising intake creates
             the Animal Profile and cannot be undone.
           </p>
+        )}
+        {isReadOnly && existing && (
+          <dl className="mt-2">
+            <SourceTransferField animalId={existing.animalId} />
+          </dl>
         )}
       </div>
 

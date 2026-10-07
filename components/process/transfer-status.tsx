@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { ProcessRail, RAIL_DOT, type RailStep } from "@/components/process/process-rail";
-import type { StepState } from "@/lib/process/engine";
+import type { TransferStep } from "@/lib/council-transfers/progress";
 import { useWorklist } from "@/lib/process/worklist-client";
 import { getJson } from "@/lib/shared/http";
 
-export type TransferStep = { label: string; state: StepState; detail: string; waitingOn?: string };
+export type { TransferStep };
 
 // A Council Officer's own transfers' status steps (GET /api/process/transfers),
 // refreshed with the shared worklist.
