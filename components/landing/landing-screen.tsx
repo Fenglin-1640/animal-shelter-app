@@ -21,7 +21,8 @@ export function LandingScreen() {
 
       {(user.role === "Administrator" || user.role === "Shelter Staff Member") && (
         <>
-          <NeedsMyActionPanel />
+          {/* Hidden for Administrators; the payment popup still shows for both roles. */}
+          {user.role !== "Administrator" && <NeedsMyActionPanel />}
           <PaymentConfirmPopup />
         </>
       )}

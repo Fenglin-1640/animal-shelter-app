@@ -170,6 +170,8 @@ Shelter Staff and Administrators can release. Veterinarians see the status only;
 - After confirming a payment, Finalise stayed disabled until a page reload, and a newly generated agreement didn't reach the payment section. Sections on the Adoption page now re-read after any write.
 - After recording a Meet and Greet outcome, the application header kept its old status until reload.
 
+**Home page note (2026-10-08):** The "Needs my action" panel is no longer shown to Administrators (Shelter Staff still see it; Veterinarians never had it on Home). The payment-received popup and the sidebar badges are unchanged for both roles.
+
 **Seed-data note (2026-09-26):** the PRD 12.1 seed animals (`lib/animals/mock-animals.ts`, written by `prisma/seed.ts`) demonstrate specific lifecycle states, not a full history. Luna, Charlie, Daisy, Rocky and Oliver are seeded straight into their states with none of the records a real animal would have passed through to get there (assessment tasks, Review Adoption Fitness sign-off, Medical Clearance, etc.), so they don't satisfy every gate that state implies. Ruby (A-0006, "Vet cleared, waiting for Staff to publish") is the exception: `seedRubyPrerequisites()` seeds her complete Pre-Listing history (3 completed assessment tasks backed by a No Chip lookup, a Health Assessment and a Suitable Temperament Assessment; the Staff + Veterinarian Review Adoption Fitness confirmation; Medical Clearance backed by a vaccination and a species desexing exemption; an adoption fee; and a public photo with alt text), so Staff can actually publish her in the demo.
 
 ## Summary
