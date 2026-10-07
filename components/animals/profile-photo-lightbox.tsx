@@ -6,6 +6,7 @@ import { PlaceholderThumbnail } from "@/components/shared/placeholder-thumbnail"
 import { addPhoto, setPrimaryPhoto } from "@/lib/photos/store";
 import type { Photo } from "@/lib/photos/types";
 import { fileToDataUrl } from "@/lib/photos/upload";
+import { FileField } from "@/components/shared/file-field";
 
 // The Animal Profile header's avatar/photo box (FR-AN-02's public
 // listing photo) - clicking it opens the current photo enlarged in a
@@ -164,11 +165,11 @@ export function ProfilePhotoLightbox({
                 <div>
                   <h3 className="text-sm font-semibold text-text">Upload New Photo</h3>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <input
-                      type="file"
+                    <FileField
+                      id="profile-photo-file"
+                      label="New photo"
                       accept="image/*"
-                      onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
-                      className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-surface file:px-3 file:text-sm file:font-semibold file:text-text"
+                      onFile={(file) => setPendingFile(file)}
                     />
                     <button
                       type="button"

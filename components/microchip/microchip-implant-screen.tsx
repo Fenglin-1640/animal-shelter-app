@@ -27,6 +27,8 @@ import { PendingVaccinationsPanel } from "@/components/medical/pending-vaccinati
 import { completeMicrochipImplant, getLatestMicrochipImplant } from "@/lib/microchip/store";
 import type { MicrochipImplantTask } from "@/lib/microchip/implant";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
 // Care team can open the page; only a Veterinarian records the session.
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
@@ -35,18 +37,6 @@ type DesexingChoice = "schedule" | "Exempt (Species)" | "Already Desexed (Pre-In
 
 const inputClass =
   "h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-
-function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function Section({ title, done, children }: { title: string; done: boolean; children: React.ReactNode }) {
   return (
@@ -245,13 +235,12 @@ function MicrochipImplantContent({ animalId, email, displayName, canAct }: { ani
                 <label className="flex flex-wrap items-center gap-2">
                   <input type="radio" name="desexing" checked={desexingChoice === "schedule"} onChange={() => setDesexingChoice("schedule")} />
                   Schedule desexing on
-                  <input
-                    type="date"
+                  <DateField
                     aria-label="Desexing date"
                     value={scheduledDate}
-                    min={todayDate()}
-                    onChange={(e) => {
-                      setScheduledDate(e.target.value);
+                    min={todayISO()}
+                    onChange={(value) => {
+                      setScheduledDate(value);
                       setDesexingChoice("schedule");
                     }}
                     className={inputClass}

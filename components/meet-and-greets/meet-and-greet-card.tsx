@@ -3,10 +3,7 @@ import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { MEET_AND_GREET_STATUS_CATEGORY } from "@/lib/meet-and-greets/status";
 import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
+import { formatDateTime } from "@/lib/shared/dates";
 
 export function MeetAndGreetCard({ meetAndGreet }: { meetAndGreet: MeetAndGreet }) {
   return (

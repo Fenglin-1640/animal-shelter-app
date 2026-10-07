@@ -21,6 +21,8 @@ import type { Role } from "@/lib/roles/roles";
 import { getAttachmentRules } from "@/lib/files/client";
 import { checkFile, describeRules, FILE_FORMATS, type AttachmentRules } from "@/lib/files/rules";
 import { getActiveValues } from "@/lib/system-administration/store";
+import { formatDateTime } from "@/lib/shared/dates";
+import { FileField } from "@/components/shared/file-field";
 
 const ALLOWED_ROLES: Role[] = ["Council Animal Control Officer"];
 
@@ -30,10 +32,6 @@ interface FieldErrors {
   foundLocation?: string;
   animalDescription?: string;
   attachments?: string;
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 }
 
 function formatSize(kb: number): string {
@@ -452,19 +450,17 @@ function CouncilTransferFormContent({
               <label htmlFor="pendingFile" className="text-xs font-semibold text-text-muted">
                 File
               </label>
-              <input
+              <FileField
                 key={fileInputKey}
                 id="pendingFile"
-                type="file"
+                label="File"
                 accept={attachmentRules?.formats.flatMap((format) => [...FILE_FORMATS[format].extensions]).join(",")}
-                aria-describedby="pendingFile-rules"
-                onChange={(e) => {
-                  const file = e.target.files?.[0] ?? null;
+                describedBy="pendingFile-rules"
+                onFile={(file) => {
                   const problem = file && attachmentRules ? checkFile(file.name, file.size, attachmentRules) : null;
                   setFileError(problem);
                   setPendingFile(problem ? null : file);
                 }}
-                className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
               />
             </div>
             <button

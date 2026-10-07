@@ -16,6 +16,7 @@ import type { AdoptionApplication } from "@/lib/applications/types";
 import { ApplicationDocuments } from "@/components/applications/application-documents";
 import { isWaitingOnAdopter } from "@/lib/applications/types";
 import { createChecksForApplication } from "@/lib/checks/store";
+import { formatDateTime } from "@/lib/shared/dates";
 import type { Role } from "@/lib/roles/roles";
 
 const ALLOWED_ROLES: Role[] = ["Adopter"];
@@ -173,7 +174,7 @@ function ApplicationDetailContent({ applicationId, email }: { applicationId: str
             <p className="mt-1 text-text">&ldquo;{application.infoRequestMessage}&rdquo;</p>
             <p className="mt-1 text-xs text-text-muted">
               {application.infoRequestedByName}
-              {application.infoRequestedAt ? ` · ${new Date(application.infoRequestedAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}` : ""}
+              {application.infoRequestedAt ? ` · ${formatDateTime(application.infoRequestedAt)}` : ""}
               {waiting ? " · Upload the documents below." : ""}
             </p>
           </div>

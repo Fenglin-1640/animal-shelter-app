@@ -12,13 +12,10 @@ import { listIntakeRecords, listLinkedTransferIds } from "@/lib/intake-records/s
 import { isIntakeRecordComplete } from "@/lib/intake-records/types";
 import type { IntakeRecord } from "@/lib/intake-records/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
 type CompletenessFilter = "" | "Complete" | "Incomplete";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
 
 function AnimalIntakeContent() {
   const [search, setSearch] = useState("");

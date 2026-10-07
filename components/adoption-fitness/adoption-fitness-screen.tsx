@@ -23,6 +23,7 @@ import {
   type TaskType,
 } from "@/lib/adoption-fitness/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDateTime } from "@/lib/shared/dates";
 
 // Review Adoption Fitness and Publish on one page (Shelter Staff and
 // Administrator). The Veterinarian half of the review is confirmed
@@ -49,10 +50,6 @@ async function loadBlockers(animalId: string): Promise<{ preListing: string[]; p
     `/api/process/animals/${encodeURIComponent(animalId)}`,
   );
   return { preListing: result.preListingBlockers ?? [], publish: result.publishBlockers ?? [] };
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 }
 
 function NotFound() {

@@ -52,6 +52,8 @@ import type {
 } from "@/lib/medical/types";
 import { getActiveValues } from "@/lib/system-administration/store";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 // PRD 9 permission matrix: MedicalRecord is 只读 (read-only) for BOTH
@@ -62,18 +64,6 @@ const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterin
 // blanket "can do everything any role can" - this is the one place in
 // this prototype where that distinction actually matters.
 const CAN_ACT_ROLES: Role[] = ["Veterinarian"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
-
-function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function NotFound() {
   return (
@@ -122,7 +112,7 @@ function HealthAssessmentForm({
   const [urgentTreatmentRequired, setUrgentTreatmentRequired] = useState(false);
   const [urgentTreatmentNotes, setUrgentTreatmentNotes] = useState("");
   const [healthRecheckRequired, setHealthRecheckRequired] = useState(false);
-  const [assessmentDate, setAssessmentDate] = useState(todayDate());
+  const [assessmentDate, setAssessmentDate] = useState(todayISO());
 
   const canSubmit = examinationObservations.trim() && bodyCondition.trim() && assessmentDate;
 
@@ -172,12 +162,11 @@ function HealthAssessmentForm({
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="ha-assessment-date" className="text-xs font-semibold text-text-muted">Assessment Date</label>
-          <input
+          <DateField
             id="ha-assessment-date"
-            type="date"
             value={assessmentDate}
-            max={todayDate()}
-            onChange={(e) => setAssessmentDate(e.target.value)}
+            max={todayISO()}
+            onChange={(value) => setAssessmentDate(value)}
             className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
@@ -271,7 +260,7 @@ function TreatmentEventForm({
 }) {
   const [medication, setMedication] = useState("");
   const [dose, setDose] = useState("");
-  const [date, setDate] = useState(todayDate());
+  const [date, setDate] = useState(todayISO());
   const [outcome, setOutcome] = useState("");
   const [furtherTreatmentRequired, setFurtherTreatmentRequired] = useState(true);
 
@@ -306,12 +295,11 @@ function TreatmentEventForm({
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="te-date" className="text-xs font-semibold text-text-muted">Date</label>
-          <input
+          <DateField
             id="te-date"
-            type="date"
             value={date}
-            max={todayDate()}
-            onChange={(e) => setDate(e.target.value)}
+            max={todayISO()}
+            onChange={(value) => setDate(value)}
             className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
@@ -395,9 +383,9 @@ function MedicalContent({
   const [showHealthForm, setShowHealthForm] = useState(false);
   const [showTreatmentForm, setShowTreatmentForm] = useState(false);
   const [showVaccinationForm, setShowVaccinationForm] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState(todayDate());
+  const [scheduledDate, setScheduledDate] = useState(todayISO());
   const [showEditScheduledDate, setShowEditScheduledDate] = useState(false);
-  const [editedScheduledDate, setEditedScheduledDate] = useState(todayDate());
+  const [editedScheduledDate, setEditedScheduledDate] = useState(todayISO());
 
   const [medicationOptions, setMedicationOptions] = useState<string[]>([]);
   const canAct = CAN_ACT_ROLES.includes(role);
@@ -695,11 +683,10 @@ function MedicalContent({
               <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
                 <div className="flex flex-col gap-1">
                   <label htmlFor="desexing-edit-date" className="text-xs font-semibold text-text-muted">Scheduled Date</label>
-                  <input
+                  <DateField
                     id="desexing-edit-date"
-                    type="date"
                     value={editedScheduledDate}
-                    onChange={(e) => setEditedScheduledDate(e.target.value)}
+                    onChange={(value) => setEditedScheduledDate(value)}
                     className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   />
                 </div>
@@ -732,11 +719,10 @@ function MedicalContent({
               <div className="mt-4 flex flex-wrap items-end gap-2">
                 <div className="flex flex-col gap-1">
                   <label htmlFor="desexing-date" className="text-xs font-semibold text-text-muted">Scheduled Date</label>
-                  <input
+                  <DateField
                     id="desexing-date"
-                    type="date"
                     value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
+                    onChange={(value) => setScheduledDate(value)}
                     className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   />
                 </div>

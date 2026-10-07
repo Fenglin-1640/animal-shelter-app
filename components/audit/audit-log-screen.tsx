@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { listAuditLog } from "@/lib/audit/store";
 import type { AuditEntityType, AuditLogEntry } from "@/lib/audit/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator"];
 const ENTITY_TYPES: AuditEntityType[] = [
@@ -18,10 +19,6 @@ const ENTITY_TYPES: AuditEntityType[] = [
   "FollowUpVisit",
   "SystemSetting",
 ];
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function AuditLogContent() {
   const [entries, setEntries] = useState<AuditLogEntry[]>([]);

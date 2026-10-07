@@ -14,13 +14,10 @@ import { getBackupRuns, getRecoveryTests } from "@/lib/records/backup-data";
 import { getAdoptionStatistics } from "@/lib/records/statistics";
 import type { Role } from "@/lib/roles/roles";
 import { downloadCsv } from "@/lib/shared/export-csv";
+import { formatDateTime } from "@/lib/shared/dates";
 
 // PRD 9's "Audit and Retention" row (查看、导出、配置) is Administrator-only.
 const ALLOWED_ROLES: Role[] = ["Administrator"];
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function timestampForFilename(): string {
   return new Date().toISOString().slice(0, 10);

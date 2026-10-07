@@ -12,12 +12,9 @@ import { listAllApplications } from "@/lib/applications/store";
 import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication, ApplicationStatus } from "@/lib/applications/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
 
 function AdoptionApplicationsContent() {
   const [search, setSearch] = useState("");

@@ -20,24 +20,15 @@ import {
 import type { Photo } from "@/lib/photos/types";
 import { fileToDataUrl } from "@/lib/photos/upload";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
+import { FileField } from "@/components/shared/file-field";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 const CAN_ACT_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
-
 function formatSize(kb: number): string {
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
-}
-
-function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function NotFound() {
@@ -81,7 +72,7 @@ function PhotosContent({
   }, [animalId]);
 
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [dateTaken, setDateTaken] = useState(todayDate());
+  const [dateTaken, setDateTaken] = useState(todayISO());
   const [fileInputKey, setFileInputKey] = useState(0);
   const [uploading, setUploading] = useState(false);
 
@@ -284,25 +275,23 @@ function PhotosContent({
               <label htmlFor="photo-file" className="text-xs font-semibold text-text-muted">
                 Photo File
               </label>
-              <input
+              <FileField
                 key={fileInputKey}
                 id="photo-file"
-                type="file"
+                label="Photo File"
                 accept="image/*"
-                onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
-                className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
+                onFile={(file) => setPendingFile(file)}
               />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="photo-date-taken" className="text-xs font-semibold text-text-muted">
                 Date Taken
               </label>
-              <input
+              <DateField
                 id="photo-date-taken"
-                type="date"
                 value={dateTaken}
-                max={todayDate()}
-                onChange={(e) => setDateTaken(e.target.value)}
+                max={todayISO()}
+                onChange={(value) => setDateTaken(value)}
                 className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               />
             </div>

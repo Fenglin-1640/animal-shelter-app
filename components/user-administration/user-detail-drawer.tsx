@@ -7,11 +7,7 @@ import { ROLES, type Role } from "@/lib/roles/roles";
 import { updateUserRoleStatus } from "@/lib/user-administration/directory-store";
 import { USER_STATUS_CATEGORY } from "@/lib/user-administration/status";
 import type { DirectoryUser } from "@/lib/user-administration/types";
-
-function formatDateTime(iso?: string): string {
-  if (!iso) return "-";
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
+import { formatDateTime } from "@/lib/shared/dates";
 
 function CloseIcon() {
   return (

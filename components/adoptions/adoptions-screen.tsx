@@ -17,6 +17,7 @@ import { ensureWorklist, useWorklist } from "@/lib/process/worklist-client";
 import type { AdoptionPayment } from "@/lib/payments/types";
 import type { Role } from "@/lib/roles/roles";
 import type { StatusCategory } from "@/lib/shared/status-category";
+import { formatDate } from "@/lib/shared/dates";
 
 interface AdoptionRow {
   application: AdoptionApplication;
@@ -45,10 +46,6 @@ function computeStageLabel(
   if (paymentStatus === "Pending") return { label: "Payment Pending Verification", category: "caution" };
   if (paymentStatus === "Failed") return { label: "Payment Failed", category: "attention" };
   return { label: "Ready to Finalise", category: "progress" };
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
 }
 
 // Steps taken on an adoption's page; a pending one puts a red dot on its row.

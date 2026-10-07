@@ -22,6 +22,7 @@ import { PAYMENT_STATUS_CATEGORY } from "@/lib/payments/status";
 import type { AdoptionPayment } from "@/lib/payments/types";
 import type { Role } from "@/lib/roles/roles";
 import { DATA_CHANGED_EVENT } from "@/lib/shared/http";
+import { formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 const CAN_MANAGE_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
@@ -37,10 +38,6 @@ function useDataVersion(): number {
     return () => window.removeEventListener(DATA_CHANGED_EVENT, bump);
   }, []);
   return version;
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 }
 
 function NotFound() {

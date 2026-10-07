@@ -16,12 +16,9 @@ import { PAYMENT_STATUS_CATEGORY } from "@/lib/payments/status";
 import type { AdoptionPayment } from "@/lib/payments/types";
 import { getActiveValues } from "@/lib/system-administration/store";
 import type { Role } from "@/lib/roles/roles";
+import { formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Adopter"];
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function NotFound() {
   return (

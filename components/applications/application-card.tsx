@@ -5,10 +5,7 @@ import { APPLICATION_STATUS_CATEGORY } from "@/lib/applications/status";
 import type { AdoptionApplication } from "@/lib/applications/types";
 import { NeedsActionLabel } from "@/components/process/needs-action-label";
 import type { ListFlag } from "@/lib/process/worklist";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
+import { formatDate } from "@/lib/shared/dates";
 
 function actionLabel(status: AdoptionApplication["applicationStatus"]): string {
   return status === "Draft" ? "Continue Application" : "View Application";

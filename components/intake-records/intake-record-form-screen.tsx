@@ -33,24 +33,13 @@ import { fileToDataUrl } from "@/lib/photos/upload";
 import { useSpeciesOptions } from "@/lib/system-administration/use-species";
 import type { Role } from "@/lib/roles/roles";
 import { getActiveValues } from "@/lib/system-administration/store";
+import { formatDateTime, fromBrisbaneLocal, nowLocalDateTime, toBrisbaneLocal, todayISO } from "@/lib/shared/dates";
+import { DateField, DateTimeField } from "@/components/shared/date-field";
+import { FileField } from "@/components/shared/file-field";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
 const SEX_OPTIONS: Sex[] = ["Male", "Female"];
 
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
-
-function toDatetimeLocalValue(iso: string): string {
-  const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function fromDatetimeLocalValue(value: string): string {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString();
-}
 
 function formatSize(kb: number): string {
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
@@ -184,7 +173,7 @@ function IntakeRecordFormContent({
       setAnimalName(record?.animalName ?? "");
       setArrivalCircumstance(record?.arrivalCircumstance ?? prefillTransfer?.arrivalCircumstance ?? "");
       setArrivalDateTime(
-        record ? toDatetimeLocalValue(record.arrivalDateTime) : toDatetimeLocalValue(new Date().toISOString()),
+        record ? toBrisbaneLocal(record.arrivalDateTime) : nowLocalDateTime(),
       );
       setIntakeSource(record?.intakeSource ?? (prefillTransfer ? "Council Transfer" : ""));
       setSurrenderingPartyName(record?.surrenderingPartyName ?? "");
@@ -238,7 +227,7 @@ function IntakeRecordFormContent({
   const buildInput = (): IntakeRecordFormInput => ({
     animalName,
     arrivalCircumstance,
-    arrivalDateTime: fromDatetimeLocalValue(arrivalDateTime),
+    arrivalDateTime: fromBrisbaneLocal(arrivalDateTime),
     intakeSource,
     surrenderingPartyName: isCouncilSource ? "" : surrenderingPartyName,
     councilTransferSubmissionId: isCouncilSource ? councilTransferSubmissionId || undefined : undefined,
@@ -435,11 +424,10 @@ function IntakeRecordFormContent({
               <label htmlFor="arrivalDateTime" className="text-sm font-semibold text-text">
                 Arrival Date and Time
               </label>
-              <input
+              <DateTimeField
                 id="arrivalDateTime"
-                type="datetime-local"
                 value={arrivalDateTime}
-                onChange={(e) => setArrivalDateTime(e.target.value)}
+                onChange={(value) => setArrivalDateTime(value)}
                 disabled={isReadOnly}
                 className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
               />
@@ -573,12 +561,11 @@ function IntakeRecordFormContent({
                 <label htmlFor="dateOfBirth" className="text-sm font-semibold text-text">
                   Date of Birth
                 </label>
-                <input
+                <DateField
                   id="dateOfBirth"
-                  type="date"
                   value={dateOfBirth}
-                  max={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  max={todayISO()}
+                  onChange={(value) => setDateOfBirth(value)}
                   disabled={isReadOnly}
                   className="h-10 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60"
                 />
@@ -760,13 +747,12 @@ function IntakeRecordFormContent({
               <label htmlFor="pendingPhoto" className="text-xs font-semibold text-text-muted">
                 Photo File
               </label>
-              <input
+              <FileField
                 key={photoInputKey}
                 id="pendingPhoto"
-                type="file"
+                label="Photo File"
                 accept="image/*"
-                onChange={(e) => setPendingPhotoFile(e.target.files?.[0] ?? null)}
-                className="text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
+                onFile={(file) => setPendingPhotoFile(file)}
               />
             </div>
             <div className="flex min-w-[240px] flex-1 flex-col gap-1">

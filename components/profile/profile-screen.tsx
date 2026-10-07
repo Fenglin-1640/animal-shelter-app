@@ -4,16 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getActiveTitleOptions } from "@/lib/options/titles";
+import { formatDateTime } from "@/lib/shared/dates";
 
 const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/;
-
-function formatDateTime(iso: string): string {
-  // Force English formatting regardless of viewer locale (English-only UI).
-  return new Date(iso).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
 
 function AlertIcon() {
   return (

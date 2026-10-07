@@ -12,12 +12,9 @@ import { confirmAttendance, getMeetAndGreet, selectSlot } from "@/lib/meet-and-g
 import { MEET_AND_GREET_STATUS_CATEGORY } from "@/lib/meet-and-greets/status";
 import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Adopter"];
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function NotFound() {
   return (

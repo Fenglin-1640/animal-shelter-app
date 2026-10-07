@@ -6,10 +6,7 @@ import { animalStatusLabel, type TransferAnimalSummary } from "@/lib/council-tra
 import { TRANSFER_STATUS_CATEGORY } from "@/lib/council-transfers/status";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
 import { TransferStatusSummary, type TransferStep } from "@/components/process/transfer-status";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
+import { formatDate } from "@/lib/shared/dates";
 
 export function TransferCard({
   transfer,

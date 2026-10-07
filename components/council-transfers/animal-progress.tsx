@@ -7,12 +7,7 @@ import { CURRENT_STATUS_CATEGORY, LISTING_STATUS_CATEGORY } from "@/lib/animals/
 import { animalStatusLabel, type TransferAnimalSummary, type TransferProgress } from "@/lib/council-transfers/progress";
 import type { CouncilTransferSubmission } from "@/lib/council-transfers/types";
 import { getJson } from "@/lib/shared/http";
-
-function formatDate(value: string): string {
-  // Date-only values are local calendar dates, not UTC midnight.
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T00:00:00`) : new Date(value);
-  return date.toLocaleDateString("en-US", { dateStyle: "medium" });
-}
+import { formatDate } from "@/lib/shared/dates";
 
 export type TransferProgressResult = TransferProgress & { transfer: CouncilTransferSubmission };
 

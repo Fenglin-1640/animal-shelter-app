@@ -11,6 +11,7 @@ import type { Animal } from "@/lib/animals/types";
 import { getLatestPreReleaseCheck, isFitForRelease } from "@/lib/medical/store";
 import type { PreReleaseCheck } from "@/lib/medical/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate } from "@/lib/shared/dates";
 
 interface QueueRow {
   animal: Animal;
@@ -111,7 +112,7 @@ function PreReleaseChecksContent() {
                   </p>
                   <p className="text-xs text-text-muted">
                     {animal.currentStatus}
-                    {latest ? ` · Last checked ${new Date(latest.checkDate).toLocaleDateString("en-US", { dateStyle: "medium" })}` : " · Not yet checked"}
+                    {latest ? ` · Last checked ${formatDate(latest.checkDate)}` : " · Not yet checked"}
                   </p>
                 </div>
                 <StatusChip

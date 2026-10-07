@@ -9,10 +9,7 @@ import type { DropdownOption } from "@/lib/system-administration/types";
 import { useSpeciesOptions } from "@/lib/system-administration/use-species";
 import { VaccineMetadataFields } from "@/components/system-administration/vaccine-metadata-fields";
 import { parseAntigenList, resolveVaccineType } from "@/lib/medical/vaccine-model";
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
+import { formatDateTime } from "@/lib/shared/dates";
 
 function CloseIcon() {
   return (

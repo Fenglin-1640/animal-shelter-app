@@ -13,14 +13,11 @@ import {
 import type { VaccinationRecord } from "@/lib/medical/types";
 import { computeGap, EVIDENCE_VALID_DAYS, outcomeLabel, type EvidenceRow } from "@/lib/medical/vaccination-check";
 import { NO_VACCINES_MESSAGE, type VaccineModel } from "@/lib/medical/vaccine-model";
+import { formatDate, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
 const inputClass =
   "h-9 rounded-[12px] border border-border bg-surface px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-
-// The local calendar date (YYYY-MM-DD).
-function todayDate(): string {
-  return new Date().toLocaleDateString("en-CA");
-}
 
 interface AntibodyRow {
   key: number;
@@ -68,7 +65,7 @@ export function VaccinationCheckForm({
   const [storedAntibodies, setStoredAntibodies] = useState<AntibodyCheck[]>([]);
   const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
   const [alreadyPending, setAlreadyPending] = useState<string[]>([]);
-  const [checkDate, setCheckDate] = useState(todayDate());
+  const [checkDate, setCheckDate] = useState(todayISO());
   const [antibodyRows, setAntibodyRows] = useState<AntibodyRow[]>([]);
   const [evidence, setEvidence] = useState<EvidenceDraft[]>([]);
   const [report, setReport] = useState("");
@@ -98,7 +95,7 @@ export function VaccinationCheckForm({
   const completeEvidence = evidence.filter((e) => e.vaccineType && e.dateGiven);
   const rowsValid =
     antibodyRows.every((r) => (r.antigen && r.result && r.testDate && (!r.expiryDate || r.expiryDate >= r.testDate)) || (!r.antigen && !r.result)) &&
-    evidence.every((e) => (e.vaccineType && e.dateGiven && e.dateGiven <= todayDate()) || (!e.vaccineType && !e.dateGiven && !e.source));
+    evidence.every((e) => (e.vaccineType && e.dateGiven && e.dateGiven <= todayISO()) || (!e.vaccineType && !e.dateGiven && !e.source));
 
   const result = useMemo(() => {
     if (!model) return null;
@@ -121,7 +118,7 @@ export function VaccinationCheckForm({
   const selection = [...proposed.filter((v) => !unticked.has(v)), ...added.filter((v) => !proposed.includes(v))];
   const outcome = result ? outcomeLabel(result, selection.length) : "";
   const input: VaccinationCheckInput | null =
-    result && report.trim() && checkDate && checkDate <= todayDate() && rowsValid
+    result && report.trim() && checkDate && checkDate <= todayISO() && rowsValid
       ? {
           checkDate,
           report: report.trim(),
@@ -163,7 +160,7 @@ export function VaccinationCheckForm({
     <div className="mt-3 flex flex-col gap-4 text-sm">
       <div className="flex flex-col gap-1">
         <label htmlFor={`vc-date-${animalId}`} className="text-xs font-semibold text-text-muted">Check date</label>
-        <input id={`vc-date-${animalId}`} type="date" value={checkDate} max={todayDate()} onChange={(e) => setCheckDate(e.target.value)} className={`${inputClass} w-fit`} />
+        <DateField id={`vc-date-${animalId}`} value={checkDate} max={todayISO()} onChange={(value) => setCheckDate(value)} className={inputClass} wrapperClassName="w-fit" />
       </div>
 
       {noTypes ? (
@@ -178,8 +175,8 @@ export function VaccinationCheckForm({
               <ul className="flex flex-col gap-0.5 text-xs text-text-muted">
                 {storedAntibodies.map((a) => (
                   <li key={a.id}>
-                    On record: {a.antigen} - {a.result}, tested {a.testDate}
-                    {a.expiryDate ? `, expires ${a.expiryDate}` : ""}
+                    On record: {a.antigen} - {a.result}, tested {formatDate(a.testDate)}
+                    {a.expiryDate ? `, expires ${formatDate(a.expiryDate)}` : ""}
                   </li>
                 ))}
               </ul>
@@ -198,8 +195,8 @@ export function VaccinationCheckForm({
                     <option key={x} value={x}>{x}</option>
                   ))}
                 </select>
-                <input aria-label={`Test date ${i + 1}`} type="date" value={r.testDate} max={todayDate()} onChange={(e) => updateAntibody(r.key, { testDate: e.target.value })} className={inputClass} />
-                <input aria-label={`Expiry date ${i + 1}`} type="date" value={r.expiryDate} min={r.testDate} onChange={(e) => updateAntibody(r.key, { expiryDate: e.target.value })} className={inputClass} />
+                <DateField aria-label={`Test date ${i + 1}`} value={r.testDate} max={todayISO()} onChange={(value) => updateAntibody(r.key, { testDate: value })} className={inputClass} />
+                <DateField aria-label={`Expiry date ${i + 1}`} value={r.expiryDate} min={r.testDate} onChange={(value) => updateAntibody(r.key, { expiryDate: value })} className={inputClass} />
                 <button type="button" onClick={() => setAntibodyRows((rows) => rows.filter((x) => x.key !== r.key))} className="text-xs font-semibold text-danger underline underline-offset-2">
                   Remove
                 </button>
@@ -208,7 +205,7 @@ export function VaccinationCheckForm({
             <button
               type="button"
               onClick={() => {
-                setAntibodyRows((rows) => [...rows, { key: nextKey, antigen: "", result: "", testDate: todayDate(), expiryDate: "" }]);
+                setAntibodyRows((rows) => [...rows, { key: nextKey, antigen: "", result: "", testDate: todayISO(), expiryDate: "" }]);
                 setNextKey((k) => k + 1);
               }}
               className="w-fit text-xs font-semibold text-secondary underline underline-offset-2 hover:no-underline"
@@ -228,7 +225,7 @@ export function VaccinationCheckForm({
                     <option key={t.id} value={t.value}>{t.value}</option>
                   ))}
                 </select>
-                <input aria-label={`Date given ${i + 1}`} type="date" value={e.dateGiven} max={todayDate()} onChange={(ev) => updateEvidence(e.key, { dateGiven: ev.target.value })} className={inputClass} />
+                <DateField aria-label={`Date given ${i + 1}`} value={e.dateGiven} max={todayISO()} onChange={(value) => updateEvidence(e.key, { dateGiven: value })} className={inputClass} />
                 <input aria-label={`Source ${i + 1}`} type="text" placeholder="Source, e.g. vaccination card" value={e.source} onChange={(ev) => updateEvidence(e.key, { source: ev.target.value })} className={inputClass} />
                 <button type="button" onClick={() => setEvidence((rows) => rows.filter((x) => x.key !== e.key))} className="text-xs font-semibold text-danger underline underline-offset-2">
                   Remove

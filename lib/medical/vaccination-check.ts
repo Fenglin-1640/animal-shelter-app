@@ -1,6 +1,7 @@
 import { protectiveAntigens, type AntibodyCheck } from "@/lib/medical/antibodies";
 import { findType, proposeTypes, type ResolvedVaccineType, type VaccineModel } from "@/lib/medical/vaccine-model";
 import type { VaccinationRecord } from "@/lib/medical/types";
+import { formatDate } from "@/lib/shared/dates";
 
 // Vaccination Check: which of the animal's required vaccine types it is
 // already covered for, and which become pending vaccination items. Shared
@@ -119,11 +120,11 @@ export function coveredAntigens(model: VaccineModel, ctx: CoverageContext): Map<
   };
   for (const v of ctx.vaccinations) {
     const until = v.nextBoosterDueDate ? day(v.nextBoosterDueDate) : day(v.administrationDate) + EVIDENCE_VALID_DAYS * DAY_MS;
-    if (day(v.administrationDate) <= at && until >= at) add(findType(v.vaccineType, model.all), `${v.vaccineType} given ${v.administrationDate.slice(0, 10)}`);
+    if (day(v.administrationDate) <= at && until >= at) add(findType(v.vaccineType, model.all), `${v.vaccineType} given ${formatDate(v.administrationDate)}`);
   }
   for (const e of ctx.evidence.filter((r) => r.vaccineType && r.dateGiven)) {
     const given = day(e.dateGiven);
-    if (given <= at && given + EVIDENCE_VALID_DAYS * DAY_MS >= at) add(findType(e.vaccineType, model.all), `${e.vaccineType} given ${e.dateGiven.slice(0, 10)}${e.source ? ` (${e.source})` : ""}`);
+    if (given <= at && given + EVIDENCE_VALID_DAYS * DAY_MS >= at) add(findType(e.vaccineType, model.all), `${e.vaccineType} given ${formatDate(e.dateGiven)}${e.source ? ` (${e.source})` : ""}`);
   }
   return covered;
 }

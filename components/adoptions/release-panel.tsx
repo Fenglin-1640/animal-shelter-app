@@ -9,19 +9,9 @@ import { getLatestFollowUpVisitForAnimal, releaseAnimal } from "@/lib/follow-up-
 import type { FollowUpType, FollowUpVisit } from "@/lib/follow-up-visits/types";
 import { listPreReleaseChecks } from "@/lib/medical/store";
 import type { PreReleaseCheck } from "@/lib/medical/types";
+import { addDaysISO, formatDate, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
-// Local calendar dates (YYYY-MM-DD), so "today" matches the user's day.
-function localDate(offsetDays = 0): string {
-  const date = new Date();
-  date.setDate(date.getDate() + offsetDays);
-  return date.toLocaleDateString("en-CA");
-}
-
-function formatDate(value: string): string {
-  // Date-only values are read as local dates, not UTC midnight.
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T00:00:00`) : new Date(value);
-  return date.toLocaleDateString("en-US", { dateStyle: "medium" });
-}
 
 const INPUT =
   "h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
@@ -37,9 +27,9 @@ function ReleaseForm({
   careInstructions: string;
   onReleased: (visit: FollowUpVisit) => void;
 }) {
-  const [releaseDate, setReleaseDate] = useState(localDate());
+  const [releaseDate, setReleaseDate] = useState(todayISO());
   const [receivingAdopter, setReceivingAdopter] = useState(defaultReceivingAdopter);
-  const [targetDate, setTargetDate] = useState(localDate(7));
+  const [targetDate, setTargetDate] = useState(addDaysISO(todayISO(), 7));
   const [followUpType, setFollowUpType] = useState<FollowUpType>("Phone Call");
   const [handoverNotes, setHandoverNotes] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -77,7 +67,7 @@ function ReleaseForm({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
           <label htmlFor="release-date" className="text-xs font-semibold text-text-muted">Release / Handover Date</label>
-          <input id="release-date" type="date" value={releaseDate} max={localDate()} onChange={(e) => setReleaseDate(e.target.value)} className={INPUT} />
+          <DateField id="release-date" value={releaseDate} max={todayISO()} onChange={(value) => setReleaseDate(value)} className={INPUT} />
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="receiving-adopter" className="text-xs font-semibold text-text-muted">Receiving Adopter</label>
@@ -85,7 +75,7 @@ function ReleaseForm({
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="target-date" className="text-xs font-semibold text-text-muted">Follow-Up Visit Date</label>
-          <input id="target-date" type="date" value={targetDate} min={releaseDate} onChange={(e) => setTargetDate(e.target.value)} className={INPUT} />
+          <DateField id="target-date" value={targetDate} min={releaseDate} onChange={(value) => setTargetDate(value)} className={INPUT} />
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="follow-up-type" className="text-xs font-semibold text-text-muted">Follow-Up Type</label>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { ApplicationDocument } from "@/lib/applications/types";
 import { downloadFile, getAttachmentRules, removeFile, uploadFile } from "@/lib/files/client";
 import { describeRules, FILE_FORMATS, type AttachmentRules } from "@/lib/files/rules";
+import { FileField } from "@/components/shared/file-field";
 
 function formatSize(kb: number): string {
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
@@ -122,19 +123,15 @@ export function ApplicationDocuments({
         <div className="mt-4 flex flex-col gap-2">
           <p className="text-xs text-text-muted">{rules ? `Accepted: ${describeRules(rules)}.` : "Accepted: PDF, JPG, PNG."}</p>
           <div className="flex flex-wrap items-end gap-2">
-            <label htmlFor={`doc-upload-${applicationId}`} className="sr-only">
-              Choose a document
-            </label>
-            <input
-              id={`doc-upload-${applicationId}`}
+            <FileField
               key={inputKey}
-              type="file"
+              id={`doc-upload-${applicationId}`}
+              label="Supporting document"
               accept={accept}
-              onChange={(e) => {
+              onFile={(file) => {
                 setError(null);
-                setFile(e.target.files?.[0] ?? null);
+                setFile(file);
               }}
-              className="max-w-full text-sm text-text file:mr-2 file:h-9 file:rounded-[12px] file:border file:border-border file:bg-page file:px-3 file:text-sm file:font-semibold file:text-text"
             />
             <button
               type="button"

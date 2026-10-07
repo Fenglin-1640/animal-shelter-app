@@ -10,15 +10,12 @@ import { getAllAnimals } from "@/lib/animals/animal-store";
 import { CURRENT_STATUS_CATEGORY } from "@/lib/animals/status";
 import type { Animal } from "@/lib/animals/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate } from "@/lib/shared/dates";
 
 // PRD 6.15: "授权 Staff 可搜索 Archived 记录，但不可修改" - Administrator and
 // Shelter Staff Member, read-only (this screen has no action buttons at
 // all; the linked Animal Profile enforces its own edit permissions).
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
 
 function ArchiveSearchContent() {
   const [search, setSearch] = useState("");

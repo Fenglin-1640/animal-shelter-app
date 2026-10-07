@@ -14,6 +14,7 @@ import { completeFollowUpVisit, getLatestFollowUpVisitForAnimal } from "@/lib/fo
 import { FOLLOW_UP_VISIT_STATUS_CATEGORY, WELFARE_OUTCOME_CATEGORY } from "@/lib/follow-up-visits/status";
 import type { FollowUpVisit, WelfareOutcome } from "@/lib/follow-up-visits/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 // PRD 9: FollowUpVisit is 安排、完成 for Administrator and Shelter Staff
@@ -21,14 +22,6 @@ const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterin
 const CAN_ACT_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
 
 const WELFARE_OUTCOMES: WelfareOutcome[] = ["Settling Well", "Concerns Noted", "Unable to Contact Adopter"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function NotFound() {
   return (

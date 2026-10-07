@@ -24,22 +24,12 @@ import {
   type TemperamentAssessment,
 } from "@/lib/behaviour/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 const CAN_ACT_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
 const SOCIALISATION_SCORES = [1, 2, 3, 4, 5];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
-
-function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function NotFound() {
   return (
@@ -71,7 +61,7 @@ function TemperamentAssessmentForm({
   const [socialisationScore, setSocialisationScore] = useState(3);
   const [observations, setObservations] = useState("");
   const [recommendations, setRecommendations] = useState("");
-  const [assessmentDate, setAssessmentDate] = useState(todayDate());
+  const [assessmentDate, setAssessmentDate] = useState(todayISO());
   const [followUpRequired, setFollowUpRequired] = useState(false);
   const [reassessmentDate, setReassessmentDate] = useState("");
   const [outcome, setOutcome] = useState<TemperamentAssessmentInput["outcome"] | "">("");
@@ -152,12 +142,11 @@ function TemperamentAssessmentForm({
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="ta-date" className="text-xs font-semibold text-text-muted">Assessment Date</label>
-          <input
+          <DateField
             id="ta-date"
-            type="date"
             value={assessmentDate}
-            max={todayDate()}
-            onChange={(e) => setAssessmentDate(e.target.value)}
+            max={todayISO()}
+            onChange={(value) => setAssessmentDate(value)}
             className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
@@ -197,11 +186,10 @@ function TemperamentAssessmentForm({
       {followUpRequired && (
         <div className="flex flex-col gap-1 sm:max-w-xs">
           <label htmlFor="ta-reassessment-date" className="text-xs font-semibold text-text-muted">Reassessment Date</label>
-          <input
+          <DateField
             id="ta-reassessment-date"
-            type="date"
             value={reassessmentDate}
-            onChange={(e) => setReassessmentDate(e.target.value)}
+            onChange={(value) => setReassessmentDate(value)}
             className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>

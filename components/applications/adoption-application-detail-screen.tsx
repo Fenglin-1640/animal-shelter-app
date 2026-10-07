@@ -23,18 +23,12 @@ import {
 import { MEET_AND_GREET_STATUS_CATEGORY } from "@/lib/meet-and-greets/status";
 import type { MeetAndGreet } from "@/lib/meet-and-greets/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDateTime, fromBrisbaneLocal, todayISO } from "@/lib/shared/dates";
+import { DateField, DateTimeField } from "@/components/shared/date-field";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 const CAN_ACT_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
 const OUTCOME_OPTIONS: Exclude<CheckOutcome, "Pending">[] = ["Pass", "Concern", "Fail"];
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
-
-function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function outcomeCategory(outcome: CheckOutcome) {
   if (outcome === "Pass") return "success" as const;
@@ -68,7 +62,7 @@ function CheckRow({
   const [showForm, setShowForm] = useState(false);
   const [outcome, setOutcome] = useState<Exclude<CheckOutcome, "Pending">>("Pass");
   const [notes, setNotes] = useState("");
-  const [date, setDate] = useState(todayDate());
+  const [date, setDate] = useState(todayISO());
 
   return (
     <div className="rounded-[12px] border border-border bg-page p-4">
@@ -103,12 +97,13 @@ function CheckRow({
               placeholder="Check notes"
               className="rounded-[12px] border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             />
-            <input
-              type="date"
+            <DateField
+              aria-label="Check date"
               value={date}
-              max={todayDate()}
-              onChange={(e) => setDate(e.target.value)}
-              className="h-9 w-40 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              max={todayISO()}
+              onChange={(value) => setDate(value)}
+              wrapperClassName="w-44"
+              className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             />
             <div className="flex gap-2">
               <button
@@ -186,7 +181,7 @@ function MeetAndGreetSection({
     if (validSlots.length === 0) return;
     await proposeSlots(
       applicationId,
-      validSlots.map((s) => ({ dateTime: new Date(s.dateTime).toISOString(), location: s.location })),
+      validSlots.map((s) => ({ dateTime: fromBrisbaneLocal(s.dateTime), location: s.location })),
       participants,
       email,
       displayName,
@@ -230,11 +225,12 @@ function MeetAndGreetSection({
         <div className="mt-4 flex flex-col gap-2">
           {slots.map((slot, index) => (
             <div key={index} className="flex flex-wrap items-end gap-2">
-              <input
-                type="datetime-local"
+              <DateTimeField
+                aria-label={`Slot ${index + 1} date and time`}
+                wrapperClassName="w-52"
                 value={slot.dateTime}
-                onChange={(e) =>
-                  setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, dateTime: e.target.value } : s)))
+                onChange={(value) =>
+                  setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, dateTime: value } : s)))
                 }
                 className="h-9 rounded-[12px] border border-border bg-page px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               />

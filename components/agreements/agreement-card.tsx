@@ -3,10 +3,7 @@ import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { AGREEMENT_STATUS_CATEGORY, getAgreementStatus } from "@/lib/agreements/status";
 import type { AdoptionAgreement } from "@/lib/agreements/types";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
+import { formatDate } from "@/lib/shared/dates";
 
 export function AgreementCard({ agreement }: { agreement: AdoptionAgreement }) {
   const status = getAgreementStatus(agreement.isSigned);

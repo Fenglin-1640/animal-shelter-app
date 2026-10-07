@@ -51,16 +51,9 @@ import { getPublishBlockers, publishAdoptionProfile, unpublishAdoptionProfile } 
 import { getPrimaryPhoto, listPhotosForAnimal } from "@/lib/photos/store";
 import type { Photo } from "@/lib/photos/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function checkOutcomeCategory(outcome: CheckOutcome) {
   if (outcome === "Pass") return "success" as const;

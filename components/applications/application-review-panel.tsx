@@ -4,16 +4,13 @@ import { useState } from "react";
 import { approvalBlockers, approveApplication, rejectApplication, reviewApplication, type ReviewAction } from "@/lib/applications/store";
 import { hasNewAdopterResponse, isWaitingOnAdopter, type AdoptionApplication } from "@/lib/applications/types";
 import { CHECK_TYPES, type SuitabilityCheck } from "@/lib/checks/types";
+import { formatDateTime } from "@/lib/shared/dates";
 
 const card = "rounded-[12px] border border-border bg-surface p-6 shadow-[0_2px_8px_rgba(200,182,173,0.2)]";
 const primary = "h-10 rounded-[12px] bg-primary px-5 text-sm font-semibold text-page hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60";
 const secondary = "h-10 rounded-[12px] border border-border bg-page px-4 text-sm font-semibold text-text hover:bg-surface-active disabled:cursor-not-allowed disabled:opacity-60";
 const textarea =
   "rounded-[12px] border border-border bg-page px-3 py-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 type Form = null | "reject" | "hold" | "request_info";
 

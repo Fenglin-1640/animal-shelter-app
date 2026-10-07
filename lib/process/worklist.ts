@@ -12,6 +12,7 @@ import {
 import { loadAnimalRecords } from "@/lib/process/load";
 import { countUnlinkedSubmittedTransfers } from "@/lib/pending-actions/counts";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate } from "@/lib/shared/dates";
 
 // Everything role-specific the UI needs about pending work, computed in
 // one pass over the process engine: list flags and ordering, the "Needs
@@ -69,9 +70,7 @@ export interface Worklist {
 const OUT_OF_CARE = new Set(["ReturnedToOwner", "Archived", "Rehomed", "inFollowUpPeriod"]);
 const BOOSTER_WINDOW_MS = 14 * 86400000;
 
-function formatDay(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
-}
+const formatDay = formatDate;
 
 // Which Vet Workbench section an animal belongs in (at most one), from
 // the engine's steps plus appointments and boosters coming due.

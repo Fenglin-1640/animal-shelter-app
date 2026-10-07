@@ -3,10 +3,7 @@ import { AnimalThumbnail } from "@/components/shared/animal-thumbnail";
 import { StatusChip } from "@/components/shared/status-chip";
 import { INTAKE_COMPLETENESS_CATEGORY } from "@/lib/intake-records/status";
 import { isIntakeRecordComplete, type IntakeRecord } from "@/lib/intake-records/types";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
+import { formatDate } from "@/lib/shared/dates";
 
 export function IntakeRecordCard({ record }: { record: IntakeRecord }) {
   const complete = isIntakeRecordComplete(record);

@@ -14,12 +14,9 @@ import type { MicrochipImplantTask } from "@/lib/microchip/implant";
 import { LOOKUP_RESULT_CATEGORY } from "@/lib/microchip/status";
 import type { MicrochipLookup } from "@/lib/microchip/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function NotFound() {
   return (

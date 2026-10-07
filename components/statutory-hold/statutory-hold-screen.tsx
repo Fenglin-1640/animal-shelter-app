@@ -18,16 +18,9 @@ import { HOLD_STATUS_CATEGORY } from "@/lib/statutory-hold/status";
 import type { StatutoryHold } from "@/lib/statutory-hold/types";
 import { getSystemSettings } from "@/lib/system-administration/settings-store";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
 
 function daysUntil(iso: string): number {
   return Math.ceil((new Date(iso).getTime() - Date.now()) / (24 * 60 * 60 * 1000));

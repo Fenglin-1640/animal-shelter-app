@@ -10,12 +10,9 @@ import { listActiveFollowUpVisits } from "@/lib/follow-up-visits/store";
 import { FOLLOW_UP_VISIT_STATUS_CATEGORY } from "@/lib/follow-up-visits/status";
 import type { FollowUpVisit } from "@/lib/follow-up-visits/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate } from "@/lib/shared/dates";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
 
 function FollowUpVisitsContent() {
   const [search, setSearch] = useState("");

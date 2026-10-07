@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="en-AU"
       suppressHydrationWarning
       className={`${figtree.variable} ${bitter.variable} h-full antialiased`}
     >

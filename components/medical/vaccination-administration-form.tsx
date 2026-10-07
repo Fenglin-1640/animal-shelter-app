@@ -5,13 +5,11 @@ import { AntibodyOverrideModal, type OverrideChoice } from "@/components/medical
 import { recordVaccinations, type FlaggedVaccine, type VaccinationBatchItem } from "@/lib/medical/store";
 import type { VaccinationTask } from "@/lib/medical/vaccination-check";
 import { findType, NO_VACCINES_MESSAGE, overlaps, type VaccineModel } from "@/lib/medical/vaccine-model";
+import { todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
 const inputClass =
   "h-9 rounded-[12px] border border-border bg-surface px-2 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-
-function todayDate(): string {
-  return new Date().toLocaleDateString("en-CA");
-}
 
 interface PerVaccine {
   doseOrChipId: string;
@@ -39,7 +37,7 @@ export function VaccinationAdministrationForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
-  const [date, setDate] = useState(todayDate());
+  const [date, setDate] = useState(todayISO());
   const [selected, setSelected] = useState<string[]>(() => preselected.filter((v) => findType(v, model.types)).map((v) => findType(v, model.types)!.value));
   const [details, setDetails] = useState<Record<string, PerVaccine>>({});
   const [saving, setSaving] = useState(false);
@@ -61,7 +59,7 @@ export function VaccinationAdministrationForm({
   const setDetail = (v: string, patch: Partial<PerVaccine>) => setDetails((d) => ({ ...d, [v]: { ...detail(v), ...patch } }));
   const selectedTypes = selected.map((v) => findType(v, model.types)!).filter(Boolean);
   const overlapList = overlaps(selectedTypes, model.antigenLabels);
-  const valid = selected.length > 0 && date && date <= todayDate() && selected.every((v) => detail(v).doseOrChipId.trim());
+  const valid = selected.length > 0 && date && date <= todayISO() && selected.every((v) => detail(v).doseOrChipId.trim());
   const pendingFor = (v: string) => pendingTasks.find((t) => t.status === "Pending" && findType(t.vaccineType, model.all)?.id === findType(v, model.types)?.id);
 
   const submit = async (choices?: Record<string, OverrideChoice>) => {
@@ -94,7 +92,7 @@ export function VaccinationAdministrationForm({
     <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-border bg-page p-4 text-sm">
       <div className="flex flex-col gap-1">
         <label htmlFor={`adm-date-${animalId}`} className="text-xs font-semibold text-text-muted">Administration date (all selected vaccines)</label>
-        <input id={`adm-date-${animalId}`} type="date" value={date} max={todayDate()} onChange={(e) => setDate(e.target.value)} className={`${inputClass} w-fit`} />
+        <DateField id={`adm-date-${animalId}`} value={date} max={todayISO()} onChange={(value) => setDate(value)} className={inputClass} wrapperClassName="w-fit" />
       </div>
 
       <fieldset className="flex flex-col gap-1">
@@ -137,7 +135,7 @@ export function VaccinationAdministrationForm({
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor={`adm-booster-${i}`} className="text-xs font-semibold text-text-muted">Next booster due</label>
-            <input id={`adm-booster-${i}`} aria-label={`Next booster for ${v}`} type="date" value={detail(v).nextBoosterDueDate} onChange={(e) => setDetail(v, { nextBoosterDueDate: e.target.value })} className={inputClass} />
+            <DateField id={`adm-booster-${i}`} aria-label={`Next booster for ${v}`} value={detail(v).nextBoosterDueDate} onChange={(value) => setDetail(v, { nextBoosterDueDate: value })} className={inputClass} />
           </div>
         </div>
       ))}

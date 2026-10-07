@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getSystemSettings, updateSystemSettings } from "@/lib/system-administration/settings-store";
 import { MAX_ATTACHMENT_SIZE_MB, type SystemSettings } from "@/lib/system-administration/settings-types";
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
+import { formatDateTime } from "@/lib/shared/dates";
 
 // FR-SA-02: "Administrator 可配置 Statutory Holding Period 天数、到期提醒提前天数、
 // 允许的附件类型、最大附件大小和默认 Adoption Agreement 条款版本". Holding Period

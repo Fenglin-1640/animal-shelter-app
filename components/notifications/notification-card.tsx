@@ -1,13 +1,7 @@
 import { StatusChip } from "@/components/shared/status-chip";
 import { NOTIFICATION_CATEGORY } from "@/lib/notifications/notification-style";
 import type { NotificationItem } from "@/lib/notifications/types";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
+import { formatDate } from "@/lib/shared/dates";
 
 export function NotificationCard({
   item,

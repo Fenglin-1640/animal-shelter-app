@@ -5,6 +5,8 @@ import { StatusChip } from "@/components/shared/status-chip";
 import { ANTIBODY_RESULTS, type AntibodyCheck, type AntibodyResult } from "@/lib/medical/antibodies";
 import { NO_VACCINES_MESSAGE } from "@/lib/medical/vaccine-model";
 import { recordAntibodyCheck } from "@/lib/medical/store";
+import { formatDate, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
 const RESULT_CATEGORY: Record<AntibodyResult, "success" | "caution" | "attention" | "neutral"> = {
   Protective: "success",
@@ -16,14 +18,6 @@ const RESULT_CATEGORY: Record<AntibodyResult, "success" | "caution" | "attention
 const inputClass =
   "h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
-function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
 function isExpired(check: AntibodyCheck): boolean {
   return Boolean(check.expiryDate) && new Date(check.expiryDate!).getTime() < Date.now();
 }
@@ -31,7 +25,7 @@ function isExpired(check: AntibodyCheck): boolean {
 function AntibodyCheckForm({ animalId, antigens, onSaved, onCancel }: { animalId: string; antigens: string[]; onSaved: () => void; onCancel: () => void }) {
   const [antigen, setAntigen] = useState("");
   const [result, setResult] = useState("");
-  const [testDate, setTestDate] = useState(todayDate());
+  const [testDate, setTestDate] = useState(todayISO());
   const [expiryDate, setExpiryDate] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -63,11 +57,11 @@ function AntibodyCheckForm({ animalId, antigens, onSaved, onCancel }: { animalId
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="ab-test-date" className="text-xs font-semibold text-text-muted">Test Date</label>
-          <input id="ab-test-date" type="date" value={testDate} max={todayDate()} onChange={(e) => setTestDate(e.target.value)} className={inputClass} />
+          <DateField id="ab-test-date" value={testDate} max={todayISO()} onChange={(value) => setTestDate(value)} className={inputClass} />
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="ab-expiry-date" className="text-xs font-semibold text-text-muted">Expiry Date (optional)</label>
-          <input id="ab-expiry-date" type="date" value={expiryDate} min={testDate} onChange={(e) => setExpiryDate(e.target.value)} className={inputClass} />
+          <DateField id="ab-expiry-date" value={expiryDate} min={testDate} onChange={(value) => setExpiryDate(value)} className={inputClass} />
           {expiryInvalid && <p className="text-xs text-danger">The expiry date must be on or after the test date.</p>}
         </div>
         <div className="flex flex-col gap-1 sm:col-span-2">

@@ -18,24 +18,14 @@ import {
 } from "@/lib/medical/store";
 import type { PreReleaseCheck, PreReleaseFitnessResult } from "@/lib/medical/types";
 import type { Role } from "@/lib/roles/roles";
+import { formatDate, formatDateTime, todayISO } from "@/lib/shared/dates";
+import { DateField } from "@/components/shared/date-field";
 
 const ALLOWED_ROLES: Role[] = ["Administrator", "Shelter Staff Member", "Veterinarian"];
 // Only the Veterinarian records the check; Shelter Staff and Administrator
 // read it and release the animal once it is Fit for Release.
 const CAN_ACT_ROLES: Role[] = ["Veterinarian"];
 const CAN_RELEASE_ROLES: Role[] = ["Administrator", "Shelter Staff Member"];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-}
-
-function todayDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function NotFound() {
   return (
@@ -58,7 +48,7 @@ function PreReleaseCheckForm({
   onSubmit: (input: PreReleaseCheckInput) => void;
   onCancel: () => void;
 }) {
-  const [checkDate, setCheckDate] = useState(todayDate());
+  const [checkDate, setCheckDate] = useState(todayISO());
   const [fitnessResult, setFitnessResult] = useState<PreReleaseFitnessResult>("Fit for Release");
   const [healthFindings, setHealthFindings] = useState("");
   const [medicationGuidance, setMedicationGuidance] = useState("");
@@ -71,12 +61,11 @@ function PreReleaseCheckForm({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
           <label htmlFor="prc-date" className="text-xs font-semibold text-text-muted">Check Date</label>
-          <input
+          <DateField
             id="prc-date"
-            type="date"
             value={checkDate}
-            max={todayDate()}
-            onChange={(e) => setCheckDate(e.target.value)}
+            max={todayISO()}
+            onChange={(value) => setCheckDate(value)}
             className="h-9 rounded-[12px] border border-border bg-surface px-3 text-sm text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
